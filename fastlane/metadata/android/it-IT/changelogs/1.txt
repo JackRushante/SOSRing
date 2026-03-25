@@ -1,0 +1,8 @@
+Prima versione:
+- Gestione contatti VIP (scelta dalla rubrica + inserimento manuale)
+- Override Silenzioso/Vibrazione/DND per chiamate VIP
+- Volume configurabile (50-100%)
+- Ripristino completo stato audio dopo la chiamata
+- Avvio automatico al riavvio
+- Supporto dark mode
+- Localizzazione inglese e italiano

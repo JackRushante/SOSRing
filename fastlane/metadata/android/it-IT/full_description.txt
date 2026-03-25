@@ -1,0 +1,30 @@
+SOS Ring forza la suoneria del telefono al massimo volume quando ricevi una chiamata da un contatto VIP, anche se il telefono e in modalita Silenzioso, Vibrazione o Non Disturbare.
+
+Perfetto per le famiglie dove qualcuno tiene sempre il telefono in silenzioso ma deve essere raggiungibile in caso di emergenza.
+
+COME FUNZIONA:
+• Aggiungi i tuoi contatti VIP (famiglia, partner, ecc.)
+• Attiva il servizio di monitoraggio
+• Quando un contatto VIP chiama, SOS Ring disattiva Silenzioso/DND, riproduce la suoneria al volume scelto (50-100%) e attiva la vibrazione
+• Dopo la chiamata (risposta, persa o rifiutata), il telefono torna esattamente allo stato precedente — silenzioso, DND, volumi, tutto
+
+PERCHE QUESTA APP ESISTE:
+Android 14+ ha rimosso le eccezioni DND per contatto. Non esiste un modo nativo per far squillare il telefono per contatti specifici. Google blocca READ_CALL_LOG sul Play Store, quindi questo tipo di app non puo essere pubblicata li. SOS Ring e gratuita, open source, e funziona dove le altre non possono.
+
+FUNZIONALITA:
+• Scegli contatti VIP dalla rubrica o inseriscili manualmente
+• Volume override configurabile (50-100%)
+• Funziona in Silenzioso, Vibrazione E Non Disturbare
+• Ripristino completo dopo la chiamata (incluso volume sveglia)
+• Sopravvive ai riavvii del telefono (auto-start)
+• Consumo batteria minimo (basato su eventi, nessun polling)
+• Supporto dark mode
+• Nessuna pubblicita, nessun tracciamento, nessun internet necessario
+
+PERMESSI SPIEGATI:
+• Stato telefono e Registro chiamate: rileva le chiamate in arrivo e identifica il chiamante
+• Contatti: scegli i contatti VIP dalla rubrica
+• Accesso Non Disturbare: disattiva il DND quando un VIP chiama
+• Notifiche: mostra una piccola notifica persistente durante il monitoraggio
+
+CODICE SORGENTE: https://github.com/JackRushante/SOSRing

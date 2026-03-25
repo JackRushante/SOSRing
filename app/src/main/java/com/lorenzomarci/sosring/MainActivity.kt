@@ -49,9 +49,9 @@ class MainActivity : AppCompatActivity() {
         updatePermissionStatus()
         val allGranted = results.values.all { it }
         if (allGranted) {
-            Toast.makeText(this, "Permessi concessi!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.perm_all_granted), Toast.LENGTH_SHORT).show()
         } else {
-            Toast.makeText(this, "Alcuni permessi mancano — il servizio potrebbe non funzionare correttamente", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.perm_some_missing), Toast.LENGTH_LONG).show()
         }
     }
 
@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity() {
                     startMonitoring()
                 } else {
                     binding.switchService.isChecked = false
-                    Toast.makeText(this, "Concedi prima tutti i permessi", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, getString(R.string.grant_perms_first), Toast.LENGTH_LONG).show()
                 }
             } else {
                 stopMonitoring()
@@ -103,16 +103,12 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnRequestDnd.setOnClickListener {
             MaterialAlertDialogBuilder(this)
-                .setTitle("Permesso Non Disturbare")
-                .setMessage(
-                    "Per poter disattivare la modalità \"Non disturbare\" quando arriva una chiamata VIP, " +
-                    "devi autorizzare SOS Ring nelle impostazioni di sistema.\n\n" +
-                    "Premi OK per aprire le impostazioni, poi cerca \"SOS Ring\" e attiva l'interruttore."
-                )
-                .setPositiveButton("Apri impostazioni") { _, _ ->
+                .setTitle(getString(R.string.dnd_dialog_title))
+                .setMessage(getString(R.string.dnd_dialog_msg))
+                .setPositiveButton(getString(R.string.btn_open_settings)) { _, _ ->
                     startActivity(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
                 }
-                .setNegativeButton("Annulla", null)
+                .setNegativeButton(getString(R.string.btn_cancel), null)
                 .show()
         }
 
@@ -135,9 +131,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showAddChoiceDialog() {
-        val options = arrayOf("Scegli dalla rubrica", "Inserisci manualmente")
+        val options = arrayOf(getString(R.string.choice_from_contacts), getString(R.string.choice_manual))
         MaterialAlertDialogBuilder(this)
-            .setTitle("Aggiungi contatto VIP")
+            .setTitle(getString(R.string.add_choice_title))
             .setItems(options) { _, which ->
                 when (which) {
                     0 -> pickFromContacts()
@@ -160,7 +156,6 @@ class MainActivity : AppCompatActivity() {
         var name = ""
         var phone = ""
 
-        // Get contact name
         val nameCursor: Cursor? = contentResolver.query(
             contactUri, arrayOf(ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts._ID),
             null, null, null
@@ -170,7 +165,6 @@ class MainActivity : AppCompatActivity() {
                 name = it.getString(it.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME)) ?: ""
                 val contactId = it.getString(it.getColumnIndexOrThrow(ContactsContract.Contacts._ID))
 
-                // Get phone number
                 val phoneCursor: Cursor? = contentResolver.query(
                     ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                     arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
@@ -187,11 +181,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (phone.isEmpty()) {
-            Toast.makeText(this, "Nessun numero trovato per questo contatto", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.no_phone_found), Toast.LENGTH_LONG).show()
             return
         }
 
-        // Show confirmation dialog with pre-filled data (editable)
         val view = LayoutInflater.from(this).inflate(R.layout.dialog_add_number, null)
         val etName = view.findViewById<EditText>(R.id.etDialogName)
         val etNumber = view.findViewById<EditText>(R.id.etDialogNumber)
@@ -199,9 +192,9 @@ class MainActivity : AppCompatActivity() {
         etNumber.setText(phone)
 
         MaterialAlertDialogBuilder(this)
-            .setTitle("Conferma contatto VIP")
+            .setTitle(getString(R.string.confirm_contact_title))
             .setView(view)
-            .setPositiveButton("Aggiungi") { _, _ ->
+            .setPositiveButton(getString(R.string.btn_add)) { _, _ ->
                 val finalName = etName.text.toString().trim()
                 val finalNumber = etNumber.text.toString().trim()
                 if (finalName.isNotEmpty() && finalNumber.length > 3) {
@@ -209,7 +202,7 @@ class MainActivity : AppCompatActivity() {
                     saveAndRefresh()
                 }
             }
-            .setNegativeButton("Annulla", null)
+            .setNegativeButton(getString(R.string.btn_cancel), null)
             .show()
     }
 
@@ -217,12 +210,12 @@ class MainActivity : AppCompatActivity() {
         val view = LayoutInflater.from(this).inflate(R.layout.dialog_add_number, null)
         val etName = view.findViewById<EditText>(R.id.etDialogName)
         val etNumber = view.findViewById<EditText>(R.id.etDialogNumber)
-        etNumber.setText("+39")
+        etNumber.setText("+")
 
         MaterialAlertDialogBuilder(this)
-            .setTitle("Aggiungi contatto VIP")
+            .setTitle(getString(R.string.add_choice_title))
             .setView(view)
-            .setPositiveButton("Aggiungi") { _, _ ->
+            .setPositiveButton(getString(R.string.btn_add)) { _, _ ->
                 val name = etName.text.toString().trim()
                 val number = etNumber.text.toString().trim()
                 if (name.isNotEmpty() && number.length > 3) {
@@ -230,7 +223,7 @@ class MainActivity : AppCompatActivity() {
                     saveAndRefresh()
                 }
             }
-            .setNegativeButton("Annulla", null)
+            .setNegativeButton(getString(R.string.btn_cancel), null)
             .show()
     }
 
@@ -242,9 +235,9 @@ class MainActivity : AppCompatActivity() {
         etNumber.setText(contact.number)
 
         MaterialAlertDialogBuilder(this)
-            .setTitle("Modifica contatto")
+            .setTitle(getString(R.string.edit_contact_title))
             .setView(view)
-            .setPositiveButton("Salva") { _, _ ->
+            .setPositiveButton(getString(R.string.btn_save)) { _, _ ->
                 val name = etName.text.toString().trim()
                 val number = etNumber.text.toString().trim()
                 if (name.isNotEmpty() && number.length > 3) {
@@ -252,20 +245,20 @@ class MainActivity : AppCompatActivity() {
                     saveAndRefresh()
                 }
             }
-            .setNegativeButton("Annulla", null)
+            .setNegativeButton(getString(R.string.btn_cancel), null)
             .show()
     }
 
     private fun deleteContact(position: Int) {
         val contact = contacts[position]
         MaterialAlertDialogBuilder(this)
-            .setTitle("Rimuovi contatto")
-            .setMessage("Rimuovere ${contact.name} (${contact.number}) dalla lista VIP?")
-            .setPositiveButton("Rimuovi") { _, _ ->
+            .setTitle(getString(R.string.remove_contact_title))
+            .setMessage(getString(R.string.remove_contact_msg, contact.name, contact.number))
+            .setPositiveButton(getString(R.string.btn_remove)) { _, _ ->
                 contacts.removeAt(position)
                 saveAndRefresh()
             }
-            .setNegativeButton("Annulla", null)
+            .setNegativeButton(getString(R.string.btn_cancel), null)
             .show()
     }
 
@@ -277,13 +270,13 @@ class MainActivity : AppCompatActivity() {
     private fun startMonitoring() {
         prefs.isServiceEnabled = true
         CallMonitorService.start(this)
-        Toast.makeText(this, "Monitoraggio attivato", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.monitoring_on), Toast.LENGTH_SHORT).show()
     }
 
     private fun stopMonitoring() {
         prefs.isServiceEnabled = false
         CallMonitorService.stop(this)
-        Toast.makeText(this, "Monitoraggio disattivato", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.monitoring_off), Toast.LENGTH_SHORT).show()
     }
 
     private fun checkAllPermissions(): Boolean {
@@ -309,11 +302,11 @@ class MainActivity : AppCompatActivity() {
 
         val runtimeAll = phoneOk && callLogOk && notifOk
 
-        binding.tvRuntimeStatus.text = if (runtimeAll) "Concessi" else "Da concedere"
+        binding.tvRuntimeStatus.text = getString(if (runtimeAll) R.string.status_granted else R.string.status_missing)
         binding.tvRuntimeStatus.setTextColor(getColor(if (runtimeAll) R.color.status_ok else R.color.status_missing))
         binding.btnRequestRuntime.isEnabled = !runtimeAll
 
-        binding.tvDndStatus.text = if (dndOk) "Concesso" else "Da concedere"
+        binding.tvDndStatus.text = getString(if (dndOk) R.string.status_granted else R.string.status_missing)
         binding.tvDndStatus.setTextColor(getColor(if (dndOk) R.color.status_ok else R.color.status_missing))
         binding.btnRequestDnd.isEnabled = !dndOk
 

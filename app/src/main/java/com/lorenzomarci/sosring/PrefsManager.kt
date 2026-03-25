@@ -20,11 +20,7 @@ class PrefsManager(context: Context) {
         const val MAX_VOLUME_PERCENT = 100
         const val DEFAULT_VOLUME_PERCENT = 100
 
-        val DEFAULT_CONTACTS = listOf(
-            VipContact("Lorenzo", "+39393207780"),
-            VipContact("Padre", "+393358027893"),
-            VipContact("Madre", "+393515713262")
-        )
+        val DEFAULT_CONTACTS = emptyList<VipContact>()
     }
 
     var isServiceEnabled: Boolean

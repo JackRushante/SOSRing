@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="subtitle">Forza la suoneria per le chiamate importanti</string>
+    <string name="service_label">Monitoraggio attivo</string>
+    <string name="permissions_title">Permessi necessari</string>
+    <string name="runtime_perm_label">Telefono, registro chiamate e contatti</string>
+    <string name="dnd_perm_label">Non disturbare (DND)</string>
+    <string name="authorize">Autorizza</string>
+    <string name="configure">Configura</string>
+    <string name="volume_label">Volume suoneria</string>
+    <string name="contacts_title">Contatti VIP</string>
+    <string name="add_contact">Aggiungi contatto</string>
+    <string name="status_granted">Concessi</string>
+    <string name="status_missing">Da concedere</string>
+    <string name="perm_all_granted">Permessi concessi!</string>
+    <string name="perm_some_missing">Alcuni permessi mancano — il servizio potrebbe non funzionare correttamente</string>
+    <string name="grant_perms_first">Concedi prima tutti i permessi</string>
+    <string name="monitoring_on">Monitoraggio attivato</string>
+    <string name="monitoring_off">Monitoraggio disattivato</string>
+    <string name="add_choice_title">Aggiungi contatto VIP</string>
+    <string name="choice_from_contacts">Scegli dalla rubrica</string>
+    <string name="choice_manual">Inserisci manualmente</string>
+    <string name="confirm_contact_title">Conferma contatto VIP</string>
+    <string name="btn_add">Aggiungi</string>
+    <string name="btn_save">Salva</string>
+    <string name="btn_cancel">Annulla</string>
+    <string name="btn_remove">Rimuovi</string>
+    <string name="edit_contact_title">Modifica contatto</string>
+    <string name="remove_contact_title">Rimuovi contatto</string>
+    <string name="remove_contact_msg">Rimuovere %1$s (%2$s) dalla lista VIP?</string>
+    <string name="no_phone_found">Nessun numero trovato per questo contatto</string>
+    <string name="dnd_dialog_title">Permesso Non Disturbare</string>
+    <string name="dnd_dialog_msg">Per poter disattivare la modalità \"Non disturbare\" quando arriva una chiamata VIP, devi autorizzare SOS Ring nelle impostazioni di sistema.\n\nPremi OK per aprire le impostazioni, poi cerca \"SOS Ring\" e attiva l\'interruttore.</string>
+    <string name="btn_open_settings">Apri impostazioni</string>
+    <string name="notif_service_title">SOS Ring attivo</string>
+    <string name="notif_service_text">Monitoraggio %1$d contatti VIP</string>
+    <string name="notif_override_title">Suoneria forzata!</string>
+    <string name="notif_override_text">Chiamata VIP in arrivo — suoneria attivata</string>
+    <string name="empty_contacts">Nessun contatto VIP. Tocca + per aggiungerne uno.</string>
+</resources>

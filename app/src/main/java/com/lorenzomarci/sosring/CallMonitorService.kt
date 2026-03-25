@@ -303,8 +303,8 @@ class CallMonitorService : Service() {
 
         val count = prefs.getContacts().size
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("SOS Ring attivo")
-            .setContentText("Monitoraggio $count contatti VIP")
+            .setContentTitle(getString(R.string.notif_service_title))
+            .setContentText(getString(R.string.notif_service_text, count))
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(openIntent)
             .setOngoing(true)
@@ -313,8 +313,8 @@ class CallMonitorService : Service() {
 
     private fun buildOverrideNotification(): Notification {
         return NotificationCompat.Builder(this, OVERRIDE_CHANNEL_ID)
-            .setContentTitle("Suoneria forzata!")
-            .setContentText("Chiamata VIP in arrivo — suoneria attivata")
+            .setContentTitle(getString(R.string.notif_override_title))
+            .setContentText(getString(R.string.notif_override_text))
             .setSmallIcon(R.drawable.ic_notification)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)

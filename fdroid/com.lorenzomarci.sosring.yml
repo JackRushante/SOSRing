@@ -1,0 +1,26 @@
+Categories:
+  - Phone & SMS
+  - Security
+License: GPL-3.0-or-later
+AuthorName: Lorenzo Marci
+AuthorEmail: marci.lorenzo@gmail.com
+SourceCode: https://github.com/JackRushante/SOSRing
+IssueTracker: https://github.com/JackRushante/SOSRing/issues
+
+AutoName: SOS Ring
+
+RepoType: git
+Repo: https://github.com/JackRushante/SOSRing.git
+
+Builds:
+  - versionName: '1.0'
+    versionCode: 1
+    commit: v1.0
+    subdir: app
+    gradle:
+      - yes
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: '1.0'
+CurrentVersionCode: 1
