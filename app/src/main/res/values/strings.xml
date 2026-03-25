@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SOS Ring</string>
+    <string name="subtitle">Forza la suoneria per le chiamate importanti</string>
+    <string name="service_label">Monitoraggio attivo</string>
+    <string name="permissions_title">Permessi necessari</string>
+    <string name="runtime_perm_label">Telefono, registro chiamate e contatti</string>
+    <string name="dnd_perm_label">Non disturbare (DND)</string>
+    <string name="authorize">Autorizza</string>
+    <string name="configure">Configura</string>
+    <string name="contacts_title">Contatti VIP</string>
+    <string name="add_contact">Aggiungi contatto</string>
+</resources>
