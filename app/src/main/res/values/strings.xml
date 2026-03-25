@@ -8,6 +8,7 @@
     <string name="dnd_perm_label">Non disturbare (DND)</string>
     <string name="authorize">Autorizza</string>
     <string name="configure">Configura</string>
+    <string name="volume_label">Volume suoneria</string>
     <string name="contacts_title">Contatti VIP</string>
     <string name="add_contact">Aggiungi contatto</string>
 </resources>

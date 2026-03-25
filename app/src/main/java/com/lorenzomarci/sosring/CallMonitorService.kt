@@ -49,6 +49,7 @@ class CallMonitorService : Service() {
     private var savedRingerMode = AudioManager.RINGER_MODE_NORMAL
     private var savedRingVolume = 0
     private var savedNotifVolume = 0
+    private var savedAlarmVolume = 0
     private var savedDndFilter = NotificationManager.INTERRUPTION_FILTER_ALL
     private var savedVibrateRing = AudioManager.VIBRATE_SETTING_OFF
     private var savedVibrateNotif = AudioManager.VIBRATE_SETTING_OFF
@@ -134,12 +135,13 @@ class CallMonitorService : Service() {
             savedRingerMode = audioManager.ringerMode
             savedRingVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING)
             savedNotifVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION)
+            savedAlarmVolume = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
             savedDndFilter = notificationManager.currentInterruptionFilter
             savedVibrateRing = audioManager.getVibrateSetting(AudioManager.VIBRATE_TYPE_RINGER)
             savedVibrateNotif = audioManager.getVibrateSetting(AudioManager.VIBRATE_TYPE_NOTIFICATION)
 
             Log.d(TAG, "Saved state: ringer=$savedRingerMode, ringVol=$savedRingVolume, " +
-                    "notifVol=$savedNotifVolume, dnd=$savedDndFilter")
+                    "notifVol=$savedNotifVolume, alarmVol=$savedAlarmVolume, dnd=$savedDndFilter")
 
             // 1. Override DND FIRST
             if (notificationManager.isNotificationPolicyAccessGranted) {
@@ -153,18 +155,21 @@ class CallMonitorService : Service() {
             audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
             Log.d(TAG, "Ringer set to NORMAL")
 
-            // 3. Ring volume to MAX (no FLAG_SHOW_UI to avoid potential issues)
-            val maxRingVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_RING)
-            audioManager.setStreamVolume(AudioManager.STREAM_RING, maxRingVolume, 0)
+            // 3. Calculate target volume from user preference (50-100%)
+            val volumePercent = prefs.volumePercent
+            fun targetVolume(stream: Int): Int {
+                val max = audioManager.getStreamMaxVolume(stream)
+                return (max * volumePercent / 100).coerceAtLeast(1)
+            }
 
-            // 4. Notification volume to MAX
-            val maxNotifVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION)
-            audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, maxNotifVolume, 0)
-
-            // 5. ALARM volume to MAX (used for our ringtone playback — bypasses DND)
-            val maxAlarmVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
-            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxAlarmVolume, 0)
-            Log.d(TAG, "Volumes set to max: ring=$maxRingVolume, notif=$maxNotifVolume, alarm=$maxAlarmVolume")
+            // 4. Set ring, notification, alarm volumes to configured level
+            val ringTarget = targetVolume(AudioManager.STREAM_RING)
+            val notifTarget = targetVolume(AudioManager.STREAM_NOTIFICATION)
+            val alarmTarget = targetVolume(AudioManager.STREAM_ALARM)
+            audioManager.setStreamVolume(AudioManager.STREAM_RING, ringTarget, 0)
+            audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, notifTarget, 0)
+            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, alarmTarget, 0)
+            Log.d(TAG, "Volumes set to $volumePercent%: ring=$ringTarget, notif=$notifTarget, alarm=$alarmTarget")
 
         } catch (e: Exception) {
             Log.e(TAG, "Error during audio override: ${e.message}", e)
@@ -241,7 +246,7 @@ class CallMonitorService : Service() {
         if (!isOverriding) return
 
         Log.d(TAG, "Restoring state: ringer=$savedRingerMode, ringVol=$savedRingVolume, " +
-                "notifVol=$savedNotifVolume, dnd=$savedDndFilter")
+                "notifVol=$savedNotifVolume, alarmVol=$savedAlarmVolume, dnd=$savedDndFilter")
 
         // 1. Stop our ringtone and vibration
         stopRingtoneAndVibration()
@@ -250,9 +255,10 @@ class CallMonitorService : Service() {
         audioManager.ringerMode = savedRingerMode
         Log.d(TAG, "Ringer restored to $savedRingerMode")
 
-        // 3. Restore volumes
+        // 3. Restore ALL volumes (including alarm)
         audioManager.setStreamVolume(AudioManager.STREAM_RING, savedRingVolume, 0)
         audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, savedNotifVolume, 0)
+        audioManager.setStreamVolume(AudioManager.STREAM_ALARM, savedAlarmVolume, 0)
 
         // 4. Restore DND LAST — this overrides any DND change triggered by ringerMode
         //    Small delay to let the system settle after ringer mode change

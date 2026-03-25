@@ -70,6 +70,8 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         updatePermissionStatus()
         binding.switchService.isChecked = prefs.isServiceEnabled
+        binding.sliderVolume.value = prefs.volumePercent.toFloat()
+        binding.tvVolumeValue.text = "${prefs.volumePercent}%"
     }
 
     private fun setupRecyclerView() {
@@ -112,6 +114,13 @@ class MainActivity : AppCompatActivity() {
                 }
                 .setNegativeButton("Annulla", null)
                 .show()
+        }
+
+        binding.sliderVolume.value = prefs.volumePercent.toFloat()
+        binding.tvVolumeValue.text = "${prefs.volumePercent}%"
+        binding.sliderVolume.addOnChangeListener { _, value, _ ->
+            prefs.volumePercent = value.toInt()
+            binding.tvVolumeValue.text = "${value.toInt()}%"
         }
 
         binding.fabAdd.setOnClickListener {
