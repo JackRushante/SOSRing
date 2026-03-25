@@ -15,7 +15,7 @@ Repo: https://github.com/JackRushante/SOSRing.git
 Builds:
   - versionName: '1.0'
     versionCode: 1
-    commit: v1.0
+    commit: f49b2eb2f19d56e01a22c2e1d57e6e29ecce214f
     subdir: app
     gradle:
       - yes
