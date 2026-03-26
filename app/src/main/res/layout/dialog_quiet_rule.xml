@@ -88,6 +88,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:minWidth="80dp"
+            android:singleLine="true"
             android:text="09:00"
             android:textSize="16sp" />
 
@@ -96,7 +98,7 @@
             android:layout_height="wrap_content"
             android:text="@string/quiet_to"
             android:textSize="14sp"
-            android:layout_marginStart="16dp" />
+            android:layout_marginStart="12dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnToTime"
@@ -104,6 +106,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:minWidth="80dp"
+            android:singleLine="true"
             android:text="18:00"
             android:textSize="16sp" />
     </LinearLayout>
