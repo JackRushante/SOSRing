@@ -2,10 +2,19 @@ package com.lorenzomarci.sosring
 
 import android.content.Context
 import android.content.SharedPreferences
+import java.util.Calendar
 import org.json.JSONArray
 import org.json.JSONObject
 
 data class VipContact(val name: String, val number: String)
+
+data class QuietRule(
+    val days: Set<Int>,    // Calendar.MONDAY(2)..SUNDAY(1)
+    val startHour: Int,
+    val startMinute: Int,
+    val endHour: Int,
+    val endMinute: Int
+)
 
 class PrefsManager(context: Context) {
 
@@ -21,6 +30,9 @@ class PrefsManager(context: Context) {
         const val DEFAULT_VOLUME_PERCENT = 100
 
         val DEFAULT_CONTACTS = emptyList<VipContact>()
+
+        private const val KEY_QUIET_RULES = "quiet_rules"
+        const val MAX_QUIET_RULES = 10
     }
 
     var isServiceEnabled: Boolean
@@ -61,5 +73,67 @@ class PrefsManager(context: Context) {
 
     fun normalizeNumber(number: String): String {
         return number.replace(Regex("[\\s\\-().]"), "")
+    }
+
+    fun getQuietRules(): List<QuietRule> {
+        val json = prefs.getString(KEY_QUIET_RULES, null) ?: return emptyList()
+        return try {
+            val arr = JSONArray(json)
+            (0 until arr.length()).map { i ->
+                val obj = arr.getJSONObject(i)
+                val daysArr = obj.getJSONArray("days")
+                val days = (0 until daysArr.length()).map { daysArr.getInt(it) }.toSet()
+                QuietRule(
+                    days = days,
+                    startHour = obj.getInt("startHour"),
+                    startMinute = obj.getInt("startMinute"),
+                    endHour = obj.getInt("endHour"),
+                    endMinute = obj.getInt("endMinute")
+                )
+            }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    fun saveQuietRules(rules: List<QuietRule>) {
+        val arr = JSONArray()
+        rules.forEach { r ->
+            arr.put(JSONObject().apply {
+                put("days", JSONArray(r.days.toList()))
+                put("startHour", r.startHour)
+                put("startMinute", r.startMinute)
+                put("endHour", r.endHour)
+                put("endMinute", r.endMinute)
+            })
+        }
+        prefs.edit().putString(KEY_QUIET_RULES, arr.toString()).apply()
+    }
+
+    fun isInQuietPeriod(): Boolean {
+        val rules = getQuietRules()
+        if (rules.isEmpty()) return false
+
+        val cal = Calendar.getInstance()
+        val currentDay = cal.get(Calendar.DAY_OF_WEEK)
+        val currentTime = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE)
+
+        val previousDay = if (currentDay == Calendar.SUNDAY) Calendar.SATURDAY
+            else if (currentDay == Calendar.MONDAY) Calendar.SUNDAY
+            else currentDay - 1
+
+        return rules.any { rule ->
+            val start = rule.startHour * 60 + rule.startMinute
+            val end = rule.endHour * 60 + rule.endMinute
+
+            if (end > start) {
+                // Same-day rule: e.g. 09:00-18:00
+                currentDay in rule.days && currentTime >= start && currentTime < end
+            } else {
+                // Cross-midnight rule: e.g. 22:00-06:00
+                (currentDay in rule.days && currentTime >= start) ||
+                (previousDay in rule.days && currentTime < end)
+            }
+        }
     }
 }
