@@ -70,6 +70,7 @@
             android:text="@string/day_sun" />
     </com.google.android.material.chip.ChipGroup>
 
+    <!-- From row -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -85,15 +86,20 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnFromTime"
             style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="8dp"
-            android:minWidth="0dp"
-            android:singleLine="true"
+            android:layout_marginStart="12dp"
             android:text="09:00"
             android:textSize="16sp" />
+    </LinearLayout>
+
+    <!-- To row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="8dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -104,23 +110,20 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnToTime"
             style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="4dp"
-            android:minWidth="0dp"
-            android:singleLine="true"
+            android:layout_marginStart="12dp"
             android:text="18:00"
             android:textSize="16sp" />
-    </LinearLayout>
 
-    <TextView
-        android:id="@+id/tvCrossMidnightHint"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/quiet_next_day"
-        android:textSize="12sp"
-        android:textColor="?colorPrimary"
-        android:visibility="gone"
-        android:layout_marginTop="4dp" />
+        <TextView
+            android:id="@+id/tvCrossMidnightHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/quiet_next_day"
+            android:textSize="12sp"
+            android:textColor="?colorPrimary"
+            android:visibility="gone"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
 </LinearLayout>
