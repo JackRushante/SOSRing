@@ -12,8 +12,16 @@ import android.os.Bundle
 import android.provider.ContactsContract
 import android.provider.Settings
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
+import com.google.android.material.chip.Chip
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.TimeFormat
+import java.util.Calendar
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -27,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var prefs: PrefsManager
     private lateinit var adapter: VipNumbersAdapter
     private val contacts = mutableListOf<VipContact>()
+    private val quietRules = mutableListOf<QuietRule>()
 
     private val runtimePermissions = buildList {
         add(Manifest.permission.READ_PHONE_STATE)
@@ -64,6 +73,7 @@ class MainActivity : AppCompatActivity() {
         setupRecyclerView()
         setupListeners()
         loadContacts()
+        loadQuietRules()
     }
 
     override fun onResume() {
@@ -119,6 +129,14 @@ class MainActivity : AppCompatActivity() {
             binding.tvVolumeValue.text = "${value.toInt()}%"
         }
 
+        binding.btnAddQuietRule.setOnClickListener {
+            if (quietRules.size >= PrefsManager.MAX_QUIET_RULES) {
+                Toast.makeText(this, getString(R.string.quiet_max_rules), Toast.LENGTH_SHORT).show()
+            } else {
+                showAddQuietRuleDialog()
+            }
+        }
+
         binding.fabAdd.setOnClickListener {
             showAddChoiceDialog()
         }
@@ -128,6 +146,158 @@ class MainActivity : AppCompatActivity() {
         contacts.clear()
         contacts.addAll(prefs.getContacts())
         adapter.submitList(contacts.toList())
+    }
+
+    private fun loadQuietRules() {
+        quietRules.clear()
+        quietRules.addAll(prefs.getQuietRules())
+        refreshQuietRulesUI()
+    }
+
+    private fun refreshQuietRulesUI() {
+        val container = binding.quietRulesContainer
+        container.removeAllViews()
+
+        quietRules.forEachIndexed { index, rule ->
+            val itemView = LayoutInflater.from(this).inflate(R.layout.item_quiet_rule, container, false)
+            val tvDays = itemView.findViewById<TextView>(R.id.tvRuleDays)
+            val tvTime = itemView.findViewById<TextView>(R.id.tvRuleTime)
+            val btnDelete = itemView.findViewById<ImageButton>(R.id.btnDeleteRule)
+
+            tvDays.text = formatRuleDays(rule)
+            tvTime.text = formatRuleTime(rule)
+
+            btnDelete.setOnClickListener { deleteQuietRule(index, rule) }
+            container.addView(itemView)
+        }
+
+        binding.btnAddQuietRule.isEnabled = quietRules.size < PrefsManager.MAX_QUIET_RULES
+    }
+
+    private fun formatRuleDays(rule: QuietRule): String {
+        if (rule.days.size == 7) return getString(R.string.quiet_every_day)
+
+        val dayNames = mapOf(
+            Calendar.MONDAY to getString(R.string.day_mon),
+            Calendar.TUESDAY to getString(R.string.day_tue),
+            Calendar.WEDNESDAY to getString(R.string.day_wed),
+            Calendar.THURSDAY to getString(R.string.day_thu),
+            Calendar.FRIDAY to getString(R.string.day_fri),
+            Calendar.SATURDAY to getString(R.string.day_sat),
+            Calendar.SUNDAY to getString(R.string.day_sun)
+        )
+        val orderedDays = listOf(
+            Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
+            Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY
+        )
+        val sorted = orderedDays.filter { it in rule.days }
+
+        // Try to compress consecutive runs
+        if (sorted.size >= 2) {
+            val first = orderedDays.indexOf(sorted.first())
+            val last = orderedDays.indexOf(sorted.last())
+            if (last - first + 1 == sorted.size) {
+                // Consecutive run
+                return "${dayNames[sorted.first()]}-${dayNames[sorted.last()]}"
+            }
+        }
+
+        return sorted.mapNotNull { dayNames[it] }.joinToString(", ")
+    }
+
+    private fun formatRuleTime(rule: QuietRule): String {
+        val from = String.format("%02d:%02d", rule.startHour, rule.startMinute)
+        val to = String.format("%02d:%02d", rule.endHour, rule.endMinute)
+        val crossMidnight = rule.endHour * 60 + rule.endMinute <= rule.startHour * 60 + rule.startMinute
+        return if (crossMidnight) "$from - $to ${getString(R.string.quiet_next_day)}" else "$from - $to"
+    }
+
+    private fun deleteQuietRule(index: Int, rule: QuietRule) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.quiet_delete_title))
+            .setMessage(getString(R.string.quiet_delete_msg,
+                formatRuleDays(rule),
+                String.format("%02d:%02d", rule.startHour, rule.startMinute),
+                String.format("%02d:%02d", rule.endHour, rule.endMinute)))
+            .setPositiveButton(getString(R.string.btn_remove)) { _, _ ->
+                quietRules.removeAt(index)
+                prefs.saveQuietRules(quietRules)
+                refreshQuietRulesUI()
+            }
+            .setNegativeButton(getString(R.string.btn_cancel), null)
+            .show()
+    }
+
+    private fun showAddQuietRuleDialog() {
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_quiet_rule, null)
+
+        val chipMap = mapOf(
+            Calendar.MONDAY to view.findViewById<Chip>(R.id.chipMon),
+            Calendar.TUESDAY to view.findViewById<Chip>(R.id.chipTue),
+            Calendar.WEDNESDAY to view.findViewById<Chip>(R.id.chipWed),
+            Calendar.THURSDAY to view.findViewById<Chip>(R.id.chipThu),
+            Calendar.FRIDAY to view.findViewById<Chip>(R.id.chipFri),
+            Calendar.SATURDAY to view.findViewById<Chip>(R.id.chipSat),
+            Calendar.SUNDAY to view.findViewById<Chip>(R.id.chipSun)
+        )
+
+        val btnFrom = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnFromTime)
+        val btnTo = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnToTime)
+        val tvHint = view.findViewById<TextView>(R.id.tvCrossMidnightHint)
+
+        var fromHour = 9; var fromMinute = 0
+        var toHour = 18; var toMinute = 0
+
+        fun updateHint() {
+            val startMin = fromHour * 60 + fromMinute
+            val endMin = toHour * 60 + toMinute
+            tvHint.visibility = if (endMin <= startMin) View.VISIBLE else View.GONE
+        }
+
+        btnFrom.setOnClickListener {
+            MaterialTimePicker.Builder()
+                .setTimeFormat(TimeFormat.CLOCK_24H)
+                .setHour(fromHour).setMinute(fromMinute)
+                .setTitleText(getString(R.string.quiet_from))
+                .build().apply {
+                    addOnPositiveButtonClickListener {
+                        fromHour = hour; fromMinute = minute
+                        btnFrom.text = String.format("%02d:%02d", hour, minute)
+                        updateHint()
+                    }
+                }.show(supportFragmentManager, "from_time")
+        }
+
+        btnTo.setOnClickListener {
+            MaterialTimePicker.Builder()
+                .setTimeFormat(TimeFormat.CLOCK_24H)
+                .setHour(toHour).setMinute(toMinute)
+                .setTitleText(getString(R.string.quiet_to))
+                .build().apply {
+                    addOnPositiveButtonClickListener {
+                        toHour = hour; toMinute = minute
+                        btnTo.text = String.format("%02d:%02d", hour, minute)
+                        updateHint()
+                    }
+                }.show(supportFragmentManager, "to_time")
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.quiet_new_rule_title))
+            .setView(view)
+            .setPositiveButton(getString(R.string.btn_save)) { _, _ ->
+                val selectedDays = chipMap.filter { it.value.isChecked }.keys
+                if (selectedDays.isEmpty()) {
+                    Toast.makeText(this, getString(R.string.quiet_select_day), Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                val rule = QuietRule(selectedDays, fromHour, fromMinute, toHour, toMinute)
+                quietRules.add(rule)
+                prefs.saveQuietRules(quietRules)
+                refreshQuietRulesUI()
+            }
+            .setNegativeButton(getString(R.string.btn_cancel), null)
+            .show()
     }
 
     private fun showAddChoiceDialog() {
