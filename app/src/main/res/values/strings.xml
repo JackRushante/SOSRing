@@ -38,4 +38,25 @@
     <string name="notif_override_title">Ringtone forced!</string>
     <string name="notif_override_text">VIP call incoming — ringtone activated</string>
     <string name="empty_contacts">No VIP contacts yet. Tap + to add one.</string>
+    <!-- Quiet Hours -->
+    <string name="quiet_hours_title">Quiet Hours</string>
+    <string name="quiet_hours_subtitle">SOS Ring pauses during these times</string>
+    <string name="quiet_add_rule">Add quiet rule</string>
+    <string name="quiet_new_rule_title">New quiet rule</string>
+    <string name="quiet_from">From</string>
+    <string name="quiet_to">To</string>
+    <string name="quiet_days_label">Days</string>
+    <string name="quiet_next_day">(+1)</string>
+    <string name="quiet_delete_title">Remove quiet rule</string>
+    <string name="quiet_delete_msg">Remove this quiet rule?\n%1$s  %2$s - %3$s</string>
+    <string name="quiet_max_rules">Maximum rules reached</string>
+    <string name="quiet_select_day">Select at least one day</string>
+    <string name="quiet_every_day">Every day</string>
+    <string name="day_mon">Mon</string>
+    <string name="day_tue">Tue</string>
+    <string name="day_wed">Wed</string>
+    <string name="day_thu">Thu</string>
+    <string name="day_fri">Fri</string>
+    <string name="day_sat">Sat</string>
+    <string name="day_sun">Sun</string>
 </resources>

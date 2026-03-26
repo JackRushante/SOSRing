@@ -37,4 +37,25 @@
     <string name="notif_override_title">Suoneria forzata!</string>
     <string name="notif_override_text">Chiamata VIP in arrivo — suoneria attivata</string>
     <string name="empty_contacts">Nessun contatto VIP. Tocca + per aggiungerne uno.</string>
+    <!-- Quiet Hours -->
+    <string name="quiet_hours_title">Orari silenziosi</string>
+    <string name="quiet_hours_subtitle">SOS Ring si mette in pausa in questi orari</string>
+    <string name="quiet_add_rule">Aggiungi regola</string>
+    <string name="quiet_new_rule_title">Nuova regola silenziosa</string>
+    <string name="quiet_from">Dalle</string>
+    <string name="quiet_to">Alle</string>
+    <string name="quiet_days_label">Giorni</string>
+    <string name="quiet_next_day">(+1)</string>
+    <string name="quiet_delete_title">Rimuovi regola</string>
+    <string name="quiet_delete_msg">Rimuovere questa regola?\n%1$s  %2$s - %3$s</string>
+    <string name="quiet_max_rules">Numero massimo di regole raggiunto</string>
+    <string name="quiet_select_day">Seleziona almeno un giorno</string>
+    <string name="quiet_every_day">Ogni giorno</string>
+    <string name="day_mon">Lun</string>
+    <string name="day_tue">Mar</string>
+    <string name="day_wed">Mer</string>
+    <string name="day_thu">Gio</string>
+    <string name="day_fri">Ven</string>
+    <string name="day_sat">Sab</string>
+    <string name="day_sun">Dom</string>
 </resources>
