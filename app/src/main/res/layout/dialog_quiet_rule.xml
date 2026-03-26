@@ -85,10 +85,12 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnFromTime"
             style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:minWidth="80dp"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="8dp"
+            android:minWidth="0dp"
             android:singleLine="true"
             android:text="09:00"
             android:textSize="16sp" />
@@ -97,16 +99,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/quiet_to"
-            android:textSize="14sp"
-            android:layout_marginStart="12dp" />
+            android:textSize="14sp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnToTime"
             style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:minWidth="80dp"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:minWidth="0dp"
             android:singleLine="true"
             android:text="18:00"
             android:textSize="16sp" />
