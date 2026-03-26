@@ -68,7 +68,7 @@ class CallMonitorService : Service() {
 
             when (state) {
                 TelephonyManager.EXTRA_STATE_RINGING -> {
-                    if (number != null && isVipNumber(number)) {
+                    if (number != null && isVipNumber(number) && !prefs.isInQuietPeriod()) {
                         Log.i(TAG, "VIP call detected! Overriding audio.")
                         overrideAudio()
                     }
