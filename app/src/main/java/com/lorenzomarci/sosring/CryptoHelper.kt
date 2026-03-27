@@ -8,7 +8,7 @@ import javax.crypto.spec.SecretKeySpec
 
 object CryptoHelper {
 
-    private const val APP_SECRET = "***REDACTED_SECRET***"
+    private val APP_SECRET = BuildConfig.APP_SECRET
     private const val AES_GCM = "AES/GCM/NoPadding"
     private const val GCM_TAG_BITS = 128
     private const val IV_SIZE = 12

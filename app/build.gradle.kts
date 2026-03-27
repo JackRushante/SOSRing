@@ -1,6 +1,13 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+}
+
+val localProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) load(f.inputStream())
 }
 
 android {
@@ -18,9 +25,9 @@ android {
     signingConfigs {
         create("release") {
             storeFile = file("../sosring-release.jks")
-            storePassword = "***REDACTED***"
+            storePassword = localProps.getProperty("STORE_PASSWORD", "")
             keyAlias = "sosring"
-            keyPassword = "***REDACTED***"
+            keyPassword = localProps.getProperty("KEY_PASSWORD", "")
         }
     }
 
@@ -30,12 +37,16 @@ android {
             dimension = "distribution"
             buildConfigField("boolean", "LOCATION_ENABLED", "false")
             buildConfigField("String", "UPDATE_URL", "\"\"")
+            buildConfigField("String", "APP_SECRET", "\"\"")
+            buildConfigField("String", "NTFY_SERVER", "\"\"")
         }
         create("internal") {
             dimension = "distribution"
             applicationIdSuffix = ".internal"
             buildConfigField("boolean", "LOCATION_ENABLED", "true")
-            buildConfigField("String", "UPDATE_URL", "\"https://YOUR_NTFY_SERVER/update/\"")
+            buildConfigField("String", "UPDATE_URL", "\"${localProps.getProperty("UPDATE_URL", "")}\"")
+            buildConfigField("String", "APP_SECRET", "\"${localProps.getProperty("APP_SECRET", "")}\"")
+            buildConfigField("String", "NTFY_SERVER", "\"${localProps.getProperty("NTFY_SERVER", "")}\"")
         }
     }
 

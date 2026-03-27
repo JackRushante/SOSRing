@@ -45,7 +45,7 @@ class PrefsManager(context: Context) {
         private const val KEY_OWN_NUMBER = "own_phone_number"
         private const val KEY_OWN_TOPIC_HASH = "own_topic_hash"
         private const val KEY_NTFY_SERVER_URL = "ntfy_server_url"
-        const val DEFAULT_NTFY_SERVER = "https://YOUR_NTFY_SERVER"
+        val DEFAULT_NTFY_SERVER = BuildConfig.NTFY_SERVER
 
         private const val KEY_LOCATION_LOGS = "location_logs"
         private const val LOG_RETENTION_DAYS = 30
