@@ -44,6 +44,9 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             add(Manifest.permission.POST_NOTIFICATIONS)
         }
+        if (BuildConfig.LOCATION_ENABLED) {
+            add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
     }.toTypedArray()
 
     private val contactPickerLauncher = registerForActivityResult(
@@ -82,12 +85,19 @@ class MainActivity : AppCompatActivity() {
         binding.switchService.isChecked = prefs.isServiceEnabled
         binding.sliderVolume.value = prefs.volumePercent.toFloat()
         binding.tvVolumeValue.text = "${prefs.volumePercent}%"
+        // Run discovery to refresh location-enabled contacts
+        if (BuildConfig.LOCATION_ENABLED) {
+            CallMonitorService.getInstance()?.ntfyService?.runDiscovery()
+        }
     }
 
     private fun setupRecyclerView() {
         adapter = VipNumbersAdapter(
             onEdit = { position, contact -> showEditDialog(position, contact) },
-            onDelete = { position -> deleteContact(position) }
+            onDelete = { position -> deleteContact(position) },
+            onLocation = if (BuildConfig.LOCATION_ENABLED) { contact ->
+                requestContactLocation(contact)
+            } else null
         )
         binding.rvContacts.layoutManager = LinearLayoutManager(this)
         binding.rvContacts.adapter = adapter
@@ -139,6 +149,30 @@ class MainActivity : AppCompatActivity() {
 
         binding.fabAdd.setOnClickListener {
             showAddChoiceDialog()
+        }
+
+        // Location sharing settings
+        if (BuildConfig.LOCATION_ENABLED) {
+            binding.cardLocation.visibility = android.view.View.VISIBLE
+            binding.etOwnNumber.setText(prefs.ownPhoneNumber)
+            binding.tvLocationServer.text = getString(R.string.location_server_label, prefs.ntfyServerUrl)
+
+            binding.btnSaveNumber.setOnClickListener {
+                val number = binding.etOwnNumber.text.toString().trim()
+                if (number.startsWith("+") && number.length >= 10) {
+                    prefs.ownPhoneNumber = number
+                    Toast.makeText(this, getString(R.string.location_number_saved), Toast.LENGTH_SHORT).show()
+                    // Restart service to connect to ntfy
+                    if (prefs.isServiceEnabled) {
+                        CallMonitorService.stop(this)
+                        CallMonitorService.start(this)
+                    }
+                } else {
+                    Toast.makeText(this, getString(R.string.location_number_invalid), Toast.LENGTH_LONG).show()
+                }
+            }
+        } else {
+            binding.cardLocation.visibility = android.view.View.GONE
         }
     }
 
@@ -298,6 +332,19 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton(getString(R.string.btn_cancel), null)
             .show()
+    }
+
+    private fun requestContactLocation(contact: VipContact) {
+        if (prefs.ownPhoneNumber.isBlank()) {
+            Toast.makeText(this, getString(R.string.location_no_number), Toast.LENGTH_SHORT).show()
+            return
+        }
+        val ntfyService = CallMonitorService.getInstance()?.ntfyService
+        if (ntfyService != null) {
+            ntfyService.requestLocation(contact)
+        } else {
+            Toast.makeText(this, getString(R.string.grant_perms_first), Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun showAddChoiceDialog() {
