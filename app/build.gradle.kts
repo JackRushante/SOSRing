@@ -24,6 +24,19 @@ android {
         }
     }
 
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("fdroid") {
+            dimension = "distribution"
+            buildConfigField("boolean", "LOCATION_ENABLED", "false")
+        }
+        create("internal") {
+            dimension = "distribution"
+            applicationIdSuffix = ".internal"
+            buildConfigField("boolean", "LOCATION_ENABLED", "true")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -37,15 +50,16 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
 }
 
@@ -55,4 +69,10 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
+
+    // Location sharing (internal flavor only)
+    "internalImplementation"("com.google.android.gms:play-services-location:21.1.0")
+
+    // HTTP client for ntfy
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
