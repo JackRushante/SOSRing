@@ -86,6 +86,7 @@ class MainActivity : AppCompatActivity() {
         setupListeners()
         loadContacts()
         loadQuietRules()
+        handleUpdateIntent(intent)
     }
 
     override fun onResume() {
@@ -102,6 +103,11 @@ class MainActivity : AppCompatActivity() {
                 IntentFilter(NtfyService.ACTION_CONTACTS_UPDATED)
             )
             CallMonitorService.getInstance()?.ntfyService?.runDiscovery()
+        }
+
+        // Check for updates (internal flavor only)
+        if (BuildConfig.UPDATE_URL.isNotBlank()) {
+            UpdateChecker(this).checkAndNotify()
         }
     }
 
@@ -221,6 +227,20 @@ class MainActivity : AppCompatActivity() {
         quietRules.clear()
         quietRules.addAll(prefs.getQuietRules())
         refreshQuietRulesUI()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleUpdateIntent(intent)
+    }
+
+    private fun handleUpdateIntent(intent: Intent?) {
+        if (intent?.action == "com.lorenzomarci.sosring.ACTION_DOWNLOAD_UPDATE") {
+            val apkUrl = intent.getStringExtra("apk_url") ?: return
+            val versionName = intent.getStringExtra("version_name") ?: ""
+            Toast.makeText(this, getString(R.string.update_downloading), Toast.LENGTH_SHORT).show()
+            UpdateChecker(this).downloadAndInstall(apkUrl)
+        }
     }
 
     private fun refreshQuietRulesUI() {

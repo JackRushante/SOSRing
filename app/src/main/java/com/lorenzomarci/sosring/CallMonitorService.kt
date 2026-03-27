@@ -51,6 +51,10 @@ class CallMonitorService : Service() {
     var ntfyService: NtfyService? = null
         private set
 
+    private var updateChecker: UpdateChecker? = null
+    private val updateHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val updateInterval = 12 * 60 * 60 * 1000L // 12 hours
+
     private var isOverriding = false
     private var savedRingerMode = AudioManager.RINGER_MODE_NORMAL
     private var savedRingVolume = 0
@@ -114,9 +118,30 @@ class CallMonitorService : Service() {
         if (BuildConfig.LOCATION_ENABLED && prefs.ownTopicHash.isNotBlank()) {
             ntfyService = NtfyService(this).also { it.start() }
         }
+
+        if (BuildConfig.UPDATE_URL.isNotBlank()) {
+            updateChecker = UpdateChecker(this)
+            scheduleUpdateCheck()
+        }
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return START_STICKY
+    }
+
+    private fun scheduleUpdateCheck() {
+        updateHandler.postDelayed(object : Runnable {
+            override fun run() {
+                updateChecker?.checkAndNotify()
+                if (instance != null) {
+                    updateHandler.postDelayed(this, updateInterval)
+                }
+            }
+        }, updateInterval)
     }
 
     override fun onDestroy() {
+        updateHandler.removeCallbacksAndMessages(null)
         ntfyService?.stop()
         ntfyService = null
         stopRingtoneAndVibration()
@@ -128,10 +153,6 @@ class CallMonitorService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        return START_STICKY
-    }
 
     private fun isVipNumber(incoming: String): Boolean {
         val normalized = prefs.normalizeNumber(incoming)
