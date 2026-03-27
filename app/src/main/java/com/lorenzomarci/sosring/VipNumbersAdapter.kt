@@ -1,6 +1,7 @@
 package com.lorenzomarci.sosring
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -9,7 +10,8 @@ import com.lorenzomarci.sosring.databinding.ItemVipNumberBinding
 
 class VipNumbersAdapter(
     private val onEdit: (Int, VipContact) -> Unit,
-    private val onDelete: (Int) -> Unit
+    private val onDelete: (Int) -> Unit,
+    private val onLocation: ((VipContact) -> Unit)? = null
 ) : ListAdapter<VipContact, VipNumbersAdapter.ViewHolder>(DiffCallback) {
 
     object DiffCallback : DiffUtil.ItemCallback<VipContact>() {
@@ -27,6 +29,13 @@ class VipNumbersAdapter(
             binding.tvNumber.text = contact.number
             binding.btnEdit.setOnClickListener { onEdit(position, contact) }
             binding.btnDelete.setOnClickListener { onDelete(position) }
+
+            if (BuildConfig.LOCATION_ENABLED && contact.locationEnabled && onLocation != null) {
+                binding.btnLocation.visibility = View.VISIBLE
+                binding.btnLocation.setOnClickListener { onLocation.invoke(contact) }
+            } else {
+                binding.btnLocation.visibility = View.GONE
+            }
         }
     }
 
