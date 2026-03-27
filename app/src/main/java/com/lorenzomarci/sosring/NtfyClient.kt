@@ -71,13 +71,18 @@ class NtfyClient(private val serverUrl: String) {
         })
     }
 
-    fun sendLocationResponse(topic: String, fromHash: String, lat: Double, lon: Double, accuracy: Float) {
-        sendMessage(topic, JSONObject().apply {
-            put("type", "loc_response")
-            put("from", fromHash)
+    fun sendLocationResponse(topic: String, fromHash: String, lat: Double, lon: Double, accuracy: Float,
+                             myNumber: String, theirNumber: String) {
+        val locationJson = JSONObject().apply {
             put("lat", lat)
             put("lon", lon)
             put("acc", accuracy.toDouble())
+        }.toString()
+        val encrypted = CryptoHelper.encrypt(locationJson, myNumber, theirNumber)
+        sendMessage(topic, JSONObject().apply {
+            put("type", "loc_response")
+            put("from", fromHash)
+            put("enc", encrypted)
             put("ts", System.currentTimeMillis() / 1000)
         })
     }
