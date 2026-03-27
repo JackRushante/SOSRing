@@ -154,21 +154,31 @@ class MainActivity : AppCompatActivity() {
         // Location sharing settings
         if (BuildConfig.LOCATION_ENABLED) {
             binding.cardLocation.visibility = android.view.View.VISIBLE
-            binding.etOwnNumber.setText(prefs.ownPhoneNumber)
             binding.tvLocationServer.text = getString(R.string.location_server_label, prefs.ntfyServerUrl)
+            updateLocationNumberUI()
 
             binding.btnSaveNumber.setOnClickListener {
-                val number = binding.etOwnNumber.text.toString().trim()
-                if (number.startsWith("+") && number.length >= 10) {
-                    prefs.ownPhoneNumber = number
-                    Toast.makeText(this, getString(R.string.location_number_saved), Toast.LENGTH_SHORT).show()
-                    // Restart service to connect to ntfy
-                    if (prefs.isServiceEnabled) {
-                        CallMonitorService.stop(this)
-                        CallMonitorService.start(this)
-                    }
+                if (prefs.ownPhoneNumber.isNotBlank() && !binding.etOwnNumber.isEnabled) {
+                    // Currently locked — switch to edit mode
+                    binding.etOwnNumber.isEnabled = true
+                    binding.etOwnNumber.requestFocus()
+                    binding.btnSaveNumber.text = getString(R.string.location_save)
                 } else {
-                    Toast.makeText(this, getString(R.string.location_number_invalid), Toast.LENGTH_LONG).show()
+                    // Save mode
+                    val number = binding.etOwnNumber.text.toString().trim()
+                    if (number.startsWith("+") && number.length >= 10) {
+                        prefs.ownPhoneNumber = number
+                        Toast.makeText(this, getString(R.string.location_number_saved), Toast.LENGTH_SHORT).show()
+                        updateLocationNumberUI()
+                        // Restart service to connect to ntfy
+                        if (prefs.isServiceEnabled) {
+                            CallMonitorService.stop(this)
+                            CallMonitorService.start(this)
+                        }
+                        checkNtfyHealth()
+                    } else {
+                        Toast.makeText(this, getString(R.string.location_number_invalid), Toast.LENGTH_LONG).show()
+                    }
                 }
             }
         } else {
@@ -332,6 +342,57 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton(getString(R.string.btn_cancel), null)
             .show()
+    }
+
+    private fun updateLocationNumberUI() {
+        val saved = prefs.ownPhoneNumber
+        if (saved.isNotBlank()) {
+            binding.etOwnNumber.setText(saved)
+            binding.etOwnNumber.isEnabled = false
+            binding.btnSaveNumber.text = getString(R.string.location_edit)
+            checkNtfyHealth()
+        } else {
+            binding.etOwnNumber.setText("")
+            binding.etOwnNumber.isEnabled = true
+            binding.btnSaveNumber.text = getString(R.string.location_save)
+            binding.layoutLocationStatus.visibility = android.view.View.GONE
+        }
+    }
+
+    private fun checkNtfyHealth() {
+        binding.layoutLocationStatus.visibility = android.view.View.VISIBLE
+        binding.tvLocationStatus.text = getString(R.string.location_status_checking)
+        binding.ivLocationStatus.setImageResource(android.R.drawable.ic_popup_sync)
+
+        Thread {
+            try {
+                val url = "${prefs.ntfyServerUrl}/v1/health"
+                val request = okhttp3.Request.Builder().url(url).build()
+                val response = okhttp3.OkHttpClient.Builder()
+                    .connectTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
+                    .build()
+                    .newCall(request).execute()
+                val healthy = response.isSuccessful
+                response.close()
+                runOnUiThread {
+                    if (healthy) {
+                        binding.ivLocationStatus.setImageResource(android.R.drawable.presence_online)
+                        binding.tvLocationStatus.text = getString(R.string.location_status_ok)
+                        binding.tvLocationStatus.setTextColor(getColor(R.color.status_ok))
+                    } else {
+                        binding.ivLocationStatus.setImageResource(android.R.drawable.presence_busy)
+                        binding.tvLocationStatus.text = getString(R.string.location_status_fail)
+                        binding.tvLocationStatus.setTextColor(getColor(R.color.status_missing))
+                    }
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    binding.ivLocationStatus.setImageResource(android.R.drawable.presence_busy)
+                    binding.tvLocationStatus.text = getString(R.string.location_status_fail)
+                    binding.tvLocationStatus.setTextColor(getColor(R.color.status_missing))
+                }
+            }
+        }.start()
     }
 
     private fun requestContactLocation(contact: VipContact) {

@@ -76,4 +76,8 @@
     <string name="location_perm_needed">Location permission required</string>
     <string name="location_bg_perm_needed">Background location permission required for auto-response</string>
     <string name="location_icon_desc">Request position</string>
+    <string name="location_edit">Edit</string>
+    <string name="location_status_ok">Connected to server</string>
+    <string name="location_status_fail">Server unreachable</string>
+    <string name="location_status_checking">Checking server…</string>
 </resources>

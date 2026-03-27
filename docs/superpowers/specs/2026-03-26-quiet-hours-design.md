@@ -98,6 +98,7 @@ Material CardView matching existing style. Contains:
 - Dynamic list of rules (LinearLayout, not RecyclerView — few items expected)
 - "+ Add quiet rule" / "+ Aggiungi regola" button at bottom
 - Empty state: only the add button visible
+- Max 10 rules — add button disabled at limit, toast: "Maximum rules reached" / "Numero massimo di regole raggiunto"
 
 ### Rule Item (item_quiet_rule.xml)
 
