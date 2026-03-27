@@ -17,6 +17,13 @@ data class QuietRule(
     val endMinute: Int
 )
 
+data class LocationLogEntry(
+    val name: String,
+    val number: String,
+    val timestamp: Long,
+    val type: String  // "incoming" or "outgoing"
+)
+
 class PrefsManager(context: Context) {
 
     private val prefs: SharedPreferences =
@@ -39,6 +46,9 @@ class PrefsManager(context: Context) {
         private const val KEY_OWN_TOPIC_HASH = "own_topic_hash"
         private const val KEY_NTFY_SERVER_URL = "ntfy_server_url"
         const val DEFAULT_NTFY_SERVER = "https://YOUR_NTFY_SERVER"
+
+        private const val KEY_LOCATION_LOGS = "location_logs"
+        private const val LOG_RETENTION_DAYS = 30
     }
 
     var isServiceEnabled: Boolean
@@ -190,5 +200,49 @@ class PrefsManager(context: Context) {
             } else c
         }
         saveContacts(updated)
+    }
+
+    fun addLocationLog(name: String, number: String, type: String) {
+        val logs = getLocationLogsMutable()
+        logs.add(0, LocationLogEntry(name, number, System.currentTimeMillis(), type))
+        // Prune entries older than 30 days
+        val cutoff = System.currentTimeMillis() - LOG_RETENTION_DAYS * 24 * 60 * 60 * 1000L
+        logs.removeAll { it.timestamp < cutoff }
+        saveLocationLogs(logs)
+    }
+
+    fun getLocationLogs(): List<LocationLogEntry> {
+        return getLocationLogsMutable()
+    }
+
+    private fun getLocationLogsMutable(): MutableList<LocationLogEntry> {
+        val json = prefs.getString(KEY_LOCATION_LOGS, null) ?: return mutableListOf()
+        return try {
+            val arr = JSONArray(json)
+            (0 until arr.length()).map { i ->
+                val obj = arr.getJSONObject(i)
+                LocationLogEntry(
+                    name = obj.getString("name"),
+                    number = obj.getString("number"),
+                    timestamp = obj.getLong("timestamp"),
+                    type = obj.getString("type")
+                )
+            }.toMutableList()
+        } catch (e: Exception) {
+            mutableListOf()
+        }
+    }
+
+    private fun saveLocationLogs(logs: List<LocationLogEntry>) {
+        val arr = JSONArray()
+        logs.forEach { entry ->
+            arr.put(JSONObject().apply {
+                put("name", entry.name)
+                put("number", entry.number)
+                put("timestamp", entry.timestamp)
+                put("type", entry.type)
+            })
+        }
+        prefs.edit().putString(KEY_LOCATION_LOGS, arr.toString()).apply()
     }
 }
