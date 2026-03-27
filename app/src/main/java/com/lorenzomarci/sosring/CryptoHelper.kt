@@ -13,8 +13,16 @@ object CryptoHelper {
     private const val GCM_TAG_BITS = 128
     private const val IV_SIZE = 12
 
+    private fun normalizeForCrypto(number: String): String {
+        var n = number.replace(Regex("[\\s\\-().]"), "")
+        if (n.startsWith("00")) n = "+" + n.removePrefix("00")
+        if (!n.startsWith("+") && n.startsWith("39") && n.length >= 11) n = "+$n"
+        if (!n.startsWith("+") && n.startsWith("3") && n.length == 10) n = "+39$n"
+        return n
+    }
+
     fun deriveKey(myNumber: String, theirNumber: String): SecretKeySpec {
-        val sorted = listOf(myNumber, theirNumber).sorted()
+        val sorted = listOf(normalizeForCrypto(myNumber), normalizeForCrypto(theirNumber)).sorted()
         val input = sorted[0] + sorted[1] + APP_SECRET
         val digest = MessageDigest.getInstance("SHA-256")
         val keyBytes = digest.digest(input.toByteArray(Charsets.UTF_8))

@@ -35,27 +35,27 @@ class UpdateChecker(private val context: Context) {
             try {
                 val versionUrl = "${BuildConfig.UPDATE_URL}version.json"
                 val request = Request.Builder().url(versionUrl).build()
-                val response = client.newCall(request).execute()
-                if (!response.isSuccessful) {
-                    Log.w(TAG, "Version check failed: ${response.code}")
-                    response.close()
-                    return@Thread
-                }
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        Log.w(TAG, "Version check failed: ${response.code}")
+                        return@Thread
+                    }
 
-                val json = JSONObject(response.body!!.string())
-                response.close()
+                    val body = response.body?.string() ?: return@Thread
+                    val json = JSONObject(body)
 
-                val remoteCode = json.getInt("versionCode")
-                val remoteName = json.getString("versionName")
-                val apkUrl = json.getString("apkUrl")
+                    val remoteCode = json.getInt("versionCode")
+                    val remoteName = json.getString("versionName")
+                    val apkUrl = json.getString("apkUrl")
 
-                val currentCode = BuildConfig.VERSION_CODE
+                    val currentCode = BuildConfig.VERSION_CODE
 
-                if (remoteCode > currentCode) {
-                    Log.i(TAG, "Update available: v$remoteName (code $remoteCode > $currentCode)")
-                    showUpdateNotification(remoteName, apkUrl)
-                } else {
-                    Log.d(TAG, "App is up to date (code $currentCode >= $remoteCode)")
+                    if (remoteCode > currentCode) {
+                        Log.i(TAG, "Update available: v$remoteName (code $remoteCode > $currentCode)")
+                        showUpdateNotification(remoteName, apkUrl)
+                    } else {
+                        Log.d(TAG, "App is up to date (code $currentCode >= $remoteCode)")
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Update check error: ${e.message}")
@@ -102,31 +102,29 @@ class UpdateChecker(private val context: Context) {
 
                 Log.i(TAG, "Downloading APK: $fullUrl")
                 val request = Request.Builder().url(fullUrl).build()
-                val response = client.newCall(request).execute()
-                if (!response.isSuccessful) {
-                    Log.e(TAG, "APK download failed: ${response.code}")
-                    response.close()
-                    return@Thread
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        Log.e(TAG, "APK download failed: ${response.code}")
+                        return@Thread
+                    }
+
+                    val apkFile = File(context.cacheDir, APK_FILENAME)
+                    FileOutputStream(apkFile).use { fos ->
+                        response.body?.byteStream()?.copyTo(fos) ?: return@Thread
+                    }
+
+                    Log.i(TAG, "APK downloaded: ${apkFile.length()} bytes")
+
+                    val apkUri = FileProvider.getUriForFile(
+                        context, "${context.packageName}.fileprovider", apkFile
+                    )
+
+                    val installIntent = Intent(Intent.ACTION_VIEW).apply {
+                        setDataAndType(apkUri, "application/vnd.android.package-archive")
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    }
+                    context.startActivity(installIntent)
                 }
-
-                val apkFile = File(context.cacheDir, APK_FILENAME)
-                FileOutputStream(apkFile).use { fos ->
-                    response.body!!.byteStream().copyTo(fos)
-                }
-                response.close()
-
-                Log.i(TAG, "APK downloaded: ${apkFile.length()} bytes")
-
-                val apkUri = FileProvider.getUriForFile(
-                    context, "${context.packageName}.fileprovider", apkFile
-                )
-
-                val installIntent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(apkUri, "application/vnd.android.package-archive")
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-                }
-                context.startActivity(installIntent)
-
             } catch (e: Exception) {
                 Log.e(TAG, "Download/install error: ${e.message}")
             }
