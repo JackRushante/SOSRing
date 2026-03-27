@@ -21,7 +21,7 @@ class UpdateChecker(private val context: Context) {
         private const val UPDATE_CHANNEL_ID = "sosring_updates"
         private const val UPDATE_NOTIFICATION_ID = 4
         private const val APK_FILENAME = "SOSRing-update.apk"
-        private const val CHECK_THROTTLE_MS = 60 * 60 * 1000L // 1 hour
+        private const val CHECK_THROTTLE_MS = 5 * 60 * 1000L // 5 minutes
         private const val KEY_LAST_UPDATE_CHECK = "last_update_check"
 
         val client: OkHttpClient = OkHttpClient.Builder()
