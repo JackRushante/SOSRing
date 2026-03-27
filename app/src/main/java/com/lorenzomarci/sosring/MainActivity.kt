@@ -22,9 +22,12 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import java.util.Calendar
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.lorenzomarci.sosring.databinding.ActivityMainBinding
@@ -36,6 +39,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adapter: VipNumbersAdapter
     private val contacts = mutableListOf<VipContact>()
     private val quietRules = mutableListOf<QuietRule>()
+
+    private val contactsUpdatedReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            loadContacts()
+        }
+    }
 
     private val runtimePermissions = buildList {
         add(Manifest.permission.READ_PHONE_STATE)
@@ -85,9 +94,21 @@ class MainActivity : AppCompatActivity() {
         binding.switchService.isChecked = prefs.isServiceEnabled
         binding.sliderVolume.value = prefs.volumePercent.toFloat()
         binding.tvVolumeValue.text = "${prefs.volumePercent}%"
+        loadContacts()
         // Run discovery to refresh location-enabled contacts
         if (BuildConfig.LOCATION_ENABLED) {
+            LocalBroadcastManager.getInstance(this).registerReceiver(
+                contactsUpdatedReceiver,
+                IntentFilter(NtfyService.ACTION_CONTACTS_UPDATED)
+            )
             CallMonitorService.getInstance()?.ntfyService?.runDiscovery()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (BuildConfig.LOCATION_ENABLED) {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(contactsUpdatedReceiver)
         }
     }
 

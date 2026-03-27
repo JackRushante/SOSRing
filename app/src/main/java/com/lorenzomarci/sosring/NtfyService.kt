@@ -3,6 +3,7 @@ package com.lorenzomarci.sosring
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.location.Location
 import android.net.Uri
 import android.util.Log
@@ -16,13 +17,6 @@ import java.io.InputStreamReader
 import java.util.concurrent.TimeUnit
 
 class NtfyService(private val context: Context) {
-
-    companion object {
-        private const val TAG = "NtfyService"
-        private const val LOCATION_CHANNEL_ID = "sosring_location"
-        private const val LOCATION_NOTIFICATION_ID = 3
-        private const val RESPONSE_TIMEOUT_MS = 30_000L
-    }
 
     private val prefs = PrefsManager(context)
     private lateinit var ntfyClient: NtfyClient
@@ -156,7 +150,17 @@ class NtfyService(private val context: Context) {
         if (contact != null) {
             Log.i(TAG, "Discovery ack from ${contact.name}, enabling location")
             prefs.updateContactLocationEnabled(contact.number, true)
+            LocalBroadcastManager.getInstance(context)
+                .sendBroadcast(Intent(ACTION_CONTACTS_UPDATED))
         }
+    }
+
+    companion object {
+        private const val TAG = "NtfyService"
+        private const val LOCATION_CHANNEL_ID = "sosring_location"
+        private const val LOCATION_NOTIFICATION_ID = 3
+        private const val RESPONSE_TIMEOUT_MS = 30_000L
+        const val ACTION_CONTACTS_UPDATED = "com.lorenzomarci.sosring.CONTACTS_UPDATED"
     }
 
     private fun handleLocationRequest(fromHash: String) {
