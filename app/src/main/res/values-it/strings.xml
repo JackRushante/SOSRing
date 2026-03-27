@@ -86,4 +86,7 @@
     <string name="location_log_incoming">%1$s ha richiesto la tua posizione</string>
     <string name="location_log_outgoing">Hai richiesto la posizione di %1$s</string>
     <string name="btn_close">Chiudi</string>
+    <!-- Auto-Update -->
+    <string name="update_available">Aggiornamento disponibile: v%1$s — tocca per installare</string>
+    <string name="update_downloading">Download aggiornamento…</string>
 </resources>

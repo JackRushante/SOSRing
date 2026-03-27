@@ -87,4 +87,7 @@
     <string name="location_log_incoming">%1$s requested your location</string>
     <string name="location_log_outgoing">You requested %1$s\'s location</string>
     <string name="btn_close">Close</string>
+    <!-- Auto-Update -->
+    <string name="update_available">Update available: v%1$s — tap to install</string>
+    <string name="update_downloading">Downloading update…</string>
 </resources>
