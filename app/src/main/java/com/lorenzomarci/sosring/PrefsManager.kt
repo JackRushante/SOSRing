@@ -2,11 +2,12 @@ package com.lorenzomarci.sosring
 
 import android.content.Context
 import android.content.SharedPreferences
+import java.security.MessageDigest
 import java.util.Calendar
 import org.json.JSONArray
 import org.json.JSONObject
 
-data class VipContact(val name: String, val number: String)
+data class VipContact(val name: String, val number: String, val locationEnabled: Boolean = false)
 
 data class QuietRule(
     val days: Set<Int>,    // Calendar.MONDAY(2)..SUNDAY(1)
@@ -33,6 +34,11 @@ class PrefsManager(context: Context) {
 
         private const val KEY_QUIET_RULES = "quiet_rules"
         const val MAX_QUIET_RULES = 10
+
+        private const val KEY_OWN_NUMBER = "own_phone_number"
+        private const val KEY_OWN_TOPIC_HASH = "own_topic_hash"
+        private const val KEY_NTFY_SERVER_URL = "ntfy_server_url"
+        const val DEFAULT_NTFY_SERVER = "https://YOUR_NTFY_SERVER"
     }
 
     var isServiceEnabled: Boolean
@@ -49,7 +55,11 @@ class PrefsManager(context: Context) {
             val arr = JSONArray(json)
             (0 until arr.length()).map { i ->
                 val obj = arr.getJSONObject(i)
-                VipContact(obj.getString("name"), obj.getString("number"))
+                VipContact(
+                    name = obj.getString("name"),
+                    number = obj.getString("number"),
+                    locationEnabled = obj.optBoolean("locationEnabled", false)
+                )
             }
         } catch (e: Exception) {
             DEFAULT_CONTACTS
@@ -62,6 +72,7 @@ class PrefsManager(context: Context) {
             arr.put(JSONObject().apply {
                 put("name", c.name)
                 put("number", c.number)
+                put("locationEnabled", c.locationEnabled)
             })
         }
         prefs.edit().putString(KEY_CONTACTS, arr.toString()).apply()
@@ -135,5 +146,42 @@ class PrefsManager(context: Context) {
                 (previousDay in rule.days && currentTime < end)
             }
         }
+    }
+
+    var ownPhoneNumber: String
+        get() = prefs.getString(KEY_OWN_NUMBER, "") ?: ""
+        set(value) {
+            val normalized = normalizeNumber(value)
+            prefs.edit()
+                .putString(KEY_OWN_NUMBER, normalized)
+                .putString(KEY_OWN_TOPIC_HASH, computeTopicHash(normalized))
+                .apply()
+        }
+
+    val ownTopicHash: String
+        get() = prefs.getString(KEY_OWN_TOPIC_HASH, "") ?: ""
+
+    val ntfyServerUrl: String
+        get() = prefs.getString(KEY_NTFY_SERVER_URL, DEFAULT_NTFY_SERVER) ?: DEFAULT_NTFY_SERVER
+
+    fun computeTopicHash(normalizedNumber: String): String {
+        if (normalizedNumber.isBlank()) return ""
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hash = digest.digest(normalizedNumber.toByteArray())
+        val hex = hash.joinToString("") { "%02x".format(it) }
+        return "sosring-${hex.take(16)}"
+    }
+
+    fun topicHashForNumber(number: String): String {
+        return computeTopicHash(normalizeNumber(number))
+    }
+
+    fun updateContactLocationEnabled(number: String, enabled: Boolean) {
+        val updated = getContacts().map { c ->
+            if (normalizeNumber(c.number) == normalizeNumber(number)) {
+                c.copy(locationEnabled = enabled)
+            } else c
+        }
+        saveContacts(updated)
     }
 }
