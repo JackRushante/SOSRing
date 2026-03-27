@@ -59,4 +59,21 @@
     <string name="day_fri">Fri</string>
     <string name="day_sat">Sat</string>
     <string name="day_sun">Sun</string>
+    <!-- Location Sharing -->
+    <string name="location_title">Location Sharing</string>
+    <string name="location_subtitle">Share position with VIP contacts who have SOS Ring</string>
+    <string name="location_your_number">Your phone number</string>
+    <string name="location_your_number_hint">+39…</string>
+    <string name="location_server_label">Server: %1$s</string>
+    <string name="location_save">Save</string>
+    <string name="location_number_saved">Number saved</string>
+    <string name="location_number_invalid">Enter a valid number with country code (e.g. +39…)</string>
+    <string name="location_request_sent">Location request sent to %1$s</string>
+    <string name="location_pending">Getting position of %1$s…</string>
+    <string name="location_received">Position of %1$s (±%2$dm)</string>
+    <string name="location_no_response">No response from %1$s</string>
+    <string name="location_no_number">Set your phone number first</string>
+    <string name="location_perm_needed">Location permission required</string>
+    <string name="location_bg_perm_needed">Background location permission required for auto-response</string>
+    <string name="location_icon_desc">Request position</string>
 </resources>

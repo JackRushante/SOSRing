@@ -58,4 +58,21 @@
     <string name="day_fri">Ven</string>
     <string name="day_sat">Sab</string>
     <string name="day_sun">Dom</string>
+    <!-- Location Sharing -->
+    <string name="location_title">Condivisione posizione</string>
+    <string name="location_subtitle">Condividi la posizione con i contatti VIP che hanno SOS Ring</string>
+    <string name="location_your_number">Il tuo numero di telefono</string>
+    <string name="location_your_number_hint">+39…</string>
+    <string name="location_server_label">Server: %1$s</string>
+    <string name="location_save">Salva</string>
+    <string name="location_number_saved">Numero salvato</string>
+    <string name="location_number_invalid">Inserisci un numero valido con prefisso internazionale (es. +39…)</string>
+    <string name="location_request_sent">Richiesta posizione inviata a %1$s</string>
+    <string name="location_pending">Ottenendo la posizione di %1$s…</string>
+    <string name="location_received">Posizione di %1$s (±%2$dm)</string>
+    <string name="location_no_response">Nessuna risposta da %1$s</string>
+    <string name="location_no_number">Imposta prima il tuo numero di telefono</string>
+    <string name="location_perm_needed">Permesso posizione necessario</string>
+    <string name="location_bg_perm_needed">Permesso posizione in background necessario per la risposta automatica</string>
+    <string name="location_icon_desc">Richiedi posizione</string>
 </resources>
