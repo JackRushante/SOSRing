@@ -174,6 +174,7 @@ class NtfyService(private val context: Context) {
         }
 
         Log.i(TAG, "Location request from ${sender.name}, getting GPS fix...")
+        prefs.addLocationLog(sender.name, sender.number, "incoming")
         ntfyClient.sendLocationPending(fromHash, prefs.ownTopicHash)
 
         locationHelper?.requestSingleFix(object : LocationHelper.Callback {
@@ -274,6 +275,7 @@ class NtfyService(private val context: Context) {
         val ownHash = prefs.ownTopicHash
 
         Log.i(TAG, "Requesting location from ${contact.name}")
+        prefs.addLocationLog(contact.name, contact.number, "outgoing")
         ntfyClient.sendLocationRequest(targetTopic, ownHash)
 
         showNotification(
