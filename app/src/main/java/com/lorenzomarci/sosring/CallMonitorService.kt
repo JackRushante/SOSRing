@@ -39,11 +39,17 @@ class CallMonitorService : Service() {
         fun stop(context: Context) {
             context.stopService(Intent(context, CallMonitorService::class.java))
         }
+
+        private var instance: CallMonitorService? = null
+        fun getInstance(): CallMonitorService? = instance
     }
 
     private lateinit var prefs: PrefsManager
     private lateinit var audioManager: AudioManager
     private lateinit var notificationManager: NotificationManager
+
+    var ntfyService: NtfyService? = null
+        private set
 
     private var isOverriding = false
     private var savedRingerMode = AudioManager.RINGER_MODE_NORMAL
@@ -92,6 +98,7 @@ class CallMonitorService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        instance = this
         prefs = PrefsManager(this)
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -103,13 +110,20 @@ class CallMonitorService : Service() {
         registerReceiver(phoneReceiver, filter)
 
         Log.i(TAG, "Service started. Monitoring ${prefs.getVipNumbers().size} VIP numbers.")
+
+        if (BuildConfig.LOCATION_ENABLED && prefs.ownTopicHash.isNotBlank()) {
+            ntfyService = NtfyService(this).also { it.start() }
+        }
     }
 
     override fun onDestroy() {
+        ntfyService?.stop()
+        ntfyService = null
         stopRingtoneAndVibration()
         if (isOverriding) restoreAudio()
         unregisterReceiver(phoneReceiver)
         Log.i(TAG, "Service stopped.")
+        instance = null
         super.onDestroy()
     }
 
