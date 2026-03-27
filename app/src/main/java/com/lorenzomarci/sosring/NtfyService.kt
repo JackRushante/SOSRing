@@ -275,7 +275,7 @@ class NtfyService(private val context: Context) {
         val ownHash = prefs.ownTopicHash
 
         Log.i(TAG, "Requesting location from ${contact.name}")
-        prefs.addLocationLog(contact.name, contact.number, "outgoing")
+        // Only incoming requests are logged (who asked MY position)
         ntfyClient.sendLocationRequest(targetTopic, ownHash)
 
         showNotification(

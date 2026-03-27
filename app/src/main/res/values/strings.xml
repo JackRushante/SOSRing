@@ -81,12 +81,10 @@
     <string name="location_status_fail">Server unreachable</string>
     <string name="location_status_checking">Checking server…</string>
     <!-- Location Log -->
-    <string name="location_log_button">History</string>
-    <string name="location_log_title">Location request history</string>
+    <string name="location_log_button">Who requested my location?</string>
+    <string name="location_log_hide">Hide history</string>
     <string name="location_log_empty">No recent requests</string>
     <string name="location_log_incoming">%1$s requested your location</string>
-    <string name="location_log_outgoing">You requested %1$s\'s location</string>
-    <string name="btn_close">Close</string>
     <!-- Auto-Update -->
     <string name="update_available">Update available: v%1$s — tap to install</string>
     <string name="update_downloading">Downloading update…</string>

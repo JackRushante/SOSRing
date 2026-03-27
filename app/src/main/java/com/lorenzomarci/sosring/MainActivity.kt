@@ -210,7 +210,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             binding.btnLocationLog.setOnClickListener {
-                showLocationLogDialog()
+                toggleLocationLog()
             }
         } else {
             binding.cardLocation.visibility = android.view.View.GONE
@@ -453,30 +453,40 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showLocationLogDialog() {
-        val logs = prefs.getLocationLogs()
+    private fun toggleLocationLog() {
+        val container = binding.locationLogContainer
+        if (container.visibility == View.VISIBLE) {
+            container.visibility = View.GONE
+            binding.btnLocationLog.text = getString(R.string.location_log_button)
+            return
+        }
+
+        container.removeAllViews()
+        val logs = prefs.getLocationLogs().filter { it.type == "incoming" }
         val dateFormat = java.text.SimpleDateFormat("dd/MM HH:mm", java.util.Locale.getDefault())
 
-        val message = if (logs.isEmpty()) {
-            getString(R.string.location_log_empty)
+        if (logs.isEmpty()) {
+            val empty = TextView(this).apply {
+                text = getString(R.string.location_log_empty)
+                textSize = 13f
+                setTextColor(getColor(android.R.color.darker_gray))
+                setPadding(0, 8, 0, 8)
+            }
+            container.addView(empty)
         } else {
-            logs.take(50).joinToString("\n\n") { entry ->
+            logs.take(50).forEach { entry ->
                 val date = dateFormat.format(java.util.Date(entry.timestamp))
-                val desc = if (entry.type == "incoming") {
-                    getString(R.string.location_log_incoming, entry.name)
-                } else {
-                    getString(R.string.location_log_outgoing, entry.name)
+                val tv = TextView(this).apply {
+                    text = "\u2B07 ${getString(R.string.location_log_incoming, entry.name)}\n     $date"
+                    textSize = 13f
+                    setPadding(0, 6, 0, 6)
                 }
-                val arrow = if (entry.type == "incoming") "\u2B07" else "\u2B06"
-                "$arrow $desc\n   $date"
+                container.addView(tv)
             }
         }
 
-        MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.location_log_title))
-            .setMessage(message)
-            .setPositiveButton(getString(R.string.btn_close), null)
-            .show()
+        container.visibility = View.VISIBLE
+        binding.btnLocationLog.text = getString(R.string.location_log_hide)
     }
 
     private fun showAddChoiceDialog() {
