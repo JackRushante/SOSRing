@@ -21,18 +21,32 @@ class UpdateChecker(private val context: Context) {
         private const val UPDATE_CHANNEL_ID = "sosring_updates"
         private const val UPDATE_NOTIFICATION_ID = 4
         private const val APK_FILENAME = "SOSRing-update.apk"
+        private const val CHECK_THROTTLE_MS = 60 * 60 * 1000L // 1 hour
+        private const val KEY_LAST_UPDATE_CHECK = "last_update_check"
+
+        val client: OkHttpClient = OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .build()
     }
 
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .build()
-
-    fun checkAndNotify() {
+    fun checkAndNotify(force: Boolean = false) {
         if (BuildConfig.UPDATE_URL.isBlank()) return
+
+        if (!force) {
+            val prefs = context.getSharedPreferences("sosring_prefs", Context.MODE_PRIVATE)
+            val lastCheck = prefs.getLong(KEY_LAST_UPDATE_CHECK, 0)
+            if (System.currentTimeMillis() - lastCheck < CHECK_THROTTLE_MS) {
+                Log.d(TAG, "Skipping update check — last check was recent")
+                return
+            }
+        }
 
         Thread {
             try {
+                context.getSharedPreferences("sosring_prefs", Context.MODE_PRIVATE)
+                    .edit().putLong(KEY_LAST_UPDATE_CHECK, System.currentTimeMillis()).apply()
+
                 val versionUrl = "${BuildConfig.UPDATE_URL}version.json"
                 val request = Request.Builder().url(versionUrl).build()
                 client.newCall(request).execute().use { response ->
