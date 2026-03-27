@@ -79,4 +79,14 @@
     <string name="location_status_ok">Connesso al server</string>
     <string name="location_status_fail">Server non raggiungibile</string>
     <string name="location_status_checking">Verifica server…</string>
+    <!-- Location Log -->
+    <string name="location_log_button">Cronologia</string>
+    <string name="location_log_title">Cronologia richieste posizione</string>
+    <string name="location_log_empty">Nessuna richiesta recente</string>
+    <string name="location_log_incoming">%1$s ha richiesto la tua posizione</string>
+    <string name="location_log_outgoing">Hai richiesto la posizione di %1$s</string>
+    <string name="btn_close">Chiudi</string>
+    <!-- Auto-Update -->
+    <string name="update_available">Aggiornamento disponibile: v%1$s — tocca per installare</string>
+    <string name="update_downloading">Download aggiornamento…</string>
 </resources>

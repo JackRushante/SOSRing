@@ -86,6 +86,7 @@ class MainActivity : AppCompatActivity() {
         setupListeners()
         loadContacts()
         loadQuietRules()
+        handleUpdateIntent(intent)
     }
 
     override fun onResume() {
@@ -102,6 +103,11 @@ class MainActivity : AppCompatActivity() {
                 IntentFilter(NtfyService.ACTION_CONTACTS_UPDATED)
             )
             CallMonitorService.getInstance()?.ntfyService?.runDiscovery()
+        }
+
+        // Check for updates (internal flavor only)
+        if (BuildConfig.UPDATE_URL.isNotBlank()) {
+            UpdateChecker(this).checkAndNotify()
         }
     }
 
@@ -202,6 +208,10 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+
+            binding.btnLocationLog.setOnClickListener {
+                showLocationLogDialog()
+            }
         } else {
             binding.cardLocation.visibility = android.view.View.GONE
         }
@@ -217,6 +227,20 @@ class MainActivity : AppCompatActivity() {
         quietRules.clear()
         quietRules.addAll(prefs.getQuietRules())
         refreshQuietRulesUI()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleUpdateIntent(intent)
+    }
+
+    private fun handleUpdateIntent(intent: Intent?) {
+        if (intent?.action == "com.lorenzomarci.sosring.ACTION_DOWNLOAD_UPDATE") {
+            val apkUrl = intent.getStringExtra("apk_url") ?: return
+            val versionName = intent.getStringExtra("version_name") ?: ""
+            Toast.makeText(this, getString(R.string.update_downloading), Toast.LENGTH_SHORT).show()
+            UpdateChecker(this).downloadAndInstall(apkUrl)
+        }
     }
 
     private fun refreshQuietRulesUI() {
@@ -427,6 +451,32 @@ class MainActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, getString(R.string.grant_perms_first), Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun showLocationLogDialog() {
+        val logs = prefs.getLocationLogs()
+        val dateFormat = java.text.SimpleDateFormat("dd/MM HH:mm", java.util.Locale.getDefault())
+
+        val message = if (logs.isEmpty()) {
+            getString(R.string.location_log_empty)
+        } else {
+            logs.take(50).joinToString("\n\n") { entry ->
+                val date = dateFormat.format(java.util.Date(entry.timestamp))
+                val desc = if (entry.type == "incoming") {
+                    getString(R.string.location_log_incoming, entry.name)
+                } else {
+                    getString(R.string.location_log_outgoing, entry.name)
+                }
+                val arrow = if (entry.type == "incoming") "\u2B07" else "\u2B06"
+                "$arrow $desc\n   $date"
+            }
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.location_log_title))
+            .setMessage(message)
+            .setPositiveButton(getString(R.string.btn_close), null)
+            .show()
     }
 
     private fun showAddChoiceDialog() {

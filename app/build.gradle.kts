@@ -11,8 +11,8 @@ android {
         applicationId = "com.lorenzomarci.sosring"
         minSdk = 29
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.2"
     }
 
     signingConfigs {
@@ -29,11 +29,13 @@ android {
         create("fdroid") {
             dimension = "distribution"
             buildConfigField("boolean", "LOCATION_ENABLED", "false")
+            buildConfigField("String", "UPDATE_URL", "\"\"")
         }
         create("internal") {
             dimension = "distribution"
             applicationIdSuffix = ".internal"
             buildConfigField("boolean", "LOCATION_ENABLED", "true")
+            buildConfigField("String", "UPDATE_URL", "\"https://YOUR_NTFY_SERVER/update/\"")
         }
     }
 

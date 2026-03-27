@@ -174,14 +174,18 @@ class NtfyService(private val context: Context) {
         }
 
         Log.i(TAG, "Location request from ${sender.name}, getting GPS fix...")
+        prefs.addLocationLog(sender.name, sender.number, "incoming")
         ntfyClient.sendLocationPending(fromHash, prefs.ownTopicHash)
 
         locationHelper?.requestSingleFix(object : LocationHelper.Callback {
             override fun onLocationReady(location: Location) {
                 Log.i(TAG, "Sending location: ${location.latitude},${location.longitude} acc=${location.accuracy}")
+                val senderNumber = sender.number
+                val myNumber = prefs.ownPhoneNumber
                 ntfyClient.sendLocationResponse(
                     fromHash, prefs.ownTopicHash,
-                    location.latitude, location.longitude, location.accuracy
+                    location.latitude, location.longitude, location.accuracy,
+                    myNumber, senderNumber
                 )
             }
 
@@ -207,9 +211,27 @@ class NtfyService(private val context: Context) {
         val contact = contacts.find { prefs.topicHashForNumber(it.number) == fromHash }
         val name = contact?.name ?: "Unknown"
 
-        val lat = message.getDouble("lat")
-        val lon = message.getDouble("lon")
-        val acc = message.optDouble("acc", 0.0).toInt()
+        val encData = message.optString("enc", "")
+        val lat: Double
+        val lon: Double
+        val acc: Int
+
+        if (encData.isNotBlank() && contact != null) {
+            val decrypted = CryptoHelper.decrypt(encData, prefs.ownPhoneNumber, contact.number)
+            if (decrypted == null) {
+                Log.e(TAG, "Failed to decrypt location from $name")
+                return
+            }
+            val locJson = JSONObject(decrypted)
+            lat = locJson.getDouble("lat")
+            lon = locJson.getDouble("lon")
+            acc = locJson.optDouble("acc", 0.0).toInt()
+        } else {
+            // Fallback for unencrypted messages (backwards compat during rollout)
+            lat = message.getDouble("lat")
+            lon = message.getDouble("lon")
+            acc = message.optDouble("acc", 0.0).toInt()
+        }
 
         pendingRequests.remove(fromHash)
 
@@ -253,6 +275,7 @@ class NtfyService(private val context: Context) {
         val ownHash = prefs.ownTopicHash
 
         Log.i(TAG, "Requesting location from ${contact.name}")
+        prefs.addLocationLog(contact.name, contact.number, "outgoing")
         ntfyClient.sendLocationRequest(targetTopic, ownHash)
 
         showNotification(
