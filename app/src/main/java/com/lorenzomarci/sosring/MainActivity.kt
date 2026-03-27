@@ -202,6 +202,10 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+
+            binding.btnLocationLog.setOnClickListener {
+                showLocationLogDialog()
+            }
         } else {
             binding.cardLocation.visibility = android.view.View.GONE
         }
@@ -427,6 +431,32 @@ class MainActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, getString(R.string.grant_perms_first), Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun showLocationLogDialog() {
+        val logs = prefs.getLocationLogs()
+        val dateFormat = java.text.SimpleDateFormat("dd/MM HH:mm", java.util.Locale.getDefault())
+
+        val message = if (logs.isEmpty()) {
+            getString(R.string.location_log_empty)
+        } else {
+            logs.take(50).joinToString("\n\n") { entry ->
+                val date = dateFormat.format(java.util.Date(entry.timestamp))
+                val desc = if (entry.type == "incoming") {
+                    getString(R.string.location_log_incoming, entry.name)
+                } else {
+                    getString(R.string.location_log_outgoing, entry.name)
+                }
+                val arrow = if (entry.type == "incoming") "\u2B07" else "\u2B06"
+                "$arrow $desc\n   $date"
+            }
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.location_log_title))
+            .setMessage(message)
+            .setPositiveButton(getString(R.string.btn_close), null)
+            .show()
     }
 
     private fun showAddChoiceDialog() {
