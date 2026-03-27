@@ -256,6 +256,15 @@
                         android:textSize="11sp"
                         android:textColor="?android:textColorSecondary"
                         android:layout_marginTop="4dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnLocationLog"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/location_log_button"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="8dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
