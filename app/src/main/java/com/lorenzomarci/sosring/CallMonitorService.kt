@@ -196,25 +196,13 @@ class CallMonitorService : Service() {
                 Log.w(TAG, "DND permission NOT granted!")
             }
 
-            // 2. Ringer mode to NORMAL
-            audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
-            Log.d(TAG, "Ringer set to NORMAL")
-
-            // 3. Calculate target volume from user preference (50-100%)
+            // 2. Set ONLY alarm volume (our MediaPlayer uses ALARM stream)
+            // Do NOT change ringer mode — that would trigger system ringtone
             val volumePercent = prefs.volumePercent
-            fun targetVolume(stream: Int): Int {
-                val max = audioManager.getStreamMaxVolume(stream)
-                return (max * volumePercent / 100).coerceAtLeast(1)
-            }
-
-            // 4. Set ring, notification, alarm volumes to configured level
-            val ringTarget = targetVolume(AudioManager.STREAM_RING)
-            val notifTarget = targetVolume(AudioManager.STREAM_NOTIFICATION)
-            val alarmTarget = targetVolume(AudioManager.STREAM_ALARM)
-            audioManager.setStreamVolume(AudioManager.STREAM_RING, ringTarget, 0)
-            audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, notifTarget, 0)
+            val alarmMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
+            val alarmTarget = (alarmMax * volumePercent / 100).coerceAtLeast(1)
             audioManager.setStreamVolume(AudioManager.STREAM_ALARM, alarmTarget, 0)
-            Log.d(TAG, "Volumes set to $volumePercent%: ring=$ringTarget, notif=$notifTarget, alarm=$alarmTarget")
+            Log.d(TAG, "Alarm volume set to $volumePercent%: alarm=$alarmTarget")
 
         } catch (e: Exception) {
             Log.e(TAG, "Error during audio override: ${e.message}", e)
@@ -248,7 +236,7 @@ class CallMonitorService : Service() {
                         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                         .build()
                 )
-                isLooping = true
+                isLooping = prefs.overrideSoundType != PrefsManager.SOUND_TYPE_NOTIFICATION
                 setVolume(vol, vol)
                 prepare()
                 start()
@@ -303,14 +291,9 @@ class CallMonitorService : Service() {
         // 1. Stop our ringtone and vibration
         stopRingtoneAndVibration()
 
-        // 2. Restore ringer mode FIRST (on OnePlus/Realme, SILENT mode auto-enables DND)
-        audioManager.ringerMode = savedRingerMode
-        Log.d(TAG, "Ringer restored to $savedRingerMode")
-
-        // 3. Restore ALL volumes (including alarm)
-        audioManager.setStreamVolume(AudioManager.STREAM_RING, savedRingVolume, 0)
-        audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, savedNotifVolume, 0)
+        // 2. Restore alarm volume (only stream we changed)
         audioManager.setStreamVolume(AudioManager.STREAM_ALARM, savedAlarmVolume, 0)
+        Log.d(TAG, "Alarm volume restored to $savedAlarmVolume")
 
         // 4. Restore DND LAST — this overrides any DND change triggered by ringerMode
         //    Small delay to let the system settle after ringer mode change
