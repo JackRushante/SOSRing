@@ -2,7 +2,7 @@
 
 **Data:** 2026-03-30
 **Versione target:** v2.0 (versionCode 4)
-**Scope:** 6 nuove feature + 1 bugfix
+**Scope:** 5 nuove feature + 1 bugfix
 
 ---
 
@@ -179,42 +179,13 @@ Lo slider volume ha range 50-100%. L'utente vuole poter scendere fino al 25%.
 
 ---
 
-## Feature 6 — Tracciamento GPS continuato (30 secondi)
-
-### Comportamento attuale
-`LocationHelper.requestSingleFix()` ottiene il primo fix con accuracy <= 30m e termina.
-
-### Nuovo comportamento
-1. Primo fix valido (accuracy <= 30m) → invia posizione + notifica "Posizione trovata"
-2. **Continua tracking per 30 secondi** con aggiornamenti ogni **1 secondo**
-3. Stessa notifica aggiornata con accuracy in tempo reale ("+/-Xm")
-4. Link Google Maps nella notifica aggiornato con ultima posizione nota
-5. Dopo 30 secondi → stop tracking, notifica resta con ultima posizione
-6. **Nessuna notifica aggiuntiva** durante il tracking continuato
-
-### Implementazione
-1. **LocationHelper**: nuovo metodo `requestContinuousFix(durationMs: Long = 30000, intervalMs: Long = 1000, callback)`
-   - Dopo primo fix valido, continua `requestLocationUpdates` per 30s
-   - Callback: `onLocationUpdate(location)` per ogni aggiornamento, `onTrackingComplete(lastLocation)` alla fine
-2. **NtfyService**: aggiornare la notifica con nuove coordinate ad ogni update
-   - Aggiornare il testo accuracy nella notifica esistente
-   - Aggiornare il PendingIntent di Google Maps con nuove coordinate
-3. **Timeout**: `Handler.postDelayed(30000)` per fermare il tracking
-
-### File coinvolti
-- `LocationHelper.kt` (flavor internal): requestContinuousFix
-- `NtfyService.kt`: gestione aggiornamenti continui + notifica
-- `strings.xml`: stringhe accuracy/tracking
-
----
-
 ## Trasversale — Localizzazione
 
 Tutte le stringhe nuove aggiunte in:
 - `values/strings.xml` (inglese, default)
 - `values-it/strings.xml` (italiano)
 
-Pattern naming: prefisso per sezione (`mute_`, `settings_`, `privacy_`, `nav_`, `tracking_`).
+Pattern naming: prefisso per sezione (`mute_`, `settings_`, `privacy_`, `nav_`).
 
 ## Trasversale — Versione e Release
 
@@ -230,5 +201,4 @@ Pattern naming: prefisso per sezione (`mute_`, `settings_`, `privacy_`, `nav_`, 
 - Feature 3 (scelta suono): disponibile in entrambi i flavor
 - Feature 4 (toggle campanella): disponibile in entrambi i flavor
 - Feature 5 (drawer): disponibile in entrambi i flavor
-- Feature 6 (tracking continuato): solo flavor **internal** (LocationHelper e' stub in fdroid)
 - Privacy fragment: contenuto diverso per flavor (fdroid: no location mention)
