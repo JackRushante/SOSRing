@@ -78,9 +78,16 @@ class CallMonitorService : Service() {
 
             when (state) {
                 TelephonyManager.EXTRA_STATE_RINGING -> {
-                    if (number != null && isVipNumber(number) && !prefs.isInQuietPeriod()) {
-                        Log.i(TAG, "VIP call detected! Overriding audio.")
-                        overrideAudio()
+                    if (number != null) {
+                        val vipContact = findVipContact(number)
+                        if (vipContact != null && !prefs.isInQuietPeriod()) {
+                            if (vipContact.ringtoneEnabled && !prefs.isMuted) {
+                                Log.i(TAG, "VIP call detected! Overriding audio.")
+                                overrideAudio()
+                            } else {
+                                Log.i(TAG, "VIP call detected but ringtone disabled or muted. Skipping override.")
+                            }
+                        }
                     }
                 }
                 TelephonyManager.EXTRA_STATE_IDLE -> {
@@ -154,11 +161,8 @@ class CallMonitorService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    private fun isVipNumber(incoming: String): Boolean {
-        val normalized = prefs.normalizeNumber(incoming)
-        return prefs.getVipNumbers().any { vip ->
-            PhoneNumberUtils.compare(normalized, vip)
-        }
+    private fun findVipContact(incoming: String): VipContact? {
+        return prefs.findVipContact(incoming)
     }
 
     @Suppress("DEPRECATION")
@@ -228,8 +232,13 @@ class CallMonitorService : Service() {
 
     private fun startRingtone() {
         try {
-            val ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
-            Log.d(TAG, "Ringtone URI: $ringtoneUri")
+            val soundType = if (prefs.overrideSoundType == PrefsManager.SOUND_TYPE_NOTIFICATION) {
+                RingtoneManager.TYPE_NOTIFICATION
+            } else {
+                RingtoneManager.TYPE_RINGTONE
+            }
+            val ringtoneUri = RingtoneManager.getDefaultUri(soundType)
+            Log.d(TAG, "Sound URI ($soundType): $ringtoneUri")
             val vol = prefs.volumePercent / 100f
             mediaPlayer = MediaPlayer().apply {
                 setDataSource(this@CallMonitorService, ringtoneUri)
@@ -244,9 +253,9 @@ class CallMonitorService : Service() {
                 prepare()
                 start()
             }
-            Log.i(TAG, "Ringtone PLAYING on ALARM stream at ${prefs.volumePercent}% volume.")
+            Log.i(TAG, "Sound PLAYING on ALARM stream at ${prefs.volumePercent}% volume.")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to play ringtone: ${e.message}", e)
+            Log.e(TAG, "Failed to play sound: ${e.message}", e)
         }
     }
 
