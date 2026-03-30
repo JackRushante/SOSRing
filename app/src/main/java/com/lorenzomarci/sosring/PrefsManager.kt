@@ -33,7 +33,7 @@ class PrefsManager(context: Context) {
         private const val KEY_CONTACTS = "vip_contacts"
         private const val KEY_SERVICE_ENABLED = "service_enabled"
         private const val KEY_VOLUME_PERCENT = "volume_percent"
-        const val MIN_VOLUME_PERCENT = 50
+        const val MIN_VOLUME_PERCENT = 25
         const val MAX_VOLUME_PERCENT = 100
         const val DEFAULT_VOLUME_PERCENT = 100
 

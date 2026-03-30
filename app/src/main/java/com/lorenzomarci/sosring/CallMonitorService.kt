@@ -165,6 +165,12 @@ class CallMonitorService : Service() {
     private fun overrideAudio() {
         if (isOverriding) return
 
+        // Feature 1: Skip override if phone is already in normal ringer mode
+        if (audioManager.ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+            Log.i(TAG, "Phone already in NORMAL mode, skipping override.")
+            return
+        }
+
         try {
             // Save ALL current audio state
             savedRingerMode = audioManager.ringerMode
@@ -224,6 +230,7 @@ class CallMonitorService : Service() {
         try {
             val ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
             Log.d(TAG, "Ringtone URI: $ringtoneUri")
+            val vol = prefs.volumePercent / 100f
             mediaPlayer = MediaPlayer().apply {
                 setDataSource(this@CallMonitorService, ringtoneUri)
                 setAudioAttributes(
@@ -233,10 +240,11 @@ class CallMonitorService : Service() {
                         .build()
                 )
                 isLooping = true
+                setVolume(vol, vol)
                 prepare()
                 start()
             }
-            Log.i(TAG, "Ringtone PLAYING on ALARM stream.")
+            Log.i(TAG, "Ringtone PLAYING on ALARM stream at ${prefs.volumePercent}% volume.")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to play ringtone: ${e.message}", e)
         }
