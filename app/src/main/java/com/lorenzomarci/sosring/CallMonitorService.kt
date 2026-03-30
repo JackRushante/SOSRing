@@ -203,15 +203,19 @@ class CallMonitorService : Service() {
                 // NOTIFICATION mode: don't change ringer, play notification via ALARM stream once
                 val alarmMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
                 val alarmTarget = (alarmMax * volumePercent / 100).coerceAtLeast(1)
-                audioManager.setStreamVolume(AudioManager.STREAM_ALARM, alarmTarget, 0)
-                Log.d(TAG, "Notification mode: alarm volume=$alarmTarget")
+                val alarmCurrent = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
+                val alarmFinal = maxOf(alarmTarget, alarmCurrent)
+                audioManager.setStreamVolume(AudioManager.STREAM_ALARM, alarmFinal, 0)
+                Log.d(TAG, "Notification mode: alarm volume=$alarmFinal (app=$alarmTarget, system=$alarmCurrent)")
             } else {
                 // RINGTONE mode: set ringer to NORMAL + set RING volume, system ringtone plays naturally
                 audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
                 val ringMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_RING)
                 val ringTarget = (ringMax * volumePercent / 100).coerceAtLeast(1)
-                audioManager.setStreamVolume(AudioManager.STREAM_RING, ringTarget, 0)
-                Log.d(TAG, "Ringtone mode: ringer=NORMAL, ringVol=$ringTarget")
+                val ringCurrent = audioManager.getStreamVolume(AudioManager.STREAM_RING)
+                val ringFinal = maxOf(ringTarget, ringCurrent)
+                audioManager.setStreamVolume(AudioManager.STREAM_RING, ringFinal, 0)
+                Log.d(TAG, "Ringtone mode: ringer=NORMAL, ringVol=$ringFinal (app=$ringTarget, system=$ringCurrent)")
             }
 
         } catch (e: Exception) {

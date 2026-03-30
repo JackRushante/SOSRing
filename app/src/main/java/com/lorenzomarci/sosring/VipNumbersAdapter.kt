@@ -51,6 +51,9 @@ class VipNumbersAdapter(
                 if (enabled) android.R.drawable.ic_lock_silent_mode_off
                 else android.R.drawable.ic_lock_silent_mode
             )
+            // Tint to match text color so it's visible in both light and dark mode
+            val color = binding.tvName.currentTextColor
+            binding.btnRingtone.setColorFilter(color)
             binding.btnRingtone.alpha = if (enabled) 1.0f else 0.4f
         }
     }

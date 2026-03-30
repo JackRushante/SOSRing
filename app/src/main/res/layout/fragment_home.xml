@@ -65,9 +65,11 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnMuteTimer"
-                        style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:backgroundTint="#E53935"
+                        android:textColor="#000000"
+                        android:textStyle="bold"
                         android:text="@string/mute_button" />
 
                     <TextView
