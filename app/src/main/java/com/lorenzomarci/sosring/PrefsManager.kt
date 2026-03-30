@@ -7,7 +7,7 @@ import java.util.Calendar
 import org.json.JSONArray
 import org.json.JSONObject
 
-data class VipContact(val name: String, val number: String, val locationEnabled: Boolean = false)
+data class VipContact(val name: String, val number: String, val locationEnabled: Boolean = false, val ringtoneEnabled: Boolean = true)
 
 data class QuietRule(
     val days: Set<Int>,    // Calendar.MONDAY(2)..SUNDAY(1)
@@ -37,6 +37,11 @@ class PrefsManager(context: Context) {
         const val MAX_VOLUME_PERCENT = 100
         const val DEFAULT_VOLUME_PERCENT = 100
 
+        private const val KEY_MUTE_UNTIL = "mute_until_timestamp"
+        private const val KEY_OVERRIDE_SOUND_TYPE = "override_sound_type"
+        const val SOUND_TYPE_RINGTONE = 0
+        const val SOUND_TYPE_NOTIFICATION = 1
+
         val DEFAULT_CONTACTS = emptyList<VipContact>()
 
         private const val KEY_QUIET_RULES = "quiet_rules"
@@ -59,6 +64,25 @@ class PrefsManager(context: Context) {
         get() = prefs.getInt(KEY_VOLUME_PERCENT, DEFAULT_VOLUME_PERCENT)
         set(value) = prefs.edit().putInt(KEY_VOLUME_PERCENT, value.coerceIn(MIN_VOLUME_PERCENT, MAX_VOLUME_PERCENT)).apply()
 
+    var muteUntilTimestamp: Long
+        get() = prefs.getLong(KEY_MUTE_UNTIL, 0L)
+        set(value) = prefs.edit().putLong(KEY_MUTE_UNTIL, value).apply()
+
+    val isMuted: Boolean
+        get() {
+            val until = muteUntilTimestamp
+            if (until == 0L) return false
+            if (System.currentTimeMillis() >= until) {
+                muteUntilTimestamp = 0L
+                return false
+            }
+            return true
+        }
+
+    var overrideSoundType: Int
+        get() = prefs.getInt(KEY_OVERRIDE_SOUND_TYPE, SOUND_TYPE_RINGTONE)
+        set(value) = prefs.edit().putInt(KEY_OVERRIDE_SOUND_TYPE, value).apply()
+
     fun getContacts(): List<VipContact> {
         val json = prefs.getString(KEY_CONTACTS, null) ?: return DEFAULT_CONTACTS
         return try {
@@ -68,7 +92,8 @@ class PrefsManager(context: Context) {
                 VipContact(
                     name = obj.getString("name"),
                     number = obj.getString("number"),
-                    locationEnabled = obj.optBoolean("locationEnabled", false)
+                    locationEnabled = obj.optBoolean("locationEnabled", false),
+                    ringtoneEnabled = obj.optBoolean("ringtoneEnabled", true)
                 )
             }
         } catch (e: Exception) {
@@ -83,6 +108,7 @@ class PrefsManager(context: Context) {
                 put("name", c.name)
                 put("number", c.number)
                 put("locationEnabled", c.locationEnabled)
+                put("ringtoneEnabled", c.ringtoneEnabled)
             })
         }
         prefs.edit().putString(KEY_CONTACTS, arr.toString()).apply()
@@ -90,6 +116,13 @@ class PrefsManager(context: Context) {
 
     fun getVipNumbers(): Set<String> {
         return getContacts().map { normalizeNumber(it.number) }.toSet()
+    }
+
+    fun findVipContact(incoming: String): VipContact? {
+        val normalized = normalizeNumber(incoming)
+        return getContacts().find { contact ->
+            android.telephony.PhoneNumberUtils.compare(normalizeNumber(contact.number), normalized)
+        }
     }
 
     fun normalizeNumber(number: String): String = PhoneUtils.normalize(number)
@@ -188,6 +221,15 @@ class PrefsManager(context: Context) {
         val updated = getContacts().map { c ->
             if (normalizeNumber(c.number) == normalizeNumber(number)) {
                 c.copy(locationEnabled = enabled)
+            } else c
+        }
+        saveContacts(updated)
+    }
+
+    fun updateContactRingtoneEnabled(number: String, enabled: Boolean) {
+        val updated = getContacts().map { c ->
+            if (normalizeNumber(c.number) == normalizeNumber(number)) {
+                c.copy(ringtoneEnabled = enabled)
             } else c
         }
         saveContacts(updated)
