@@ -78,9 +78,16 @@ class CallMonitorService : Service() {
 
             when (state) {
                 TelephonyManager.EXTRA_STATE_RINGING -> {
-                    if (number != null && isVipNumber(number) && !prefs.isInQuietPeriod()) {
-                        Log.i(TAG, "VIP call detected! Overriding audio.")
-                        overrideAudio()
+                    if (number != null) {
+                        val vipContact = findVipContact(number)
+                        if (vipContact != null && !prefs.isInQuietPeriod()) {
+                            if (vipContact.ringtoneEnabled && !prefs.isMuted) {
+                                Log.i(TAG, "VIP call detected! Overriding audio.")
+                                overrideAudio()
+                            } else {
+                                Log.i(TAG, "VIP call detected but ringtone disabled or muted. Skipping override.")
+                            }
+                        }
                     }
                 }
                 TelephonyManager.EXTRA_STATE_IDLE -> {
@@ -154,16 +161,19 @@ class CallMonitorService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    private fun isVipNumber(incoming: String): Boolean {
-        val normalized = prefs.normalizeNumber(incoming)
-        return prefs.getVipNumbers().any { vip ->
-            PhoneNumberUtils.compare(normalized, vip)
-        }
+    private fun findVipContact(incoming: String): VipContact? {
+        return prefs.findVipContact(incoming)
     }
 
     @Suppress("DEPRECATION")
     private fun overrideAudio() {
         if (isOverriding) return
+
+        // Feature 1: Skip override if phone is already in normal ringer mode
+        if (audioManager.ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+            Log.i(TAG, "Phone already in NORMAL mode, skipping override.")
+            return
+        }
 
         try {
             // Save ALL current audio state
@@ -186,59 +196,61 @@ class CallMonitorService : Service() {
                 Log.w(TAG, "DND permission NOT granted!")
             }
 
-            // 2. Ringer mode to NORMAL
-            audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
-            Log.d(TAG, "Ringer set to NORMAL")
-
-            // 3. Calculate target volume from user preference (50-100%)
             val volumePercent = prefs.volumePercent
-            fun targetVolume(stream: Int): Int {
-                val max = audioManager.getStreamMaxVolume(stream)
-                return (max * volumePercent / 100).coerceAtLeast(1)
-            }
+            val useNotificationSound = prefs.overrideSoundType == PrefsManager.SOUND_TYPE_NOTIFICATION
 
-            // 4. Set ring, notification, alarm volumes to configured level
-            val ringTarget = targetVolume(AudioManager.STREAM_RING)
-            val notifTarget = targetVolume(AudioManager.STREAM_NOTIFICATION)
-            val alarmTarget = targetVolume(AudioManager.STREAM_ALARM)
-            audioManager.setStreamVolume(AudioManager.STREAM_RING, ringTarget, 0)
-            audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, notifTarget, 0)
-            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, alarmTarget, 0)
-            Log.d(TAG, "Volumes set to $volumePercent%: ring=$ringTarget, notif=$notifTarget, alarm=$alarmTarget")
+            if (useNotificationSound) {
+                // NOTIFICATION mode: don't change ringer, play notification via ALARM stream once
+                val alarmMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
+                val alarmTarget = (alarmMax * volumePercent / 100).coerceAtLeast(1)
+                audioManager.setStreamVolume(AudioManager.STREAM_ALARM, alarmTarget, 0)
+                Log.d(TAG, "Notification mode: alarm volume=$alarmTarget")
+            } else {
+                // RINGTONE mode: set ringer to NORMAL + set RING volume, system ringtone plays naturally
+                audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
+                val ringMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_RING)
+                val ringTarget = (ringMax * volumePercent / 100).coerceAtLeast(1)
+                audioManager.setStreamVolume(AudioManager.STREAM_RING, ringTarget, 0)
+                Log.d(TAG, "Ringtone mode: ringer=NORMAL, ringVol=$ringTarget")
+            }
 
         } catch (e: Exception) {
             Log.e(TAG, "Error during audio override: ${e.message}", e)
         }
 
-        // 6. Play ringtone via ALARM stream (bypasses ALL DND restrictions)
-        startRingtone()
+        // Play sound via MediaPlayer ONLY for notification mode
+        if (prefs.overrideSoundType == PrefsManager.SOUND_TYPE_NOTIFICATION) {
+            startNotificationSound()
+        }
 
-        // 7. Start vibration
+        // Start vibration
         startVibration()
 
         isOverriding = true
         notificationManager.notify(OVERRIDE_NOTIFICATION_ID, buildOverrideNotification())
     }
 
-    private fun startRingtone() {
+    private fun startNotificationSound() {
         try {
-            val ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
-            Log.d(TAG, "Ringtone URI: $ringtoneUri")
+            val ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            Log.d(TAG, "Notification sound URI: $ringtoneUri")
+            val vol = prefs.volumePercent / 100f
             mediaPlayer = MediaPlayer().apply {
                 setDataSource(this@CallMonitorService, ringtoneUri)
                 setAudioAttributes(
                     AudioAttributes.Builder()
                         .setUsage(AudioAttributes.USAGE_ALARM)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                         .build()
                 )
-                isLooping = true
+                isLooping = false
+                setVolume(vol, vol)
                 prepare()
                 start()
             }
-            Log.i(TAG, "Ringtone PLAYING on ALARM stream.")
+            Log.i(TAG, "Notification sound PLAYING once on ALARM stream at ${prefs.volumePercent}%.")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to play ringtone: ${e.message}", e)
+            Log.e(TAG, "Failed to play notification sound: ${e.message}", e)
         }
     }
 
@@ -283,17 +295,18 @@ class CallMonitorService : Service() {
         Log.d(TAG, "Restoring state: ringer=$savedRingerMode, ringVol=$savedRingVolume, " +
                 "notifVol=$savedNotifVolume, alarmVol=$savedAlarmVolume, dnd=$savedDndFilter")
 
-        // 1. Stop our ringtone and vibration
+        // 1. Stop our sound and vibration
         stopRingtoneAndVibration()
 
-        // 2. Restore ringer mode FIRST (on OnePlus/Realme, SILENT mode auto-enables DND)
-        audioManager.ringerMode = savedRingerMode
-        Log.d(TAG, "Ringer restored to $savedRingerMode")
-
-        // 3. Restore ALL volumes (including alarm)
-        audioManager.setStreamVolume(AudioManager.STREAM_RING, savedRingVolume, 0)
-        audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, savedNotifVolume, 0)
-        audioManager.setStreamVolume(AudioManager.STREAM_ALARM, savedAlarmVolume, 0)
+        // 2. Restore audio state based on what we changed
+        if (prefs.overrideSoundType == PrefsManager.SOUND_TYPE_NOTIFICATION) {
+            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, savedAlarmVolume, 0)
+            Log.d(TAG, "Alarm volume restored to $savedAlarmVolume")
+        } else {
+            audioManager.ringerMode = savedRingerMode
+            audioManager.setStreamVolume(AudioManager.STREAM_RING, savedRingVolume, 0)
+            Log.d(TAG, "Ringer restored to $savedRingerMode, ring volume to $savedRingVolume")
+        }
 
         // 4. Restore DND LAST — this overrides any DND change triggered by ringerMode
         //    Small delay to let the system settle after ringer mode change

@@ -22,6 +22,21 @@ SOS Ring solves this with a simple approach: a foreground service monitors incom
 - Dual language: English and Italian
 - No ads, no tracking, no internet required
 
+## What's new in v2.0
+
+### Bug fixes
+
+- **Fix**: No more double ringtone when phone is already in normal mode
+- **Fix**: Volume slider now correctly controls MediaPlayer volume (range extended to 25-100%)
+
+### New features
+
+- **Temporary mute timer (1-12 hours)**: Disables ringtone override while keeping GPS active — useful when you need silence without turning off the service entirely
+- **Choose override sound type**: Select between a ringtone or a notification sound for the override playback
+- **Per-contact ringtone toggle**: Disable the override for specific VIP contacts while keeping GPS tracking active for them
+- **Navigation drawer**: Home, Settings, Location Log, and Privacy & Licenses sections are now accessible via a side drawer
+- **Privacy & Licenses page**: In-app page with data handling information and GPL-3.0 license details
+
 ## Permissions
 
 | Permission | Why |

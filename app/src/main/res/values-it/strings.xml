@@ -87,4 +87,34 @@
     <!-- Auto-Update -->
     <string name="update_available">Aggiornamento disponibile: v%1$s — tocca per installare</string>
     <string name="update_downloading">Download aggiornamento…</string>
+    <!-- Icon descriptions -->
+    <string name="ringtone_toggle_desc">Attiva/disattiva suoneria per questo contatto</string>
+    <string name="edit_icon_desc">Modifica contatto</string>
+    <string name="delete_icon_desc">Elimina contatto</string>
+    <!-- Mute Timer -->
+    <string name="mute_button">Disattiva suoneria</string>
+    <string name="mute_button_cancel">Riattiva suoneria</string>
+    <string name="mute_dialog_title">Disattiva suoneria</string>
+    <string name="mute_dialog_message">La suoneria di override sarà disabilitata per la durata selezionata. La condivisione posizione GPS rimarrà attiva.</string>
+    <string name="mute_dialog_hours">ore</string>
+    <string name="mute_countdown">Suoneria disattivata — riattivazione tra %1$dh %2$dm</string>
+    <string name="mute_activated">Suoneria disattivata per %1$d ore</string>
+    <string name="mute_cancelled">Suoneria riattivata</string>
+    <!-- Settings -->
+    <string name="settings_sound_title">Suono di override</string>
+    <string name="settings_sound_ringtone">Suoneria telefono</string>
+    <string name="settings_sound_notification">Suono di notifica</string>
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_settings">Impostazioni</string>
+    <string name="nav_location_log">Log posizioni</string>
+    <string name="nav_privacy">Privacy e licenze</string>
+    <!-- Privacy -->
+    <string name="privacy_title">Privacy e licenze</string>
+    <string name="privacy_data_title">Trattamento dati</string>
+    <string name="privacy_data_body">SOS Ring elabora i dati esclusivamente sul tuo dispositivo. Nessun dato personale viene inviato a server esterni.\n\nLa versione internal utilizza un canale peer-to-peer cifrato (ntfy) per la condivisione posizione. Le coordinate sono cifrate end-to-end con AES-256-GCM prima della trasmissione.\n\nNessuna analitica, nessun tracciamento, nessuna pubblicità.</string>
+    <string name="privacy_license_title">Licenza</string>
+    <string name="privacy_license_body">SOS Ring è software libero con licenza GPL-3.0-or-later.\n\nCodice sorgente: github.com/JackRushante/SOSRing</string>
+    <string name="privacy_contact_title">Contatto</string>
+    <string name="privacy_contact_body">Sviluppatore: Lorenzo Marci</string>
 </resources>
