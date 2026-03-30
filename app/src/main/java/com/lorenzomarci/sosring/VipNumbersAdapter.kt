@@ -11,7 +11,8 @@ import com.lorenzomarci.sosring.databinding.ItemVipNumberBinding
 class VipNumbersAdapter(
     private val onEdit: (Int, VipContact) -> Unit,
     private val onDelete: (Int) -> Unit,
-    private val onLocation: ((VipContact) -> Unit)? = null
+    private val onLocation: ((VipContact) -> Unit)? = null,
+    private val onRingtoneToggle: ((Int, VipContact) -> Unit)? = null
 ) : ListAdapter<VipContact, VipNumbersAdapter.ViewHolder>(DiffCallback) {
 
     object DiffCallback : DiffUtil.ItemCallback<VipContact>() {
@@ -30,12 +31,27 @@ class VipNumbersAdapter(
             binding.btnEdit.setOnClickListener { onEdit(position, contact) }
             binding.btnDelete.setOnClickListener { onDelete(position) }
 
+            // Ringtone toggle
+            updateRingtoneIcon(contact.ringtoneEnabled)
+            binding.btnRingtone.setOnClickListener {
+                onRingtoneToggle?.invoke(position, contact)
+            }
+
+            // Location button
             if (BuildConfig.LOCATION_ENABLED && contact.locationEnabled && onLocation != null) {
                 binding.btnLocation.visibility = View.VISIBLE
                 binding.btnLocation.setOnClickListener { onLocation.invoke(contact) }
             } else {
                 binding.btnLocation.visibility = View.GONE
             }
+        }
+
+        private fun updateRingtoneIcon(enabled: Boolean) {
+            binding.btnRingtone.setImageResource(
+                if (enabled) android.R.drawable.ic_lock_silent_mode_off
+                else android.R.drawable.ic_lock_silent_mode
+            )
+            binding.btnRingtone.alpha = if (enabled) 1.0f else 0.4f
         }
     }
 
