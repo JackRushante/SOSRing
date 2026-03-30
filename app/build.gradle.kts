@@ -18,8 +18,8 @@ android {
         applicationId = "com.lorenzomarci.sosring"
         minSdk = 29
         targetSdk = 34
-        versionCode = 4
-        versionName = "2.0"
+        versionCode = 5
+        versionName = "2.0.1"
     }
 
     signingConfigs {
