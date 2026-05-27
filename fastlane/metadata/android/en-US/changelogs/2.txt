@@ -1,0 +1,3 @@
+Listing update:
+- Added app icon and phone screenshots to the F-Droid listing
+No functional changes.

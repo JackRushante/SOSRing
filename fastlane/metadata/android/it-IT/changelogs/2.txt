@@ -1,0 +1,3 @@
+Aggiornamento scheda:
+- Aggiunti icona e screenshot dell'app alla scheda F-Droid
+Nessuna modifica funzionale.
