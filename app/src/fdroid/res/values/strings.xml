@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="p2p_block_not_registered">Push not registered yet. Open your UnifiedPush app (e.g. ntfy) and reopen SOS Ring.</string>
+    <string name="p2p_block_not_paired">This contact is not paired yet. Scan their pairing QR in the Security screen first.</string>
+
+    <string name="p2p_security_title">Your push channel</string>
+    <string name="p2p_security_desc">Pairing links you to a contact directly. Show your QR so they can request your location; scan theirs to request from them.</string>
+    <string name="p2p_status_registered">Push channel ready</string>
+    <string name="p2p_status_waiting">Waiting for a UnifiedPush distributor. Open ntfy (or another distributor) and reopen this screen.</string>
+    <string name="p2p_btn_show_qr">Show my pairing QR</string>
+    <string name="p2p_my_qr_title">My pairing QR</string>
+    <string name="p2p_my_qr_hint">Let the other person scan this to pair with you.</string>
+    <string name="p2p_peers_header">Paired contacts</string>
+    <string name="p2p_btn_scan">Pair a contact (scan QR)</string>
+    <string name="p2p_peers_empty">No paired contacts yet.</string>
+    <string name="p2p_pair_invalid">Invalid pairing QR.</string>
+    <string name="p2p_pair_no_contacts">Add a contact in the Home screen first.</string>
+    <string name="p2p_pair_choose_contact">Link this QR to which contact?</string>
+    <string name="p2p_pair_saved">Paired with %1$s</string>
+    <string name="p2p_peer_remove_title">Remove pairing</string>
+    <string name="p2p_peer_remove_msg">Remove the pairing for %1$s?</string>
+
+    <string name="p2p_location_share_label">Share my location with this contact</string>
+    <string name="p2p_location_share_hint">Off by default. Turn on only for contacts you want to be able to see your location when they request it.</string>
+    <string name="p2p_location_shared">Shared your location with %1$s</string>
+    <string name="p2p_location_received_no_acc">Position of %1$s</string>
+
+    <string name="p2p_peer_fingerprint">Identity: %1$s</string>
+    <string name="p2p_fingerprint_label">Verify this code out-of-band before trusting:</string>
+    <string name="p2p_repair_title">Identity changed</string>
+    <string name="p2p_repair_msg">This will replace an existing trusted identity for %1$s.\n\nOld identity: %2$s\nNew identity: %3$s\n\nOnly continue if you expected this contact to re-pair. Otherwise this could be an impersonation attempt.</string>
+    <string name="p2p_repair_confirm">Replace identity</string>
+
+    <string name="p2p_no_distributor_title">No push distributor installed</string>
+    <string name="p2p_no_distributor_msg">Direct location sharing needs a UnifiedPush distributor app (for example ntfy). Install one from your app store or F-Droid, open it once, then reopen this screen.</string>
+
+    <string name="privacy_data_body">SOS Ring processes call and contact data on your device.\n\nLocation sharing is peer-to-peer over UnifiedPush. You choose the push distributor (e.g. ntfy). The distributor relays only ciphertext and cannot read your location.\n\nCoordinates are end-to-end encrypted using Web Push encryption (ECDH P-256 + HKDF-SHA256 + AES-128-GCM). Each message is signed with a per-device ECDSA P-256 key held in the Android Keystore (non-exportable), so the recipient can verify the sender.\n\nPairing is explicit via QR code. Location sharing is off by default per contact.\n\nThis is NOT forward-secret and does NOT protect against a compromised phone, malware, screenshots, or keyloggers.\n\nNo analytics, no tracking, no ads.</string>
+</resources>

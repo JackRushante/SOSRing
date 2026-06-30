@@ -1,0 +1,40 @@
+SOS Ring forces your phone to ring at full volume when you receive a call from a VIP contact, even if your phone is in Silent, Vibrate, or Do Not Disturb mode.
+
+Perfect for families where someone always keeps their phone on silent but needs to be reachable in emergencies.
+
+HOW IT WORKS:
+• Add your VIP contacts (family, partner, etc.)
+• Enable the monitoring service
+• When a VIP contact calls, SOS Ring overrides Silent/DND mode, plays the ringtone at your chosen volume (50-100%), and vibrates
+• After the call ends (answered, missed, or rejected), your phone is restored to its original state — silent mode, DND, volumes, everything
+
+WHY THIS APP EXISTS:
+Android 14+ removed per-contact DND exceptions. No built-in way exists to let specific contacts bypass silent mode. Google restricts READ_CALL_LOG on the Play Store, so this type of app can't be published there. SOS Ring is free, open source, and works where others can't.
+
+FEATURES:
+• Pick VIP contacts from your phonebook or enter manually
+• Configurable override volume (50-100%)
+• Works in Silent, Vibrate, AND Do Not Disturb mode
+• Full state restore after call (including alarm volume)
+• Survives phone reboots (auto-start)
+• Minimal battery usage (event-driven, no polling)
+• Dark mode support
+• No ads or tracking
+
+LOCATION SHARING (optional, peer-to-peer):
+• No SOS Ring server required — you pick a UnifiedPush distributor app (e.g. ntfy on F-Droid); it relays only encrypted data
+• End-to-end encrypted using Web Push encryption; the distributor never sees your location
+• Each message is signed with a per-device key in the Android Keystore, so the recipient can verify the sender
+• Pairing is explicit via QR code — no automatic connections
+• Location sharing is off by default per contact; you control who can see your location
+• Live tracking streams your position roughly every 10 seconds for a chosen duration, shown on an OpenStreetMap map in the app
+• Tracked path is saved locally on the requester's device only — no data leaves without your explicit action
+• No server, no analytics, no tracking
+
+PERMISSIONS EXPLAINED:
+• Phone State & Call Log: detect incoming calls and identify the caller
+• Contacts: pick VIP contacts from your phonebook
+• Do Not Disturb access: override DND when a VIP calls
+• Notifications: show a small persistent notification while monitoring
+
+SOURCE CODE: https://github.com/JackRushante/SOSRing

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="p2p_block_not_registered">Push non ancora registrato. Apri l\'app UnifiedPush (es. ntfy) e riapri SOS Ring.</string>
+    <string name="p2p_block_not_paired">Contatto non ancora abbinato. Scansiona prima il suo QR nella schermata Sicurezza.</string>
+
+    <string name="p2p_security_title">Il tuo canale push</string>
+    <string name="p2p_security_desc">L\'abbinamento ti collega direttamente a un contatto. Mostra il tuo QR per farti richiedere la posizione; scansiona il suo per richiederla a lui.</string>
+    <string name="p2p_status_registered">Canale push pronto</string>
+    <string name="p2p_status_waiting">In attesa di un distributore UnifiedPush. Apri ntfy (o un altro distributore) e riapri questa schermata.</string>
+    <string name="p2p_btn_show_qr">Mostra il mio QR di abbinamento</string>
+    <string name="p2p_my_qr_title">Il mio QR di abbinamento</string>
+    <string name="p2p_my_qr_hint">Fallo scansionare all\'altra persona per abbinarvi.</string>
+    <string name="p2p_peers_header">Contatti abbinati</string>
+    <string name="p2p_btn_scan">Abbina un contatto (scansiona QR)</string>
+    <string name="p2p_peers_empty">Nessun contatto abbinato.</string>
+    <string name="p2p_pair_invalid">QR di abbinamento non valido.</string>
+    <string name="p2p_pair_no_contacts">Aggiungi prima un contatto nella schermata Home.</string>
+    <string name="p2p_pair_choose_contact">A quale contatto vuoi collegare questo QR?</string>
+    <string name="p2p_pair_saved">Abbinato con %1$s</string>
+    <string name="p2p_peer_remove_title">Rimuovi abbinamento</string>
+    <string name="p2p_peer_remove_msg">Rimuovere l\'abbinamento per %1$s?</string>
+
+    <string name="p2p_location_share_label">Condividi la mia posizione con questo contatto</string>
+    <string name="p2p_location_share_hint">Disattivata di default. Attivala solo per i contatti a cui vuoi permettere di vedere la tua posizione quando la richiedono.</string>
+    <string name="p2p_location_shared">Posizione condivisa con %1$s</string>
+    <string name="p2p_location_received_no_acc">Posizione di %1$s</string>
+
+    <string name="p2p_peer_fingerprint">Identità: %1$s</string>
+    <string name="p2p_fingerprint_label">Verifica questo codice di persona prima di fidarti:</string>
+    <string name="p2p_repair_title">Identità cambiata</string>
+    <string name="p2p_repair_msg">Questa operazione sostituirà un\'identità già considerata fidata per %1$s.\n\nVecchia identità: %2$s\nNuova identità: %3$s\n\nContinua solo se ti aspettavi che questo contatto si riabbinasse. Altrimenti potrebbe essere un tentativo di impersonificazione.</string>
+    <string name="p2p_repair_confirm">Sostituisci identità</string>
+
+    <string name="p2p_no_distributor_title">Nessun distributore push installato</string>
+    <string name="p2p_no_distributor_msg">La condivisione diretta della posizione richiede un\'app distributore UnifiedPush (per esempio ntfy). Installane una dallo store o da F-Droid, aprila una volta, poi riapri questa schermata.</string>
+
+    <string name="privacy_data_body">SOS Ring elabora i dati di chiamata e contatto sul tuo dispositivo.\n\nLa condivisione della posizione avviene in modalità peer-to-peer tramite UnifiedPush. Scegli tu il distributore push (es. ntfy). Il distributore trasmette solo testo cifrato e non può leggere la tua posizione.\n\nLe coordinate sono cifrate end-to-end con crittografia Web Push (ECDH P-256 + HKDF-SHA256 + AES-128-GCM). Ogni messaggio è firmato con una chiave ECDSA P-256 per dispositivo, custodita nell\'Android Keystore (non esportabile), così il destinatario può verificare il mittente.\n\nL\'abbinamento avviene tramite QR code. La condivisione della posizione è disattivata per default per ogni contatto.\n\nQuesto sistema NON è forward-secret e NON protegge da telefono compromesso, malware, screenshot o keylogger.\n\nNessuna analisi, nessun tracciamento, nessuna pubblicità.</string>
+</resources>

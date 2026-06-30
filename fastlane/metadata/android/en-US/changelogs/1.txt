@@ -1,0 +1,8 @@
+Initial release:
+- VIP contact management (phonebook picker + manual entry)
+- Override Silent/Vibrate/DND for VIP calls
+- Configurable volume (50-100%)
+- Full audio state restore after call
+- Auto-start on boot
+- Dark mode support
+- English and Italian localization

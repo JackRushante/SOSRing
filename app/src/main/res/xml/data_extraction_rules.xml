@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="sosring_peers.xml" />
+        <exclude domain="sharedpref" path="sosring_unifiedpush.xml" />
+        <exclude domain="sharedpref" path="sosring_prefs.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="sosring_peers.xml" />
+        <exclude domain="sharedpref" path="sosring_unifiedpush.xml" />
+        <exclude domain="sharedpref" path="sosring_prefs.xml" />
+    </device-transfer>
+</data-extraction-rules>

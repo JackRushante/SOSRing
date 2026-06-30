@@ -1,0 +1,5 @@
+• Added optional peer-to-peer location sharing and live tracking over UnifiedPush
+• Location is end-to-end encrypted; the push distributor relays only ciphertext
+• Pairs via QR code; location sharing is off by default per contact
+• Live tracking streams position every ~10 seconds with an OpenStreetMap map in the app
+• No server, no analytics, no tracking

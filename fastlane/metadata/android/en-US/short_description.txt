@@ -1,0 +1,1 @@
+Force ringtone for VIP contacts even in Silent/DND mode

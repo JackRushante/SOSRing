@@ -1,0 +1,13 @@
+package com.lorenzomarci.sosring
+
+enum class PushSetupStatus {
+    CONNECTED_AUTH,
+    CONNECTED_NO_AUTH,
+    CONNECTED_NO_AUTH_TOKEN_IGNORED,
+    TOKEN_REQUIRED,
+    TOKEN_REJECTED,
+    RATE_LIMITED,
+    SERVER_UNREACHABLE,
+    INVALID_URL,
+    MISSING_OWN_NUMBER
+}

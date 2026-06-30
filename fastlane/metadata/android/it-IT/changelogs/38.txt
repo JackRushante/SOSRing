@@ -1,0 +1,5 @@
+• Aggiunta condivisione posizione peer-to-peer opzionale e tracciamento live tramite UnifiedPush
+• La posizione è cifrata end-to-end; il distributore push trasmette solo testo cifrato
+• Abbinamento via QR code; la condivisione è disattivata per default per ogni contatto
+• Il tracciamento live invia la posizione ogni ~10 secondi con mappa OpenStreetMap nell'app
+• Nessun server, nessuna analisi, nessun tracciamento
