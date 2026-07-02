@@ -36,5 +36,6 @@ PERMISSIONS EXPLAINED:
 • Contacts: pick VIP contacts from your phonebook
 • Do Not Disturb access: override DND when a VIP calls
 • Notifications: show a small persistent notification while monitoring
+• Location (including background): used only to answer location requests from paired contacts you explicitly authorized, even while the app is not on screen; nothing is collected or sent otherwise
 
 SOURCE CODE: https://github.com/JackRushante/SOSRing

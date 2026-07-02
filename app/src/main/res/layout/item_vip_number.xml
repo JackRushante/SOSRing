@@ -38,8 +38,8 @@
 
         <ImageButton
             android:id="@+id/btnGps"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="?selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_menu_mylocation"
             android:contentDescription="@string/gps_icon_desc"
@@ -49,8 +49,8 @@
 
         <ImageButton
             android:id="@+id/btnStop"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="?selectableItemBackgroundBorderless"
             android:src="@drawable/ic_stop"
             android:contentDescription="@string/stop_icon_desc"
@@ -60,8 +60,8 @@
 
         <ImageButton
             android:id="@+id/btnMap"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="?selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_menu_mapmode"
             android:contentDescription="@string/view_path_desc"
@@ -71,8 +71,8 @@
 
         <ImageButton
             android:id="@+id/btnMore"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="?selectableItemBackgroundBorderless"
             android:src="@drawable/ic_more_vert"
             android:contentDescription="@string/more_icon_desc"

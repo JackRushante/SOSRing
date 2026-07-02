@@ -14,6 +14,8 @@ object PushProvider {
 
     fun engine(): PushEngine? = NtfyService.getInstance()
 
+    fun liveEngine(): PushEngine? = CallMonitorService.getInstance()?.pushEngine
+
     fun verifySetup(context: Context): PushSetupStatus {
         val prefs = PrefsManager(context)
         val status = NtfySetupVerifier.verify(
@@ -46,4 +48,16 @@ object PushProvider {
         engine.requestLocation(contact)
         return true
     }
+
+    fun canRequestLocation(context: Context, number: String): Boolean {
+        val prefs = PrefsManager(context)
+        return prefs.getContacts().firstOrNull { it.number == number }?.locationEnabled ?: false
+    }
+
+    fun startLiveTracking(context: Context, contact: VipContact, minutes: Int): Boolean {
+        val engine = NtfyService.getInstance() ?: return false
+        return engine.startLiveTracking(contact, minutes)
+    }
+
+    fun onLocationSharingRevoked(context: Context, number: String) {}
 }

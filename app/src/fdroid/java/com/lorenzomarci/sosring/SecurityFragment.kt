@@ -117,7 +117,7 @@ class SecurityFragment : Fragment() {
                 MaterialAlertDialogBuilder(ctx)
                     .setTitle(R.string.p2p_my_qr_title)
                     .setView(container)
-                    .setPositiveButton(R.string.btn_save, null)
+                    .setPositiveButton(R.string.btn_close, null)
                     .show()
             }
         }.start()
@@ -139,13 +139,27 @@ class SecurityFragment : Fragment() {
             .setTitle(R.string.p2p_pair_choose_contact)
             .setItems(names) { _, which ->
                 val contact = contacts[which]
-                val existing = PeerStore(requireContext()).get(contact.number)
-                if (existing != null && existing.idPub != payload.idPub) {
-                    confirmRepair(contact, existing, payload)
-                } else {
-                    savePeer(contact, payload)
+                val store = PeerStore(requireContext())
+                val duplicateOwner = store.all().firstOrNull {
+                    it.idPub == payload.idPub && !PhoneUtils.matches(it.number, contact.number)
+                }
+                val existing = store.get(contact.number)
+                when {
+                    duplicateOwner != null -> confirmDuplicateIdentity(contact, duplicateOwner, payload)
+                    existing != null && existing.idPub != payload.idPub -> confirmRepair(contact, existing, payload)
+                    else -> savePeer(contact, payload)
                 }
             }
+            .setNegativeButton(R.string.btn_cancel, null)
+            .show()
+    }
+
+    private fun confirmDuplicateIdentity(contact: VipContact, other: Peer, payload: PairPayload) {
+        val fingerprint = fingerprintOf(payload.idPub!!)
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.p2p_duplicate_identity_title)
+            .setMessage(getString(R.string.p2p_duplicate_identity_msg, other.number, contact.name, fingerprint))
+            .setPositiveButton(R.string.p2p_duplicate_identity_confirm) { _, _ -> savePeer(contact, payload) }
             .setNegativeButton(R.string.btn_cancel, null)
             .show()
     }
@@ -187,12 +201,13 @@ class SecurityFragment : Fragment() {
             row.findViewById<TextView>(R.id.tvPeerFingerprint).text =
                 getString(R.string.p2p_peer_fingerprint, fingerprintOf(peer.idPub))
             row.findViewById<View>(R.id.btnRemovePeer).setOnClickListener { confirmRemovePeer(peer) }
-            val locationEnabled = contacts.firstOrNull { it.number == peer.number }?.locationEnabled ?: false
+            val locationEnabled = contacts.firstOrNull { PhoneUtils.matches(it.number, peer.number) }?.locationEnabled ?: false
             val locationSwitch = row.findViewById<MaterialSwitch>(R.id.swPeerLocation)
             locationSwitch.setOnCheckedChangeListener(null)
             locationSwitch.isChecked = locationEnabled
             locationSwitch.setOnCheckedChangeListener { _, isChecked ->
                 prefs.updateContactLocationEnabled(peer.number, isChecked)
+                if (!isChecked) Push.onLocationSharingRevoked(requireContext(), peer.number)
             }
             container.addView(row)
         }
@@ -204,6 +219,7 @@ class SecurityFragment : Fragment() {
             .setMessage(getString(R.string.p2p_peer_remove_msg, peer.number))
             .setPositiveButton(R.string.btn_remove) { _, _ ->
                 PeerStore(requireContext()).remove(peer.number)
+                Push.onLocationSharingRevoked(requireContext(), peer.number)
                 refreshPeerList()
             }
             .setNegativeButton(R.string.btn_cancel, null)

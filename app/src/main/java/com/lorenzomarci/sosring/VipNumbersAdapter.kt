@@ -33,6 +33,7 @@ class VipNumbersAdapter(
             binding.tvNumber.text = contact.number
 
             val icons = VipRowIcons.rowIcons(
+                canRequest = Push.canRequestLocation(binding.root.context, contact.number),
                 locationEnabled = contact.locationEnabled,
                 isLiveForThisContact = liveTrackingNumber() == contact.number
             )

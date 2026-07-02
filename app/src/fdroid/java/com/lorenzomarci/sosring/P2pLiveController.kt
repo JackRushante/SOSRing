@@ -31,10 +31,12 @@ object P2pLiveController {
 
     private var inSessionId: String? = null
     private var inRequesterNumber: String? = null
+    private var inStartedAtMs: Long = 0L
     private var locationHelper: LocationHelper? = null
 
     val outgoingContactNumber: String? get() = outPeerNumber
     fun outgoingSessionId(): String? = outSessionId
+    fun hasActiveIncomingSession(): Boolean = inSessionId != null
 
     fun startOutgoing(context: Context, contact: VipContact, durationMinutes: Int): Boolean {
         if (outSessionId != null) return false
@@ -85,26 +87,63 @@ object P2pLiveController {
             Log.w(TAG, "live point for inactive session, ignoring")
             return
         }
+        val peerNumber = outPeerNumber
+        if (peerNumber == null || !PhoneUtils.matches(senderNumber, peerNumber)) {
+            Log.w(TAG, "live point for session=$sessionId from unexpected sender, ignoring")
+            return
+        }
         SosRingDatabase.getInstance(context).insertPoint(senderNumber, sessionId, lat, lon, accuracy.toFloat(), System.currentTimeMillis())
         outFirstPointReceived = true
         LocalBroadcastManager.getInstance(context).sendBroadcast(Intent(Push.ACTION_CONTACTS_UPDATED))
     }
 
-    fun onEndReceived(context: Context, sessionId: String) {
-        if (outSessionId == sessionId) stopOutgoing(context, sendEnd = false)
-        if (inSessionId == sessionId) stopIncoming(context, sendEnd = false)
+    fun onEndReceived(context: Context, senderNumber: String, sessionId: String) {
+        if (outSessionId == sessionId) {
+            val peerNumber = outPeerNumber
+            if (peerNumber != null && PhoneUtils.matches(senderNumber, peerNumber)) {
+                stopOutgoing(context, sendEnd = false)
+            } else {
+                Log.w(TAG, "live end for session=$sessionId from unexpected sender, ignoring")
+            }
+        }
+        if (inSessionId == sessionId) {
+            val requesterNumber = inRequesterNumber
+            if (requesterNumber != null && PhoneUtils.matches(senderNumber, requesterNumber)) {
+                stopIncoming(context, sendEnd = false)
+            } else {
+                Log.w(TAG, "live end for session=$sessionId from unexpected sender, ignoring")
+            }
+        }
     }
 
     fun startIncoming(context: Context, requester: Peer, requesterName: String, sessionId: String, durationMinutes: Int, intervalSeconds: Int) {
+        if (inSessionId != null && inRequesterNumber == requester.number) {
+            Log.w(TAG, "live start from ${requester.number} ignored, session already active for this peer")
+            return
+        }
+        val requestedMs = durationMinutes * 60_000L
+        val usedMsToday = LiveConsentUsageStore(context).usedMsToday(requester.number)
+        if (!LiveConsentBudget.allow(usedMsToday, requestedMs, LiveConsentBudget.DAILY_CAP_MS)) {
+            Log.w(TAG, "live start from ${requester.number} rejected, daily budget exceeded")
+            return
+        }
         stopIncoming(context, sendEnd = false)
         inSessionId = sessionId
         inRequesterNumber = requester.number
+        inStartedAtMs = System.currentTimeMillis()
         CallMonitorService.getInstance()?.setLocationForegroundType(true)
         val helper = LocationHelper(context)
         locationHelper = helper
         helper.startLiveTracking(object : LocationHelper.LiveCallback {
             override fun onLocationUpdate(location: Location) {
                 val active = inSessionId ?: return
+                val contact = PrefsManager(context).getContacts()
+                    .firstOrNull { PhoneUtils.matches(requester.number, it.number) }
+                if (contact == null || !contact.locationEnabled) {
+                    Log.w(TAG, "consent revoked mid-session for ${requester.number}, stopping")
+                    stopIncoming(context, sendEnd = true)
+                    return
+                }
                 sendTo(requester, P2pMessageFactory.livePoint(active, location.latitude, location.longitude, location.accuracy.toDouble()))
             }
 
@@ -118,9 +157,16 @@ object P2pLiveController {
         Log.i(TAG, "incoming live started session=$sessionId from ${requester.number}")
     }
 
+    fun stopIncomingIfRequester(context: Context, number: String) {
+        if (P2pRevocationPolicy.matchesActiveRequester(inRequesterNumber, number)) {
+            stopIncoming(context, sendEnd = true)
+        }
+    }
+
     fun stopIncoming(context: Context, sendEnd: Boolean) {
         val sessionId = inSessionId ?: return
         val requesterNumber = inRequesterNumber
+        val startedAtMs = inStartedAtMs
         locationHelper?.stopLiveTracking()
         locationHelper = null
         CallMonitorService.getInstance()?.setLocationForegroundType(false)
@@ -128,8 +174,12 @@ object P2pLiveController {
         if (sendEnd && requesterNumber != null) {
             PeerStore(context).get(requesterNumber)?.let { sendTo(it, P2pMessageFactory.liveStop(sessionId)) }
         }
+        if (requesterNumber != null) {
+            LiveConsentUsageStore(context).addUsage(requesterNumber, System.currentTimeMillis() - startedAtMs, startedAtMs)
+        }
         inSessionId = null
         inRequesterNumber = null
+        inStartedAtMs = 0L
         NotificationManagerCompat.from(context).cancel(LIVE_NOTIFICATION_ID)
         Log.i(TAG, "incoming live stopped session=$sessionId")
     }

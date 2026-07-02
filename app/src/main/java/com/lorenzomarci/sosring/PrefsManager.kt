@@ -1,5 +1,6 @@
 package com.lorenzomarci.sosring
 
+import android.app.NotificationManager
 import android.content.Context
 import android.content.SharedPreferences
 import java.util.Calendar
@@ -60,6 +61,15 @@ class PrefsManager(context: Context) {
         private const val LOG_RETENTION_DAYS = 30
 
         private const val KEY_LAST_PERM_WARNING = "last_perm_warning"
+
+        private const val KEY_OVERRIDE_ACTIVE = "override_active"
+        private const val KEY_SAVED_ALARM_VOLUME = "saved_alarm_volume"
+        private const val KEY_SAVED_DND_FILTER = "saved_dnd_filter"
+
+        private const val KEY_PENDING_UPDATE_TOKEN = "pending_update_token"
+
+        fun applyLocationEnabledUpdate(contacts: List<VipContact>, number: String, enabled: Boolean): List<VipContact> =
+            contacts.map { c -> if (PhoneUtils.matches(c.number, number)) c.copy(locationEnabled = enabled) else c }
     }
 
     var isServiceEnabled: Boolean
@@ -77,12 +87,11 @@ class PrefsManager(context: Context) {
     val isMuted: Boolean
         get() {
             val until = muteUntilTimestamp
-            if (until == 0L) return false
-            if (System.currentTimeMillis() >= until) {
+            val muted = MutePolicy.isMuted(until, System.currentTimeMillis())
+            if (!muted && until != 0L) {
                 muteUntilTimestamp = 0L
-                return false
             }
-            return true
+            return muted
         }
 
     var overrideSoundType: Int
@@ -233,13 +242,24 @@ class PrefsManager(context: Context) {
         get() = prefs.getLong(KEY_LAST_PERM_WARNING, 0L)
         set(value) = prefs.edit().putLong(KEY_LAST_PERM_WARNING, value).apply()
 
+    var overrideActive: Boolean
+        get() = prefs.getBoolean(KEY_OVERRIDE_ACTIVE, false)
+        set(value) = prefs.edit().putBoolean(KEY_OVERRIDE_ACTIVE, value).apply()
+
+    var savedAlarmVolume: Int
+        get() = prefs.getInt(KEY_SAVED_ALARM_VOLUME, 0)
+        set(value) = prefs.edit().putInt(KEY_SAVED_ALARM_VOLUME, value).apply()
+
+    var savedDndFilter: Int
+        get() = prefs.getInt(KEY_SAVED_DND_FILTER, NotificationManager.INTERRUPTION_FILTER_ALL)
+        set(value) = prefs.edit().putInt(KEY_SAVED_DND_FILTER, value).apply()
+
+    var pendingUpdateToken: String?
+        get() = prefs.getString(KEY_PENDING_UPDATE_TOKEN, null)
+        set(value) = prefs.edit().putString(KEY_PENDING_UPDATE_TOKEN, value).apply()
+
     fun updateContactLocationEnabled(number: String, enabled: Boolean) {
-        val updated = getContacts().map { c ->
-            if (normalizeNumber(c.number) == normalizeNumber(number)) {
-                c.copy(locationEnabled = enabled)
-            } else c
-        }
-        saveContacts(updated)
+        saveContacts(applyLocationEnabledUpdate(getContacts(), number, enabled))
     }
 
     fun addLocationLog(name: String, number: String, type: String) {

@@ -1,0 +1,5 @@
+• Affidabilità suoneria: DND e volume si ripristinano dopo un crash, i numeri VIP internazionali e fissi ora funzionano, suoneria di riserva se quella personalizzata non è disponibile
+• Il monitoraggio non richiede più i permessi posizione o contatti
+• Privacy: revocare la condivisione ferma subito il live; ogni richiesta in arrivo è registrata, anche se negata; budget giornaliero di tracciamento per contatto
+• Identità peer e validazione chiavi più rigorose
+• Guida all'ottimizzazione batteria e rifiniture UI

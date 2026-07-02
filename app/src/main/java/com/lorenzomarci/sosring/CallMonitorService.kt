@@ -15,6 +15,7 @@ import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.RingtoneManager
+import android.net.Uri
 import android.os.IBinder
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -97,8 +98,7 @@ class CallMonitorService : Service() {
                                 )
                                 if (shouldOverride) {
                                     Log.i(TAG, "VIP call detected! Overriding audio.")
-                                    currentRingingNumber = number
-                                    overrideAudio()
+                                    overrideAudio(number)
                                 } else {
                                     Log.i(TAG, "VIP call detected but system already audible. Skipping override.")
                                 }
@@ -132,12 +132,19 @@ class CallMonitorService : Service() {
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
+        restoreStaleOverrideState()
+
         createNotificationChannels()
         startForeground(NOTIFICATION_ID, buildPersistentNotification(),
             ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
 
         val filter = IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED)
         registerReceiver(phoneReceiver, filter)
+
+        if (isOverriding && isCallStateIdle()) {
+            Log.i(TAG, "Call went idle before receiver registration; restoring audio.")
+            restoreAudio()
+        }
 
         Log.i(TAG, "Service started. Monitoring ${prefs.getVipNumbers().size} VIP numbers.")
 
@@ -198,6 +205,33 @@ class CallMonitorService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    private fun restoreStaleOverrideState() {
+        val persistedOverriding = prefs.overrideActive
+        if (!persistedOverriding) return
+
+        savedAlarmVolume = prefs.savedAlarmVolume
+        savedDndFilter = prefs.savedDndFilter
+        isOverriding = true
+
+        if (OverrideStatePolicy.shouldRestoreOnStart(persistedOverriding, isCallStateIdle())) {
+            Log.i(TAG, "Self-healing stale override state after process restart.")
+            restoreAudio()
+        } else {
+            Log.i(TAG, "Call still active after process restart; deferring restore of stale override state.")
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun isCallStateIdle(): Boolean {
+        return try {
+            val telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+            telephonyManager.callState == TelephonyManager.CALL_STATE_IDLE
+        } catch (e: SecurityException) {
+            Log.w(TAG, "Cannot read call state: ${e.message}")
+            false
+        }
+    }
+
     private fun warnIfCriticalPermsMissing() {
         if (!prefs.isServiceEnabled) return
         val callLogOk = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED
@@ -233,13 +267,15 @@ class CallMonitorService : Service() {
     }
 
     @Suppress("DEPRECATION")
-    private fun overrideAudio(force: Boolean = false) {
+    private fun overrideAudio(number: String) {
         if (isOverriding) return
 
-        if (!force && !AudioOverridePolicy.shouldOverride(audioManager.ringerMode, audioManager.getStreamVolume(AudioManager.STREAM_RING), notificationManager.currentInterruptionFilter)) {
+        if (!AudioOverridePolicy.shouldOverride(audioManager.ringerMode, audioManager.getStreamVolume(AudioManager.STREAM_RING), notificationManager.currentInterruptionFilter)) {
             Log.i(TAG, "Phone already allows calls, skipping override.")
             return
         }
+
+        currentRingingNumber = number
 
         try {
             // Save the state changed by SOS Ring.
@@ -284,38 +320,79 @@ class CallMonitorService : Service() {
         startVibration()
 
         isOverriding = true
+        prefs.savedAlarmVolume = savedAlarmVolume
+        prefs.savedDndFilter = savedDndFilter
+        prefs.overrideActive = true
         notificationManager.notify(OVERRIDE_NOTIFICATION_ID, buildOverrideNotification())
     }
 
     private fun startOverrideSound() {
+        val customUri = currentRingingNumber?.let {
+            ContactRingtoneHelper.getRingtoneUri(this, it)
+        }
+
         val useNotificationSound = prefs.overrideSoundType == PrefsManager.SOUND_TYPE_NOTIFICATION
         val defaultUri = RingtoneManager.getDefaultUri(
             if (useNotificationSound) RingtoneManager.TYPE_NOTIFICATION else RingtoneManager.TYPE_RINGTONE
         )
-        val customUri = currentRingingNumber?.let {
-            ContactRingtoneHelper.getRingtoneUri(this, it)
+        val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+
+        val candidates = listOfNotNull(
+            customUri?.let { it to "custom" },
+            defaultUri?.let { it to "default ringtone" },
+            alarmUri?.let { it to "alarm" }
+        )
+        playCandidate(candidates, 0)
+    }
+
+    private fun playCandidate(candidates: List<Pair<Uri, String>>, index: Int) {
+        if (index >= candidates.size) {
+            Log.e(TAG, "Failed to play override sound: all URIs failed")
+            return
         }
-        val finalUri = customUri ?: defaultUri
-        Log.d(TAG, "Override sound URI: $finalUri (custom=${customUri != null})")
+
+        val (uri, label) = candidates[index]
+        Log.d(TAG, "Override sound URI: $uri ($label)")
+
         val vol = 1f
         val mp = MediaPlayer()
         try {
-            mp.setDataSource(this, finalUri)
+            mp.setDataSource(this, uri)
             mp.setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_ALARM)
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                     .build()
             )
-            mp.isLooping = !useNotificationSound
+            mp.isLooping = prefs.overrideSoundType != PrefsManager.SOUND_TYPE_NOTIFICATION
             mp.setVolume(vol, vol)
-            mp.prepare()
-            mp.start()
+            mp.setOnPreparedListener { player ->
+                if (mediaPlayer !== player) return@setOnPreparedListener
+                try {
+                    player.start()
+                    Log.i(TAG, "Override sound playing on ALARM stream at ${prefs.volumePercent}%.")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to start prepared override sound: ${e.message}")
+                }
+            }
+            mp.setOnErrorListener { player, what, extra ->
+                Log.e(TAG, "MediaPlayer error preparing override sound: what=$what extra=$extra")
+                if (mediaPlayer === player) {
+                    mediaPlayer = null
+                    try { player.release() } catch (_: Exception) {}
+                    Log.w(TAG, "Override sound ($label) failed asynchronously, advancing fallback chain.")
+                    playCandidate(candidates, index + 1)
+                } else {
+                    try { player.release() } catch (_: Exception) {}
+                }
+                true
+            }
+            mp.prepareAsync()
             mediaPlayer = mp
-            Log.i(TAG, "Override sound playing on ALARM stream at ${prefs.volumePercent}%.")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to play override sound: ${e.message}", e)
+            Log.w(TAG, "Failed to play URI: ${e.message}")
             try { mp.release() } catch (_: Exception) {}
+            playCandidate(candidates, index + 1)
         }
     }
 
@@ -342,9 +419,14 @@ class CallMonitorService : Service() {
         mediaPlayer?.let {
             try {
                 if (it.isPlaying) it.stop()
-                it.release()
             } catch (e: Exception) {
                 Log.e(TAG, "Error stopping ringtone: ${e.message}")
+            } finally {
+                try {
+                    it.release()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error releasing ringtone: ${e.message}")
+                }
             }
         }
         mediaPlayer = null
@@ -362,17 +444,22 @@ class CallMonitorService : Service() {
         // 1. Stop our sound and vibration
         stopRingtoneAndVibration()
 
-        // 2. Restore the only stream modified by SOS Ring playback.
-        audioManager.setStreamVolume(AudioManager.STREAM_ALARM, savedAlarmVolume, 0)
-        Log.d(TAG, "Alarm volume restored to $savedAlarmVolume")
+        try {
+            // 2. Restore the only stream modified by SOS Ring playback.
+            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, savedAlarmVolume, 0)
+            Log.d(TAG, "Alarm volume restored to $savedAlarmVolume")
 
-        // Restore DND synchronously (no ringer-mode change happens anymore)
-        if (notificationManager.isNotificationPolicyAccessGranted) {
-            notificationManager.setInterruptionFilter(savedDndFilter)
-            Log.d(TAG, "DND restored to $savedDndFilter")
+            // Restore DND synchronously (no ringer-mode change happens anymore)
+            if (notificationManager.isNotificationPolicyAccessGranted) {
+                notificationManager.setInterruptionFilter(savedDndFilter)
+                Log.d(TAG, "DND restored to $savedDndFilter")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error restoring audio state: ${e.message}", e)
         }
 
         isOverriding = false
+        prefs.overrideActive = false
         notificationManager.cancel(OVERRIDE_NOTIFICATION_ID)
         currentRingingNumber = null
     }

@@ -8,6 +8,7 @@ import java.security.KeyPairGenerator
 import java.security.SecureRandom
 import java.security.interfaces.ECPrivateKey
 import java.security.interfaces.ECPublicKey
+import java.security.spec.ECFieldFp
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.ECParameterSpec
 import java.security.spec.ECPoint
@@ -91,8 +92,20 @@ object WebPushCrypto {
         require(point.size == 65 && point[0].toInt() == 0x04) { "invalid EC public point" }
         val x = BigInteger(1, point.copyOfRange(1, 33))
         val y = BigInteger(1, point.copyOfRange(33, 65))
-        val spec = ECPublicKeySpec(ECPoint(x, y), ecParameters())
+        val params = ecParameters()
+        require(isOnCurve(x, y, params)) { "EC public point is not on curve" }
+        val spec = ECPublicKeySpec(ECPoint(x, y), params)
         return KeyFactory.getInstance("EC").generatePublic(spec) as ECPublicKey
+    }
+
+    private fun isOnCurve(x: BigInteger, y: BigInteger, params: ECParameterSpec): Boolean {
+        val field = params.curve.field as ECFieldFp
+        val p = field.p
+        val a = params.curve.a
+        val b = params.curve.b
+        val lhs = y.modPow(BigInteger.valueOf(2), p)
+        val rhs = x.modPow(BigInteger.valueOf(3), p).add(a.multiply(x)).add(b).mod(p)
+        return lhs == rhs
     }
 
     internal fun loadPrivate(scalar: ByteArray): ECPrivateKey {

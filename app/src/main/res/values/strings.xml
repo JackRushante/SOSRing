@@ -26,10 +26,13 @@
     <string name="btn_save">Save</string>
     <string name="btn_cancel">Cancel</string>
     <string name="btn_remove">Remove</string>
+    <string name="btn_close">Close</string>
+    <string name="btn_continue">Continue</string>
     <string name="edit_contact_title">Edit contact</string>
     <string name="remove_contact_title">Remove contact</string>
     <string name="remove_contact_msg">Remove %1$s (%2$s) from VIP list?</string>
     <string name="no_phone_found">No phone number found for this contact</string>
+    <string name="contact_invalid_input">Enter a name and a phone number with at least 4 digits.</string>
     <string name="dnd_dialog_title">Do Not Disturb permission</string>
     <string name="dnd_dialog_msg">To disable \"Do Not Disturb\" when a VIP call arrives, you need to authorize SOS Ring in system settings.\n\nPress OK to open settings, then find \"SOS Ring\" and enable the toggle.</string>
     <string name="btn_open_settings">Open settings</string>
@@ -94,6 +97,7 @@
     <string name="location_log_hide">Hide history</string>
     <string name="location_log_empty">No recent requests</string>
     <string name="location_log_incoming">%1$s requested your location</string>
+    <string name="location_log_denied">%1$s requested your location — denied (sharing off)</string>
     <!-- Auto-Update -->
     <string name="update_available">Update available: v%1$s — tap to install</string>
     <string name="update_downloading">Downloading update…</string>
@@ -220,6 +224,7 @@
     <string name="perm_revoked_notif_text">Permissions revoked: VIP ringing is not working. Open SOS Ring and grant them again.</string>
     <string name="home_warn_perms_revoked">Permissions revoked: VIP ringing is not working.</string>
     <string name="home_warn_auto_revoke">Android may remove permissions if you never open the app.</string>
+    <string name="home_warn_battery_unrestricted">Battery optimization may kill call monitoring. Set SOS Ring to Unrestricted battery use.</string>
     <string name="home_warn_action_fix">Fix</string>
     <string name="notif_service_channel_name">Call monitoring</string>
     <string name="notif_service_channel_desc">Persistent notification for the SOS Ring service</string>

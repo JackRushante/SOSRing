@@ -72,4 +72,39 @@ class PhoneUtilsTest {
         assertFalse(PhoneUtils.matches("", "+393401234567"))
         assertFalse(PhoneUtils.matches("   ", "+393401234567"))
     }
+
+    @Test
+    fun matches_germanNationalVsInternational_returnsTrue() {
+        assertTrue(PhoneUtils.matches("+491761234567", "01761234567"))
+    }
+
+    @Test
+    fun matches_italianLandlineNationalVsInternational_returnsTrue() {
+        assertTrue(PhoneUtils.matches("+390461234567", "0461234567"))
+    }
+
+    @Test
+    fun matches_usNumberNotRewrittenToItaly_returnsTrue() {
+        assertTrue(PhoneUtils.matches("3037551234", "+13037551234"))
+    }
+
+    @Test
+    fun matches_italianMobileStillMatches_returnsTrue() {
+        assertTrue(PhoneUtils.matches("+393358027893", "3358027893"))
+    }
+
+    @Test
+    fun matches_differentInternationalNumbers_returnsFalse() {
+        assertFalse(PhoneUtils.matches("+3912345678", "+3987654321"))
+    }
+
+    @Test
+    fun matches_shortNumbersDoNotSuffixMatch_returnsFalse() {
+        assertFalse(PhoneUtils.matches("123", "456123"))
+    }
+
+    @Test
+    fun matches_trunkStripUnderfitsButUnstrippedSuffixFits_returnsTrue() {
+        assertTrue(PhoneUtils.matches("01111111", "+901111111"))
+    }
 }

@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="p2p_block_not_registered">Push non ancora registrato. Apri l\'app UnifiedPush (es. ntfy) e riapri SOS Ring.</string>
+    <string name="security_title">Sicurezza</string>
+
+    <string name="p2p_block_not_registered">Push non ancora registrato. Installa un\'app UnifiedPush (es. ntfy), aprila una volta, poi riapri SOS Ring.</string>
     <string name="p2p_block_not_paired">Contatto non ancora abbinato. Scansiona prima il suo QR nella schermata Sicurezza.</string>
+    <string name="location_service_not_running">Non pronto: assicurati che il canale push sia registrato e che questo contatto sia abbinato, poi riprova.</string>
 
     <string name="p2p_security_title">Il tuo canale push</string>
     <string name="p2p_security_desc">L\'abbinamento ti collega direttamente a un contatto. Mostra il tuo QR per farti richiedere la posizione; scansiona il suo per richiederla a lui.</string>
@@ -30,6 +33,9 @@
     <string name="p2p_repair_title">Identità cambiata</string>
     <string name="p2p_repair_msg">Questa operazione sostituirà un\'identità già considerata fidata per %1$s.\n\nVecchia identità: %2$s\nNuova identità: %3$s\n\nContinua solo se ti aspettavi che questo contatto si riabbinasse. Altrimenti potrebbe essere un tentativo di impersonificazione.</string>
     <string name="p2p_repair_confirm">Sostituisci identità</string>
+    <string name="p2p_duplicate_identity_title">Identità già in uso</string>
+    <string name="p2p_duplicate_identity_msg">Questa identità è già abbinata a %1$s.\n\nCollegarla anche a %2$s farebbe condividere ai due contatti la stessa identità: %3$s\n\nContinua solo se te lo aspettavi. Altrimenti potrebbe essere un tentativo di impersonificazione.</string>
+    <string name="p2p_duplicate_identity_confirm">Collega comunque</string>
 
     <string name="p2p_no_distributor_title">Nessun distributore push installato</string>
     <string name="p2p_no_distributor_msg">La condivisione diretta della posizione richiede un\'app distributore UnifiedPush (per esempio ntfy). Installane una dallo store o da F-Droid, aprila una volta, poi riapri questa schermata.</string>

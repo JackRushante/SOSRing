@@ -126,7 +126,7 @@ class SecurityFragment : Fragment() {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.security_your_key_title)
             .setView(dialogBinding.root)
-            .setPositiveButton(R.string.btn_save, null)
+            .setPositiveButton(R.string.btn_close, null)
             .show()
     }
 

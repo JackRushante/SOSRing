@@ -33,7 +33,7 @@ class LocationLogFragment : Fragment() {
         val container = binding.locationLogContainer
         container.removeAllViews()
 
-        val logs = prefs.getLocationLogs().filter { it.type == "incoming" }
+        val logs = prefs.getLocationLogs().filter { it.type == "incoming" || it.type == "incoming_denied" }
         val dateFormat = java.text.SimpleDateFormat("dd/MM HH:mm", java.util.Locale.getDefault())
 
         if (logs.isEmpty()) {
@@ -47,8 +47,13 @@ class LocationLogFragment : Fragment() {
         } else {
             logs.take(50).forEach { entry ->
                 val date = dateFormat.format(java.util.Date(entry.timestamp))
+                val label = if (entry.type == "incoming_denied") {
+                    getString(R.string.location_log_denied, entry.name)
+                } else {
+                    "\u2B07 ${getString(R.string.location_log_incoming, entry.name)}"
+                }
                 val tv = TextView(requireContext()).apply {
-                    text = "\u2B07 ${getString(R.string.location_log_incoming, entry.name)}\n     $date"
+                    text = "$label\n     $date"
                     textSize = 14f
                     setPadding(0, 8, 0, 8)
                 }

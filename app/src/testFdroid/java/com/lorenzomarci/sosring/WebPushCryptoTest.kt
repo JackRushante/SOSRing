@@ -2,6 +2,7 @@ package com.lorenzomarci.sosring
 
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
 import java.security.KeyPair
 import java.security.interfaces.ECPrivateKey
 import java.security.interfaces.ECPublicKey
@@ -75,6 +76,29 @@ class WebPushCryptoTest {
 
         val decrypted = decrypt(body, receiver.private as ECPrivateKey, receiverPublic, auth)
         assertArrayEquals(message, decrypted)
+    }
+
+    @Test
+    fun loadPublic_acceptsOnCurvePoint() {
+        val point = WebPushCrypto.b64dec(rfcUaPublic)
+
+        val key = WebPushCrypto.loadPublic(point)
+
+        assertArrayEquals(point, WebPushCrypto.pointBytes(key))
+    }
+
+    @Test
+    fun loadPublic_rejectsOffCurvePoint() {
+        val point = WebPushCrypto.b64dec(rfcUaPublic)
+        val offCurve = point.copyOf()
+        offCurve[64] = (offCurve[64].toInt() xor 0x01).toByte()
+
+        try {
+            WebPushCrypto.loadPublic(offCurve)
+            fail("expected off-curve point to be rejected")
+        } catch (e: IllegalArgumentException) {
+            // expected
+        }
     }
 
     private fun decrypt(body: ByteArray, receiverPrivate: ECPrivateKey, receiverPublic: ByteArray, auth: ByteArray): ByteArray {

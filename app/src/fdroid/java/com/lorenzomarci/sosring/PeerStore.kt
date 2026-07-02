@@ -58,7 +58,7 @@ class PeerStore(context: Context) {
 
     fun byIdPub(idPub: ByteArray): Peer? {
         val target = WebPushCrypto.b64enc(idPub)
-        return all().firstOrNull { it.idPub == target }
+        return matchSingleByIdPub(all(), target)
     }
 
     private fun persist(peers: List<Peer>) {
@@ -77,5 +77,10 @@ class PeerStore(context: Context) {
 
     companion object {
         private const val KEY_PEERS = "peers"
+
+        internal fun matchSingleByIdPub(peers: List<Peer>, idPubB64: String): Peer? {
+            val matches = peers.filter { it.idPub == idPubB64 }
+            return matches.singleOrNull()
+        }
     }
 }

@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="p2p_block_not_registered">Push not registered yet. Open your UnifiedPush app (e.g. ntfy) and reopen SOS Ring.</string>
+    <string name="security_title">Security</string>
+
+    <string name="p2p_block_not_registered">Push not registered yet. Install a UnifiedPush app (e.g. ntfy), open it once, then reopen SOS Ring.</string>
     <string name="p2p_block_not_paired">This contact is not paired yet. Scan their pairing QR in the Security screen first.</string>
+    <string name="location_service_not_running">Not ready: make sure your push channel is registered and this contact is paired, then try again.</string>
 
     <string name="p2p_security_title">Your push channel</string>
     <string name="p2p_security_desc">Pairing links you to a contact directly. Show your QR so they can request your location; scan theirs to request from them.</string>
@@ -30,6 +33,9 @@
     <string name="p2p_repair_title">Identity changed</string>
     <string name="p2p_repair_msg">This will replace an existing trusted identity for %1$s.\n\nOld identity: %2$s\nNew identity: %3$s\n\nOnly continue if you expected this contact to re-pair. Otherwise this could be an impersonation attempt.</string>
     <string name="p2p_repair_confirm">Replace identity</string>
+    <string name="p2p_duplicate_identity_title">Identity already in use</string>
+    <string name="p2p_duplicate_identity_msg">This identity is already paired with %1$s.\n\nLinking it to %2$s as well means both contacts would share the same identity: %3$s\n\nOnly continue if you expected this. Otherwise this could be an impersonation attempt.</string>
+    <string name="p2p_duplicate_identity_confirm">Link anyway</string>
 
     <string name="p2p_no_distributor_title">No push distributor installed</string>
     <string name="p2p_no_distributor_msg">Direct location sharing needs a UnifiedPush distributor app (for example ntfy). Install one from your app store or F-Droid, open it once, then reopen this screen.</string>

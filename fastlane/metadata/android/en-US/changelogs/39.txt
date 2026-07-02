@@ -1,0 +1,5 @@
+• Ring reliability: DND and volume self-heal after a crash, international and landline VIP numbers now match, fallback ringtone when the custom one is unavailable
+• Monitoring no longer requires location or contacts permissions
+• Privacy: revoking location sharing stops a live share instantly; every inbound request is logged, including denied ones; daily live-tracking budget per contact
+• Hardened peer identity and key validation
+• Battery optimization guidance and UI polish

@@ -26,10 +26,23 @@ object PushProvider {
 
     fun engine(): PushEngine? = engineInstance
 
+    fun liveEngine(): PushEngine? = engineInstance ?: CallMonitorService.getInstance()?.pushEngine
+
     fun requestLocation(context: Context, contact: VipContact): Boolean {
         val engine = engineInstance ?: P2pPushEngine(context.applicationContext)
         engine.requestLocation(contact)
         return true
+    }
+
+    fun canRequestLocation(context: Context, number: String): Boolean {
+        val registered = !UnifiedPushStore(context).endpointUrl.isNullOrBlank()
+        val peerPaired = PeerStore(context).get(number) != null
+        return P2pLocationReadiness.check(registered, peerPaired) == P2pBlock.NONE
+    }
+
+    fun startLiveTracking(context: Context, contact: VipContact, minutes: Int): Boolean {
+        val engine = engineInstance ?: P2pPushEngine(context.applicationContext).also { engineInstance = it }
+        return engine.startLiveTracking(contact, minutes)
     }
 
     fun verifySetup(context: Context): PushSetupStatus = PushSetupStatus.SERVER_UNREACHABLE
@@ -42,6 +55,10 @@ object PushProvider {
             P2pBlock.NOT_REGISTERED -> context.getString(R.string.p2p_block_not_registered)
             P2pBlock.NOT_PAIRED -> context.getString(R.string.p2p_block_not_paired)
         }
+    }
+
+    fun onLocationSharingRevoked(context: Context, number: String) {
+        P2pLiveController.stopIncomingIfRequester(context, number)
     }
 
     fun ensureRegistered(activity: Activity) {

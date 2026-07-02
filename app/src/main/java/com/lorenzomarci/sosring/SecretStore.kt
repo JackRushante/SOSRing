@@ -16,11 +16,13 @@ object SecretStore {
     private const val KEYSTORE = "AndroidKeyStore"
     private const val KEY_ALIAS = "sosring_secret_v1"
     private const val MARKER = "enc1:"
+    private const val FAILED_MARKER = "encfail1:"
     private const val IV_SIZE = 12
     private const val TAG_BITS = 128
     private const val AES_GCM = "AES/GCM/NoPadding"
 
-    fun isWrapped(value: String?): Boolean = value?.startsWith(MARKER) == true
+    fun isWrapped(value: String?): Boolean =
+        value != null && (value.startsWith(MARKER) || value.startsWith(FAILED_MARKER))
 
     fun wrap(plain: String): String {
         return try {
@@ -30,13 +32,14 @@ object SecretStore {
             val ciphertext = cipher.doFinal(plain.toByteArray(Charsets.UTF_8))
             MARKER + Base64.getEncoder().encodeToString(iv + ciphertext)
         } catch (e: Exception) {
-            Log.e(TAG, "wrap failed, storing plaintext: ${e.message}")
-            plain
+            Log.e(TAG, "wrap failed, refusing to store plaintext: ${e.message}")
+            FAILED_MARKER
         }
     }
 
     fun unwrap(value: String?): String? {
         if (value == null) return null
+        if (value.startsWith(FAILED_MARKER)) return null
         if (!value.startsWith(MARKER)) return value
         return try {
             val combined = Base64.getDecoder().decode(value.removePrefix(MARKER))

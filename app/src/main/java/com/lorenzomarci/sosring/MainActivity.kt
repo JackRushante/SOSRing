@@ -100,9 +100,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun isSelfOriginatedUpdateIntent(intent: Intent): Boolean {
         if (intent.component?.packageName != packageName) return false
-        if (intent.getStringExtra("version_name").isNullOrBlank()) return false
-        val origin = referrer?.host
-        return origin == null || origin == packageName
+        val token = intent.getStringExtra("update_token")
+        val expectedToken = prefs.pendingUpdateToken
+        if (token.isNullOrBlank() || expectedToken.isNullOrBlank() || token != expectedToken) return false
+        prefs.pendingUpdateToken = null
+        return true
     }
 
     private fun loadFragment(fragment: androidx.fragment.app.Fragment, title: String) {

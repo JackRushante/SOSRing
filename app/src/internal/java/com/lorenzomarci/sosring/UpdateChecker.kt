@@ -76,10 +76,14 @@ class UpdateChecker(private val context: Context) {
     private fun showUpdateNotification(versionName: String, apkUrl: String) {
         createUpdateChannel()
 
+        val token = java.util.UUID.randomUUID().toString()
+        PrefsManager(context).pendingUpdateToken = token
+
         val downloadIntent = Intent(context, MainActivity::class.java).apply {
             action = "com.lorenzomarci.sosring.ACTION_DOWNLOAD_UPDATE"
             putExtra("apk_url", apkUrl)
             putExtra("version_name", versionName)
+            putExtra("update_token", token)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
 

@@ -5,20 +5,20 @@ import org.junit.Test
 
 class VipRowIconsTest {
     @Test
-    fun notPaired_showsNothing() {
-        val r = VipRowIcons.rowIcons(locationEnabled = false, isLiveForThisContact = false)
+    fun cannotRequest_showsNothing() {
+        val r = VipRowIcons.rowIcons(canRequest = false, locationEnabled = true, isLiveForThisContact = false)
         assertEquals(VipRowIcons(false, false, false), r)
     }
 
     @Test
-    fun pairedIdle_showsGpsOnly() {
-        val r = VipRowIcons.rowIcons(locationEnabled = true, isLiveForThisContact = false)
+    fun canRequestIdle_showsGpsOnly_regardlessOfLocationEnabled() {
+        val r = VipRowIcons.rowIcons(canRequest = true, locationEnabled = false, isLiveForThisContact = false)
         assertEquals(VipRowIcons(showGps = true, showStop = false, showMap = false), r)
     }
 
     @Test
-    fun pairedLive_showsStopAndMap() {
-        val r = VipRowIcons.rowIcons(locationEnabled = true, isLiveForThisContact = true)
+    fun canRequestLive_showsStopAndMap() {
+        val r = VipRowIcons.rowIcons(canRequest = true, locationEnabled = true, isLiveForThisContact = true)
         assertEquals(VipRowIcons(showGps = false, showStop = true, showMap = true), r)
     }
 }

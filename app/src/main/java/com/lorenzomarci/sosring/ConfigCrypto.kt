@@ -13,6 +13,8 @@ object ConfigCrypto {
 
     private const val FORMAT = "sosring-enc-v1"
     private const val ITERATIONS = 600000
+    private const val MIN_ITERATIONS = 100000
+    private const val MAX_ITERATIONS = 1000000
     private const val KEY_BITS = 256
     private const val SALT_SIZE = 16
     private const val IV_SIZE = 12
@@ -42,6 +44,7 @@ object ConfigCrypto {
             val root = JSONObject(envelope)
             if (root.optString("format") != FORMAT) return null
             val iterations = root.getInt("iter")
+            if (iterations < MIN_ITERATIONS || iterations > MAX_ITERATIONS) return null
             val dec = Base64.getDecoder()
             val salt = dec.decode(root.getString("salt"))
             val iv = dec.decode(root.getString("iv"))

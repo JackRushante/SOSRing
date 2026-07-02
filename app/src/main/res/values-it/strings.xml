@@ -25,10 +25,13 @@
     <string name="btn_save">Salva</string>
     <string name="btn_cancel">Annulla</string>
     <string name="btn_remove">Rimuovi</string>
+    <string name="btn_close">Chiudi</string>
+    <string name="btn_continue">Continua</string>
     <string name="edit_contact_title">Modifica contatto</string>
     <string name="remove_contact_title">Rimuovi contatto</string>
     <string name="remove_contact_msg">Rimuovere %1$s (%2$s) dalla lista VIP?</string>
     <string name="no_phone_found">Nessun numero trovato per questo contatto</string>
+    <string name="contact_invalid_input">Inserisci un nome e un numero di telefono di almeno 4 cifre.</string>
     <string name="dnd_dialog_title">Permesso Non Disturbare</string>
     <string name="dnd_dialog_msg">Per poter disattivare la modalità \"Non disturbare\" quando arriva una chiamata VIP, devi autorizzare SOS Ring nelle impostazioni di sistema.\n\nPremi OK per aprire le impostazioni, poi cerca \"SOS Ring\" e attiva l\'interruttore.</string>
     <string name="btn_open_settings">Apri impostazioni</string>
@@ -93,6 +96,7 @@
     <string name="location_log_hide">Nascondi cronologia</string>
     <string name="location_log_empty">Nessuna richiesta recente</string>
     <string name="location_log_incoming">%1$s ha richiesto la tua posizione</string>
+    <string name="location_log_denied">%1$s ha richiesto la tua posizione — negata (condivisione disattivata)</string>
     <!-- Auto-Update -->
     <string name="update_available">Aggiornamento disponibile: v%1$s — tocca per installare</string>
     <string name="update_downloading">Download aggiornamento…</string>
@@ -219,6 +223,7 @@
     <string name="perm_revoked_notif_text">Permessi revocati: la suoneria VIP non funziona. Apri SOS Ring e ri-concedili.</string>
     <string name="home_warn_perms_revoked">Permessi revocati: la suoneria VIP non funziona.</string>
     <string name="home_warn_auto_revoke">Android può rimuovere i permessi se non apri mai l\'app.</string>
+    <string name="home_warn_battery_unrestricted">L\'ottimizzazione batteria può interrompere il monitoraggio chiamate. Imposta SOS Ring su utilizzo batteria Senza restrizioni.</string>
     <string name="home_warn_action_fix">Risolvi</string>
     <string name="notif_service_channel_name">Monitoraggio chiamate</string>
     <string name="notif_service_channel_desc">Notifica persistente del servizio SOS Ring</string>

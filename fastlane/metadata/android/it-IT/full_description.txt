@@ -36,5 +36,6 @@ PERMESSI SPIEGATI:
 • Contatti: scegli i contatti VIP dalla rubrica
 • Accesso Non Disturbare: disattiva il DND quando un VIP chiama
 • Notifiche: mostra una piccola notifica persistente durante il monitoraggio
+• Posizione (anche in background): usata solo per rispondere alle richieste di posizione dei contatti abbinati che hai autorizzato esplicitamente, anche quando l'app non è in primo piano; nient'altro viene raccolto o inviato
 
 CODICE SORGENTE: https://github.com/JackRushante/SOSRing

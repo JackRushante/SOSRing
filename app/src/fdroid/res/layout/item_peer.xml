@@ -35,10 +35,11 @@
 
         <ImageButton
             android:id="@+id/btnRemovePeer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:src="@android:drawable/ic_menu_delete"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
             android:contentDescription="@string/btn_remove" />
     </LinearLayout>
 

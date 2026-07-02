@@ -18,6 +18,8 @@ object P2pMessaging {
     private const val CHANNEL_ID = "sosring_push"
     private const val NOTIFICATION_ID = 7
     private const val MAX_ENVELOPE_BYTES = 4096
+    private const val LOG_TYPE_INCOMING = "incoming"
+    private const val LOG_TYPE_INCOMING_DENIED = "incoming_denied"
 
     fun requestLocation(context: Context, peer: Peer) {
         sendTo(context, peer, P2pMessageFactory.locRequest())
@@ -41,12 +43,12 @@ object P2pMessaging {
             return
         }
         val type = P2pMessageFactory.type(opened.payload)
-        val isRequest = type == P2pMessageFactory.TYPE_LOC_REQUEST
+        val enforceRateLimit = (type == P2pMessageFactory.TYPE_LOC_REQUEST || type == P2pMessageFactory.TYPE_LIVE_START)
         val verdict = P2pReplayGuard(context).check(
             senderIdPubB64 = WebPushCrypto.b64enc(opened.senderIdPub),
             ts = P2pMessageFactory.timestamp(opened.payload),
             now = System.currentTimeMillis(),
-            enforceRateLimit = isRequest
+            enforceRateLimit = enforceRateLimit
         )
         if (verdict != FreshnessVerdict.ACCEPT) {
             Log.w(TAG, "Message rejected from ${sender.number} (freshness: $verdict)")
@@ -57,19 +59,26 @@ object P2pMessaging {
             P2pMessageFactory.TYPE_LOC_RESPONSE -> showLocation(context, sender, opened.payload)
             P2pMessageFactory.TYPE_LIVE_START -> respondWithLiveStart(context, sender, opened.payload)
             P2pMessageFactory.TYPE_LIVE_POINT -> handleLivePoint(context, sender, opened.payload)
-            P2pMessageFactory.TYPE_LIVE_STOP -> handleLiveStop(context, opened.payload)
+            P2pMessageFactory.TYPE_LIVE_STOP -> handleLiveStop(context, sender, opened.payload)
             else -> Log.w(TAG, "Unknown P2P message type")
         }
     }
 
     private fun respondWithLocation(context: Context, requester: Peer) {
-        val contact = PrefsManager(context).getContacts()
+        val prefs = PrefsManager(context)
+        val contact = prefs.getContacts()
             .firstOrNull { PhoneUtils.matches(requester.number, it.number) }
-        if (contact == null || !contact.locationEnabled) {
+        val allowed = contact != null && contact.locationEnabled
+        val label = contact?.name?.ifBlank { requester.number } ?: requester.number
+        prefs.addLocationLog(label, requester.number, if (allowed) LOG_TYPE_INCOMING else LOG_TYPE_INCOMING_DENIED)
+        if (!allowed) {
             Log.w(TAG, "Location request from ${requester.number} dropped (sharing not enabled)")
             return
         }
         Log.i(TAG, "position request from ${requester.number}, getting fix")
+        val locationServicePromoted = CallMonitorService.getInstance()?.also {
+            it.setLocationForegroundType(true)
+        } != null
         LocationHelper(context).requestSingleFix(object : LocationHelper.Callback {
             override fun onLocationReady(location: Location) {
                 val payload = P2pMessageFactory.locResponse(
@@ -77,26 +86,36 @@ object P2pMessaging {
                 )
                 sendTo(context, requester, payload)
                 Log.i(TAG, "position response sent to ${requester.number}")
-                val label = contact.name.ifBlank { requester.number }
                 notify(context, context.getString(R.string.p2p_location_shared, label), null)
+                demoteLocationForeground(locationServicePromoted)
             }
 
             override fun onLocationFailed() {
                 Log.w(TAG, "Location fix failed for ${requester.number}")
+                demoteLocationForeground(locationServicePromoted)
             }
         })
     }
 
+    private fun demoteLocationForeground(wasPromoted: Boolean) {
+        if (!wasPromoted) return
+        if (P2pLiveController.hasActiveIncomingSession()) return
+        CallMonitorService.getInstance()?.setLocationForegroundType(false)
+    }
+
     private fun respondWithLiveStart(context: Context, requester: Peer, payload: ByteArray) {
         val start = P2pMessageFactory.parseLiveStart(payload) ?: return
-        val contact = PrefsManager(context).getContacts()
+        val prefs = PrefsManager(context)
+        val contact = prefs.getContacts()
             .firstOrNull { PhoneUtils.matches(requester.number, it.number) }
-        if (contact == null || !contact.locationEnabled) {
+        val allowed = contact != null && contact.locationEnabled
+        val label = contact?.name?.ifBlank { requester.number } ?: requester.number
+        prefs.addLocationLog(label, requester.number, if (allowed) LOG_TYPE_INCOMING else LOG_TYPE_INCOMING_DENIED)
+        if (!allowed) {
             Log.w(TAG, "Live start from ${requester.number} dropped (sharing not enabled)")
             return
         }
-        val name = contact.name.ifBlank { requester.number }
-        P2pLiveController.startIncoming(context, requester, name, start.sessionId, start.durationMin, start.intervalSec)
+        P2pLiveController.startIncoming(context, requester, label, start.sessionId, start.durationMin, start.intervalSec)
     }
 
     private fun handleLivePoint(context: Context, sender: Peer, payload: ByteArray) {
@@ -104,9 +123,9 @@ object P2pMessaging {
         P2pLiveController.onPointReceived(context, sender.number, point.sessionId, point.lat, point.lon, point.accuracy)
     }
 
-    private fun handleLiveStop(context: Context, payload: ByteArray) {
+    private fun handleLiveStop(context: Context, sender: Peer, payload: ByteArray) {
         val stop = P2pMessageFactory.parseLiveStop(payload) ?: return
-        P2pLiveController.onEndReceived(context, stop.sessionId)
+        P2pLiveController.onEndReceived(context, sender.number, stop.sessionId)
     }
 
     private fun showLocation(context: Context, sender: Peer, payload: ByteArray) {

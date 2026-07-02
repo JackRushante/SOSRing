@@ -6,9 +6,9 @@ data class VipRowIcons(
     val showMap: Boolean
 ) {
     companion object {
-        fun rowIcons(locationEnabled: Boolean, isLiveForThisContact: Boolean): VipRowIcons {
+        fun rowIcons(canRequest: Boolean, locationEnabled: Boolean, isLiveForThisContact: Boolean): VipRowIcons {
             return when {
-                !locationEnabled -> VipRowIcons(false, false, false)
+                !canRequest -> VipRowIcons(false, false, false)
                 isLiveForThisContact -> VipRowIcons(showGps = false, showStop = true, showMap = true)
                 else -> VipRowIcons(showGps = true, showStop = false, showMap = false)
             }

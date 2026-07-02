@@ -12,10 +12,20 @@ object Push {
     fun canStart(context: Context): Boolean = PushProvider.canStart(context)
     fun start(context: Context) = PushProvider.start(context)
     fun engine(): PushEngine? = PushProvider.engine()
+    fun liveEngine(): PushEngine? = PushProvider.liveEngine()
     fun verifySetup(context: Context): PushSetupStatus = PushProvider.verifySetup(context)
     fun locationBlock(context: Context, contact: VipContact): String? = PushProvider.locationBlock(context, contact)
     fun ensureRegistered(activity: Activity) = PushProvider.ensureRegistered(activity)
 
     fun requestLocation(context: Context, contact: VipContact): Boolean =
         PushProvider.requestLocation(context, contact)
+
+    fun canRequestLocation(context: Context, number: String): Boolean =
+        PushProvider.canRequestLocation(context, number)
+
+    fun startLiveTracking(context: Context, contact: VipContact, minutes: Int): Boolean =
+        PushProvider.startLiveTracking(context, contact, minutes)
+
+    fun onLocationSharingRevoked(context: Context, number: String) =
+        PushProvider.onLocationSharingRevoked(context, number)
 }

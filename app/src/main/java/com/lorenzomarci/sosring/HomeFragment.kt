@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.provider.ContactsContract
 import android.provider.Settings
 import android.view.LayoutInflater
@@ -129,7 +130,7 @@ private fun setupRecyclerView() {
             onStop = { contact -> stopLiveTrackingFor(contact) },
             onViewPath = { contact -> viewContactPath(contact) },
             liveTrackingNumber = {
-                CallMonitorService.getInstance()?.pushEngine?.liveContactNumber
+                Push.liveEngine()?.liveContactNumber
             }
         )
         binding.rvContacts.layoutManager = LinearLayoutManager(requireContext())
@@ -157,16 +158,12 @@ private fun setupRecyclerView() {
     }
 
     private fun startLiveFollow(contact: VipContact) {
-        val ntfy = CallMonitorService.getInstance()?.pushEngine
-        if (ntfy == null) {
-            if (Push.supportsServerConfig) {
-                showLocationShareUnavailable()
-            } else {
-                Toast.makeText(requireContext(), getString(R.string.location_service_not_running), Toast.LENGTH_LONG).show()
-            }
+        val engine = Push.liveEngine()
+        if (engine == null && Push.supportsServerConfig) {
+            showLocationShareUnavailable()
             return
         }
-        val activeNumber = ntfy.liveContactNumber
+        val activeNumber = engine?.liveContactNumber
         if (activeNumber != null && activeNumber != contact.number) {
             Toast.makeText(requireContext(), getString(R.string.live_track_already_active), Toast.LENGTH_LONG).show()
             return
@@ -186,11 +183,13 @@ private fun setupRecyclerView() {
             .setMessage(getString(R.string.live_track_dialog_message, npDuration.value))
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 val minutes = npDuration.value
-                if (ntfy.startLiveTracking(contact, minutes)) {
+                if (Push.startLiveTracking(ctx, contact, minutes)) {
                     Toast.makeText(ctx, getString(R.string.live_track_started, minutes), Toast.LENGTH_SHORT).show()
                     adapter.notifyDataSetChanged()
-                } else {
+                } else if (Push.supportsServerConfig) {
                     Toast.makeText(ctx, getString(R.string.live_track_already_active), Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(ctx, getString(R.string.location_service_not_running), Toast.LENGTH_LONG).show()
                 }
             }
             .setNegativeButton(getString(R.string.btn_cancel), null)
@@ -198,7 +197,7 @@ private fun setupRecyclerView() {
     }
 
     private fun stopLiveTrackingFor(contact: VipContact) {
-        val ntfy = CallMonitorService.getInstance()?.pushEngine ?: return
+        val ntfy = Push.liveEngine() ?: return
         if (ntfy.liveContactNumber == contact.number) {
             ntfy.stopLiveTracking()
             Toast.makeText(requireContext(), getString(R.string.location_live_stopped), Toast.LENGTH_SHORT).show()
@@ -207,7 +206,7 @@ private fun setupRecyclerView() {
     }
 
     private fun viewContactPath(contact: VipContact) {
-        val ntfy = CallMonitorService.getInstance()?.pushEngine
+        val ntfy = Push.liveEngine()
         val activeSession = ntfy?.getLiveSessionId()
         if (activeSession == null || ntfy.liveContactNumber != contact.number) {
             Toast.makeText(requireContext(), getString(R.string.live_track_no_session), Toast.LENGTH_SHORT).show()
@@ -318,7 +317,11 @@ private fun setupRecyclerView() {
             Toast.makeText(requireContext(), block, Toast.LENGTH_LONG).show()
             return
         }
-        if (!Push.requestLocation(requireContext(), contact)) {
+        if (Push.requestLocation(requireContext(), contact)) {
+            if (!Push.supportsServerConfig) {
+                Toast.makeText(requireContext(), getString(R.string.location_request_sent, contact.name), Toast.LENGTH_SHORT).show()
+            }
+        } else {
             Toast.makeText(requireContext(), getString(R.string.location_service_not_running), Toast.LENGTH_LONG).show()
         }
     }
@@ -443,6 +446,8 @@ private fun setupRecyclerView() {
                 if (finalName.isNotEmpty() && finalNumber.length > 3) {
                     contacts.add(VipContact(finalName, finalNumber))
                     saveAndRefresh()
+                } else {
+                    Toast.makeText(requireContext(), getString(R.string.contact_invalid_input), Toast.LENGTH_LONG).show()
                 }
             }
             .setNegativeButton(getString(R.string.btn_cancel), null)
@@ -464,6 +469,8 @@ private fun setupRecyclerView() {
                 if (name.isNotEmpty() && number.length > 3) {
                     contacts.add(VipContact(name, number))
                     saveAndRefresh()
+                } else {
+                    Toast.makeText(requireContext(), getString(R.string.contact_invalid_input), Toast.LENGTH_LONG).show()
                 }
             }
             .setNegativeButton(getString(R.string.btn_cancel), null)
@@ -486,6 +493,8 @@ private fun setupRecyclerView() {
                 if (name.isNotEmpty() && number.length > 3) {
                     contacts[position] = contact.copy(name = name, number = number)
                     saveAndRefresh()
+                } else {
+                    Toast.makeText(requireContext(), getString(R.string.contact_invalid_input), Toast.LENGTH_LONG).show()
                 }
             }
             .setNegativeButton(getString(R.string.btn_cancel), null)
@@ -529,17 +538,13 @@ private fun setupRecyclerView() {
             PackageManager.PERMISSION_GRANTED
         val callLogOk = ContextCompat.checkSelfPermission(ctx, Manifest.permission.READ_CALL_LOG) ==
             PackageManager.PERMISSION_GRANTED
-        val contactsOk = ContextCompat.checkSelfPermission(ctx, Manifest.permission.READ_CONTACTS) ==
-            PackageManager.PERMISSION_GRANTED
         val notifOk = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) ==
                 PackageManager.PERMISSION_GRANTED
         } else true
-        val runtimeOk = phoneOk && callLogOk && contactsOk && notifOk &&
-            hasForegroundLocationPermission() && hasBackgroundLocationPermission()
         val dndOk = (ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
             .isNotificationPolicyAccessGranted
-        return runtimeOk && dndOk
+        return ServiceEnableGate.canEnable(phoneOk, callLogOk, dndOk, notifOk)
     }
 
     private fun updatePermissionStatus() {
@@ -548,28 +553,25 @@ private fun setupRecyclerView() {
                 PackageManager.PERMISSION_GRANTED
         val callLogOk = ContextCompat.checkSelfPermission(ctx, Manifest.permission.READ_CALL_LOG) ==
                 PackageManager.PERMISSION_GRANTED
-        val contactsOk = ContextCompat.checkSelfPermission(ctx, Manifest.permission.READ_CONTACTS) ==
-                PackageManager.PERMISSION_GRANTED
         val notifOk = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) ==
                     PackageManager.PERMISSION_GRANTED
         } else true
-        val corePermsOk = phoneOk && callLogOk && contactsOk && notifOk && hasForegroundLocationPermission()
-        val bgLocationOk = hasBackgroundLocationPermission()
         val dndOk = (ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
             .isNotificationPolicyAccessGranted
+        val allOk = ServiceEnableGate.canEnable(phoneOk, callLogOk, dndOk, notifOk)
+        val allRuntimePermissionsGranted = runtimePermissions.all {
+            ContextCompat.checkSelfPermission(ctx, it) == PackageManager.PERMISSION_GRANTED
+        }
 
-        val runtimeAll = corePermsOk && bgLocationOk
-
-        binding.tvRuntimeStatus.text = getString(if (corePermsOk) R.string.status_granted else R.string.status_missing)
-        binding.tvRuntimeStatus.setTextColor(ctx.getColor(if (corePermsOk) R.color.status_ok else R.color.status_missing))
-        binding.btnRequestRuntime.isEnabled = !runtimeAll
+        binding.tvRuntimeStatus.text = getString(if (allOk) R.string.status_granted else R.string.status_missing)
+        binding.tvRuntimeStatus.setTextColor(ctx.getColor(if (allOk) R.color.status_ok else R.color.status_missing))
+        binding.btnRequestRuntime.isEnabled = !allRuntimePermissionsGranted
 
         binding.tvDndStatus.text = getString(if (dndOk) R.string.status_granted else R.string.status_missing)
         binding.tvDndStatus.setTextColor(ctx.getColor(if (dndOk) R.color.status_ok else R.color.status_missing))
         binding.btnRequestDnd.isEnabled = !dndOk
 
-        val allOk = runtimeAll && dndOk
         binding.switchService.isEnabled = allOk || prefs.isServiceEnabled
         updateWarningBanner()
     }
@@ -583,7 +585,10 @@ private fun setupRecyclerView() {
         val autoRevokeActive = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             !ctx.packageManager.isAutoRevokeWhitelisted
         } else false
-        when (HomeWarningPolicy.decide(prefs.isServiceEnabled, criticalMissing, autoRevokeActive)) {
+        val powerManager = ctx.getSystemService(Context.POWER_SERVICE) as PowerManager
+        val batteryOptimizationActive = !powerManager.isIgnoringBatteryOptimizations(ctx.packageName)
+        val warning = HomeWarningPolicy.decide(prefs.isServiceEnabled, criticalMissing, autoRevokeActive, batteryOptimizationActive)
+        when (warning) {
             HomeWarning.PERMISSIONS_REVOKED -> {
                 binding.tvWarning.text = getString(R.string.home_warn_perms_revoked)
                 binding.warningBanner.visibility = View.VISIBLE
@@ -592,11 +597,19 @@ private fun setupRecyclerView() {
                 binding.tvWarning.text = getString(R.string.home_warn_auto_revoke)
                 binding.warningBanner.visibility = View.VISIBLE
             }
+            HomeWarning.BATTERY_UNRESTRICTED_NEEDED -> {
+                binding.tvWarning.text = getString(R.string.home_warn_battery_unrestricted)
+                binding.warningBanner.visibility = View.VISIBLE
+            }
             HomeWarning.NONE -> binding.warningBanner.visibility = View.GONE
         }
         binding.btnWarningAction.setOnClickListener {
-            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                Uri.fromParts("package", ctx.packageName, null)))
+            if (warning == HomeWarning.BATTERY_UNRESTRICTED_NEEDED) {
+                startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+            } else {
+                startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.fromParts("package", ctx.packageName, null)))
+            }
         }
     }
 

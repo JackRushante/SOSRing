@@ -173,7 +173,7 @@ class SettingsFragment : Fragment() {
             com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.backup_import_confirm_title)
                 .setMessage(R.string.backup_import_confirm)
-                .setPositiveButton(R.string.btn_save) { _, _ ->
+                .setPositiveButton(R.string.btn_continue) { _, _ ->
                     importLauncher.launch(arrayOf("application/json", "*/*"))
                 }
                 .setNegativeButton(R.string.btn_cancel, null)
@@ -293,17 +293,18 @@ class SettingsFragment : Fragment() {
             }
 
             promptImportPassword { password ->
-                val plaintext = ConfigCrypto.decrypt(text, password)
-                if (plaintext == null) {
-                    Toast.makeText(requireContext(), getString(R.string.backup_import_wrong_password), Toast.LENGTH_LONG).show()
-                    return@promptImportPassword
-                }
-                val config = ConfigExporter.import(plaintext)
-                if (config == null) {
-                    Toast.makeText(requireContext(), getString(R.string.backup_import_failed), Toast.LENGTH_LONG).show()
-                    return@promptImportPassword
-                }
-                applyImportedConfig(config)
+                Thread {
+                    val plaintext = ConfigCrypto.decrypt(text, password)
+                    val config = plaintext?.let { ConfigExporter.import(it) }
+                    activity?.runOnUiThread {
+                        if (_binding == null) return@runOnUiThread
+                        when {
+                            plaintext == null -> Toast.makeText(requireContext(), getString(R.string.backup_import_wrong_password), Toast.LENGTH_LONG).show()
+                            config == null -> Toast.makeText(requireContext(), getString(R.string.backup_import_failed), Toast.LENGTH_LONG).show()
+                            else -> applyImportedConfig(config)
+                        }
+                    }
+                }.start()
             }
         } catch (e: Exception) {
             Toast.makeText(requireContext(), getString(R.string.backup_import_failed), Toast.LENGTH_LONG).show()

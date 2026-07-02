@@ -104,4 +104,23 @@ class ConfigExporterTest {
         assertFalse(ConfigExporter.isValidRuleRanges(0, 0, 6, 0, setOf(0)))
         assertFalse(ConfigExporter.isValidRuleRanges(0, 0, 6, 0, setOf(8)))
     }
+
+    @Test
+    fun isValidRuleRanges_rejectsZeroDurationRule() {
+        assertFalse(ConfigExporter.isValidRuleRanges(22, 0, 22, 0, setOf(1)))
+    }
+
+    @Test
+    fun import_dropsZeroDurationRule() {
+        val json = """
+            {"version":1,"quietRules":[
+              {"days":[2],"startHour":22,"startMinute":0,"endHour":22,"endMinute":0},
+              {"days":[2],"startHour":22,"startMinute":0,"endHour":6,"endMinute":0}
+            ]}
+        """.trimIndent()
+        val config = ConfigExporter.import(json)
+        assertNotNull(config)
+        assertEquals(1, config!!.quietRules.size)
+        assertEquals(6, config.quietRules[0].endHour)
+    }
 }

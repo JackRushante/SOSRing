@@ -26,7 +26,8 @@ object ConfigExporter {
     ): Boolean {
         return startHour in 0..23 && endHour in 0..23 &&
             startMinute in 0..59 && endMinute in 0..59 &&
-            days.isNotEmpty() && days.all { it in 1..7 }
+            days.isNotEmpty() && days.all { it in 1..7 } &&
+            QuietRuleValidator.isValid(days, startHour, startMinute, endHour, endMinute)
     }
 
     fun buildConfig(
