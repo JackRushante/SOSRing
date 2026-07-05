@@ -9,4 +9,11 @@ object NetworkClient {
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(10, TimeUnit.SECONDS)
         .build()
+
+    // Client dedicato alle subscription SSE: il readTimeout deve superare il
+    // keepalive di ntfy (45s), altrimenti la connessione cicla in timeout ogni
+    // 30s e ogni buco di riconnessione può perdere messaggi.
+    val sseClient: OkHttpClient = client.newBuilder()
+        .readTimeout(90, TimeUnit.SECONDS)
+        .build()
 }

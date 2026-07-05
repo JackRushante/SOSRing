@@ -1,0 +1,6 @@
+Live tracking reliability fixes:
+- Sessions now end on time even after the phone was in deep sleep
+- Fixed GPS updates silently stopping mid-session (update budget corrected, automatic restart)
+- New alerts when live updates stall on either side
+- The map clearly shows when a session has ended; the path stays visible
+- Start/stop messages are retried and recovered after reconnections

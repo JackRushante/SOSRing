@@ -21,16 +21,20 @@ object WebPushSender {
             .build()
     }
 
-    fun send(endpoint: String, body: ByteArray) {
+    fun send(endpoint: String, body: ByteArray, attempts: Int = 1) {
         Thread {
-            try {
-                NetworkClient.client.newCall(buildRequest(endpoint, body)).execute().use { response ->
-                    if (!response.isSuccessful) {
-                        Log.e(TAG, "Web Push POST failed: ${response.code}")
+            for (attempt in 0 until attempts.coerceAtLeast(1)) {
+                try {
+                    Thread.sleep(ControlRetryPolicy.delayBeforeAttempt(attempt))
+                    NetworkClient.client.newCall(buildRequest(endpoint, body)).execute().use { response ->
+                        if (response.isSuccessful) return@Thread
+                        Log.e(TAG, "Web Push POST failed: ${response.code} (attempt ${attempt + 1}/$attempts)")
                     }
+                } catch (e: InterruptedException) {
+                    return@Thread
+                } catch (e: Exception) {
+                    Log.e(TAG, "Web Push POST error: ${e.message} (attempt ${attempt + 1}/$attempts)")
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Web Push POST error: ${e.message}")
             }
         }.start()
     }

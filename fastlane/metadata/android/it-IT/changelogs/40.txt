@@ -1,0 +1,6 @@
+Fix di affidabilità del tracking live:
+- Le sessioni ora terminano puntuali anche dopo il deep sleep del telefono
+- Corretto lo stop silenzioso del GPS a metà sessione (budget aggiornamenti corretto, riavvio automatico)
+- Nuovi avvisi quando gli aggiornamenti live si bloccano
+- La mappa mostra chiaramente la fine della sessione; il percorso resta visibile
+- Retry dei messaggi di start/stop e recupero dopo le riconnessioni

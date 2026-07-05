@@ -31,4 +31,12 @@ class LiveLocationBudgetTest {
     fun fdroidDefaultFifteenMinutes() {
         assertEquals(90, LiveLocationBudget.maxUpdates(15 * 60_000L, 10_000L))
     }
+
+    @Test
+    fun budgetMustBeSizedOnTheFastestAllowedCadence() {
+        // Fused può consegnare a minUpdateInterval (interval/2): il budget va
+        // calcolato su quello, altrimenti si esaurisce a metà sessione
+        // (90 update * 5s = 7,5 min su una sessione da 15).
+        assertEquals(180, LiveLocationBudget.maxUpdates(15 * 60_000L, 5_000L))
+    }
 }

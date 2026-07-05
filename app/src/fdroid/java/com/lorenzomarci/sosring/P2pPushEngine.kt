@@ -25,6 +25,8 @@ class P2pPushEngine(private val appContext: Context) : PushEngine {
 
     override fun getLiveSessionId(): String? = P2pLiveController.outgoingSessionId()
 
+    override fun heartbeat(nowMs: Long) = P2pLiveController.heartbeat(appContext, nowMs)
+
     override fun resubscribe() {}
 
     override fun broadcastKeyRotated() {}

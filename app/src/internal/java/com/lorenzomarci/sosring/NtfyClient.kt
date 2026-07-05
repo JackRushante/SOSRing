@@ -13,22 +13,26 @@ class NtfyClient(private val context: Context, private val serverUrl: String) {
 
     private val prefs = PrefsManager(context)
 
-    fun sendMessage(topic: String, message: JSONObject) {
+    fun sendMessage(topic: String, message: JSONObject, attempts: Int = 1) {
         Thread {
-            try {
-                val request = NtfyRequestFactory.publish(
-                    serverUrl = serverUrl,
-                    topic = topic,
-                    message = message,
-                    token = prefs.ntfyAuthToken
-                )
-                NetworkClient.client.newCall(request).execute().use { response ->
-                    if (!response.isSuccessful) {
-                        Log.e(TAG, "ntfy POST failed: ${response.code}")
+            for (attempt in 0 until attempts.coerceAtLeast(1)) {
+                try {
+                    Thread.sleep(ControlRetryPolicy.delayBeforeAttempt(attempt))
+                    val request = NtfyRequestFactory.publish(
+                        serverUrl = serverUrl,
+                        topic = topic,
+                        message = message,
+                        token = prefs.ntfyAuthToken
+                    )
+                    NetworkClient.client.newCall(request).execute().use { response ->
+                        if (response.isSuccessful) return@Thread
+                        Log.e(TAG, "ntfy POST failed: ${response.code} (attempt ${attempt + 1}/$attempts)")
                     }
+                } catch (e: InterruptedException) {
+                    return@Thread
+                } catch (e: Exception) {
+                    Log.e(TAG, "ntfy POST error: ${e.message} (attempt ${attempt + 1}/$attempts)")
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "ntfy POST error: ${e.message}")
             }
         }.start()
     }
@@ -67,7 +71,8 @@ class NtfyClient(private val context: Context, private val serverUrl: String) {
     fun sendLiveStart(topic: String, fromHash: String, sessionId: String, durationMinutes: Int, intervalSeconds: Int) {
         sendMessage(
             topic,
-            NtfyMessageFactory.liveStart(fromHash, sessionId, durationMinutes, intervalSeconds)
+            NtfyMessageFactory.liveStart(fromHash, sessionId, durationMinutes, intervalSeconds),
+            attempts = ControlRetryPolicy.MAX_ATTEMPTS
         )
     }
 
@@ -92,6 +97,10 @@ class NtfyClient(private val context: Context, private val serverUrl: String) {
     }
 
     fun sendLiveStop(topic: String, fromHash: String, sessionId: String) {
-        sendMessage(topic, NtfyMessageFactory.liveStop(fromHash, sessionId))
+        sendMessage(
+            topic,
+            NtfyMessageFactory.liveStop(fromHash, sessionId),
+            attempts = ControlRetryPolicy.MAX_ATTEMPTS
+        )
     }
 }

@@ -1,6 +1,6 @@
 package com.lorenzomarci.sosring
 
-enum class LiveMapStatus { WAITING_FIRST, NO_POINTS, LIVE, HISTORY, ENDED }
+enum class LiveMapStatus { WAITING_FIRST, NO_POINTS, LIVE, STALLED, HISTORY, ENDED }
 
 data class LiveMapState(
     val latestPoint: LocationPoint?,
@@ -19,14 +19,17 @@ object LiveMapStateFactory {
         sessionEnded: Boolean = false
     ): LiveMapState {
         val latest = points.lastOrNull()
+        val ageSeconds = if (latest != null) ((nowMs - latest.timestamp) / 1000).coerceAtLeast(0) else 0L
+        val stalled = latest != null && isLive &&
+            ageSeconds * 1000 >= LiveSessionPolicy.MIN_STALE_MS
         val status = when {
             sessionEnded -> LiveMapStatus.ENDED
             latest == null && isLive -> LiveMapStatus.WAITING_FIRST
             latest == null -> LiveMapStatus.NO_POINTS
+            stalled -> LiveMapStatus.STALLED
             isLive -> LiveMapStatus.LIVE
             else -> LiveMapStatus.HISTORY
         }
-        val ageSeconds = if (latest != null) ((nowMs - latest.timestamp) / 1000).coerceAtLeast(0) else 0L
         return LiveMapState(
             latestPoint = latest,
             pointCount = points.size,

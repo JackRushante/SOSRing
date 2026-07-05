@@ -152,9 +152,14 @@ class LocationHelper(private val context: Context) {
         liveCallback = cb
         isLiveTracking = true
 
+        // Il tetto va dimensionato sulla cadenza minima consentita: Fused può
+        // consegnare a minUpdateInterval (il doppio della velocità richiesta) e
+        // un budget calcolato su intervalMillis si esaurirebbe a metà sessione,
+        // fermando gli update in silenzio (nessun callback da FLP).
+        val minIntervalMillis = intervalMillis / 2
         val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, intervalMillis)
-            .setMinUpdateIntervalMillis(intervalMillis / 2)
-            .setMaxUpdates(LiveLocationBudget.maxUpdates(maxDurationMillis, intervalMillis))
+            .setMinUpdateIntervalMillis(minIntervalMillis)
+            .setMaxUpdates(LiveLocationBudget.maxUpdates(maxDurationMillis, minIntervalMillis))
             .build()
 
         try {

@@ -68,4 +68,27 @@ class LiveMapStateFactoryTest {
         val state = LiveMapStateFactory.fromPoints(emptyList(), isLive = false, nowMs = 0L, sessionEnded = true)
         assertEquals(LiveMapStatus.ENDED, state.status)
     }
+
+    @Test
+    fun sessionEnded_withPoints_keepsTerminatedStatus() {
+        val p = LocationPoint(1, "+39", "s", 1.0, 2.0, 5f, 100_000L)
+        val state = LiveMapStateFactory.fromPoints(listOf(p), isLive = false, nowMs = 100_000L, sessionEnded = true)
+        assertEquals(LiveMapStatus.ENDED, state.status)
+        assertTrue(state.hasPoints)
+    }
+
+    @Test
+    fun live_staleUpdates_showStalled() {
+        val p = LocationPoint(1, "+39", "s", 1.0, 2.0, 5f, 100_000L)
+        val state = LiveMapStateFactory.fromPoints(listOf(p), isLive = true, nowMs = 130_000L)
+        assertEquals(LiveMapStatus.STALLED, state.status)
+        assertEquals(30L, state.ageSeconds)
+    }
+
+    @Test
+    fun live_justUnderStaleThreshold_staysLive() {
+        val p = LocationPoint(1, "+39", "s", 1.0, 2.0, 5f, 100_000L)
+        val state = LiveMapStateFactory.fromPoints(listOf(p), isLive = true, nowMs = 129_000L)
+        assertEquals(LiveMapStatus.LIVE, state.status)
+    }
 }

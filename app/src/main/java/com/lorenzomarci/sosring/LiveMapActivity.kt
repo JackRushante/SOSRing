@@ -145,14 +145,18 @@ class LiveMapActivity : AppCompatActivity() {
 
     private fun refreshMap() {
         if (!styleLoaded || sessionEnded) return
-        val points = database.getPointsForSession(sessionId)
         val now = System.currentTimeMillis()
+        // enforcement opportunistico: se la deadline è passata mentre il timer
+        // uptime dormiva, è questo refresh a chiudere davvero la sessione
+        val engine = Push.liveEngine()
+        engine?.heartbeat(now)
+        if (isLive && engine?.getLiveSessionId() != sessionId) {
+            endSession(now)
+            return
+        }
+        val points = database.getPointsForSession(sessionId)
         if (points.isEmpty() && hadPoints) {
-            sessionEnded = true
-            binding.tvStatus.text = resolveStatusText(
-                LiveMapStateFactory.fromPoints(emptyList(), isLive = false, nowMs = now, sessionEnded = true)
-            )
-            refreshHandler.removeCallbacks(refreshRunnable)
+            endSession(now)
             return
         }
         if (points.isNotEmpty()) hadPoints = true
@@ -160,6 +164,18 @@ class LiveMapActivity : AppCompatActivity() {
         binding.tvStatus.text = resolveStatusText(state)
         updateSources(points)
         recenterOnLatestPoint(force = false)
+    }
+
+    private fun endSession(nowMs: Long) {
+        sessionEnded = true
+        isLive = false
+        val points = database.getPointsForSession(sessionId)
+        binding.tvStatus.text = resolveStatusText(
+            LiveMapStateFactory.fromPoints(points, isLive = false, nowMs = nowMs, sessionEnded = true)
+        )
+        // il percorso già disegnato resta visibile anche a sessione conclusa
+        if (points.isNotEmpty()) updateSources(points)
+        refreshHandler.removeCallbacks(refreshRunnable)
     }
 
     private fun updateSources(points: List<LocationPoint>) {
@@ -209,6 +225,7 @@ class LiveMapActivity : AppCompatActivity() {
             LiveMapStatus.WAITING_FIRST -> getString(R.string.live_map_status_waiting)
             LiveMapStatus.NO_POINTS -> getString(R.string.live_map_status_no_points)
             LiveMapStatus.ENDED -> getString(R.string.live_map_status_ended)
+            LiveMapStatus.STALLED -> getString(R.string.live_map_status_stalled, state.ageSeconds)
             LiveMapStatus.LIVE -> {
                 if (state.ageSeconds <= 5) {
                     getString(R.string.live_map_status_live_now)

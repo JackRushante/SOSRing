@@ -42,4 +42,42 @@ class NtfyRequestFactoryTest {
 
         assertNull(request.header("Authorization"))
     }
+
+    @Test
+    fun sseWithoutSinceHasNoQueryString() {
+        val request = NtfyRequestFactory.sse(
+            serverUrl = "https://push.example.com",
+            topic = "sosring-topic",
+            token = "t"
+        )
+
+        assertNull(request.url.query)
+    }
+
+    @Test
+    fun sseReconnectRequestsCatchUpSinceLastEvent() {
+        val request = NtfyRequestFactory.sse(
+            serverUrl = "https://push.example.com",
+            topic = "sosring-topic",
+            token = "t",
+            sinceUnixSeconds = 1_770_000_000L
+        )
+
+        assertEquals(
+            "https://push.example.com/sosring-topic/sse?since=1770000000",
+            request.url.toString()
+        )
+    }
+
+    @Test
+    fun sseIgnoresNonPositiveSince() {
+        val request = NtfyRequestFactory.sse(
+            serverUrl = "https://push.example.com",
+            topic = "sosring-topic",
+            token = "t",
+            sinceUnixSeconds = 0L
+        )
+
+        assertNull(request.url.query)
+    }
 }

@@ -41,6 +41,20 @@ class NtfyService(private val context: Context) : PushEngine {
     private val liveHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private val incomingLiveHandler = android.os.Handler(android.os.Looper.getMainLooper())
 
+    // Fine sessione su orologio a muro: i postDelayed (uptime) si fermano in
+    // deep sleep, la deadline invece resta confrontabile in ogni momento.
+    private var liveDeadlineMs = 0L
+    private var lastLivePointAtMs = 0L
+    private var liveStaleNotified = false
+    private var incomingDeadlineMs = 0L
+    private var incomingIntervalMs = LIVE_INTERVAL_MS
+    private var lastFixAtMs = 0L
+    private var incomingStaleNotified = false
+    private var incomingLiveCallback: LocationHelper.LiveCallback? = null
+
+    private val sseDedup = SseDedup()
+    @Volatile private var lastSseEventTimeSec = 0L
+
     fun start() {
         val serverUrl = prefs.ntfyServerUrl
         val ownTopic = TopicScheme.own(prefs)
@@ -99,7 +113,9 @@ class NtfyService(private val context: Context) : PushEngine {
     }
 
     private fun subscribeToTopic(serverUrl: String, topic: String) {
-        val request = NtfyRequestFactory.sse(serverUrl, topic, prefs.ntfyAuthToken)
+        // since= recupera i messaggi pubblicati nei buchi di riconnessione
+        // (senza, un live_stop perso in un gap sparisce per sempre)
+        val request = NtfyRequestFactory.sse(serverUrl, topic, prefs.ntfyAuthToken, lastSseEventTimeSec)
 
         val listener = object : EventSourceListener() {
             override fun onOpen(eventSource: EventSource, response: Response) {
@@ -127,12 +143,16 @@ class NtfyService(private val context: Context) : PushEngine {
             }
         }
 
-        eventSource = EventSources.createFactory(NetworkClient.client).newEventSource(request, listener)
+        eventSource = EventSources.createFactory(NetworkClient.sseClient).newEventSource(request, listener)
     }
 
     private fun handleSseData(data: String) {
+        heartbeat(System.currentTimeMillis())
         try {
             val event = JSONObject(data)
+            val eventTimeSec = event.optLong("time", 0L)
+            if (eventTimeSec > 0) lastSseEventTimeSec = eventTimeSec
+            if (!sseDedup.markSeen(event.optString("id", ""))) return
             val message = if (event.has("message")) {
                 JSONObject(event.getString("message"))
             } else if (event.has("type") && event.optString("type") != "open") {
@@ -236,6 +256,8 @@ class NtfyService(private val context: Context) : PushEngine {
         private const val RESPONSE_TIMEOUT_MS = 30_000L
         private const val PHONE_CHANGE_RATE_LIMIT_MS = 60 * 60 * 1000L
         private const val LOC_REQUEST_RATE_LIMIT_MS = 30 * 1000L
+        private const val LIVE_INTERVAL_SEC = 10
+        private const val LIVE_INTERVAL_MS = LIVE_INTERVAL_SEC * 1000L
 
         private var instance: NtfyService? = null
 
@@ -376,11 +398,22 @@ class NtfyService(private val context: Context) : PushEngine {
         incomingLiveSessionId = sessionId
         incomingLiveRequesterHash = requesterHash
         incomingLiveRequesterNumber = requester.number
+        incomingDeadlineMs = LiveSessionPolicy.deadlineMs(System.currentTimeMillis(), durationMinutes)
+        incomingIntervalMs = intervalSeconds * 1000L
+        lastFixAtMs = System.currentTimeMillis()
+        incomingStaleNotified = false
         CallMonitorService.getInstance()?.setLocationForegroundType(true)
 
-        locationHelper?.startLiveTracking(object : LocationHelper.LiveCallback {
+        val callback = object : LocationHelper.LiveCallback {
             override fun onLocationUpdate(location: Location) {
                 val activeSession = incomingLiveSessionId ?: return
+                val now = System.currentTimeMillis()
+                if (LiveSessionPolicy.isExpired(incomingDeadlineMs, now)) {
+                    stopIncomingLiveTracking(sendStop = true)
+                    return
+                }
+                lastFixAtMs = now
+                incomingStaleNotified = false
                 ntfyClient.sendLivePoint(
                     requesterHash,
                     TopicScheme.own(prefs),
@@ -397,15 +430,51 @@ class NtfyService(private val context: Context) : PushEngine {
                 Log.e(TAG, "Incoming live error: $message")
                 showNotification("Live tracking error: $message", openAppIntent())
             }
-        }, intervalMillis = intervalSeconds * 1000L, maxDurationMillis = durationMinutes * 60_000L)
+        }
+        incomingLiveCallback = callback
+        locationHelper?.startLiveTracking(callback, intervalMillis = incomingIntervalMs, maxDurationMillis = durationMinutes * 60_000L)
 
         incomingLiveHandler.removeCallbacksAndMessages(null)
         incomingLiveHandler.postDelayed({
             stopIncomingLiveTracking(sendStop = true)
         }, durationMinutes * 60 * 1000L)
+        incomingLiveHandler.postDelayed(incomingWatchdog, LiveSessionPolicy.WATCHDOG_TICK_MS)
 
         Log.i(TAG, "Incoming live tracking started for ${requester.name}, session=$sessionId")
         showNotification(context.getString(R.string.location_live_started, requester.name, durationMinutes), openAppIntent())
+    }
+
+    // Watchdog lato target: chiude a deadline e, se il FLP smette di consegnare
+    // fix (budget esaurito, provider spento), riavvia la richiesta per il tempo
+    // residuo invece di lasciare morire la sessione in silenzio.
+    private val incomingWatchdog = object : Runnable {
+        override fun run() {
+            if (incomingLiveSessionId == null) return
+            val now = System.currentTimeMillis()
+            if (LiveSessionPolicy.isExpired(incomingDeadlineMs, now)) {
+                stopIncomingLiveTracking(sendStop = true)
+                return
+            }
+            if (LiveSessionPolicy.isStale(lastFixAtMs, incomingIntervalMs, now)) {
+                restartIncomingLocationUpdates(now)
+            }
+            incomingLiveHandler.postDelayed(this, LiveSessionPolicy.WATCHDOG_TICK_MS)
+        }
+    }
+
+    private fun restartIncomingLocationUpdates(nowMs: Long) {
+        val callback = incomingLiveCallback ?: return
+        val remainingMs = incomingDeadlineMs - nowMs
+        if (remainingMs <= 0) return
+        Log.w(TAG, "No GPS fix for ${(nowMs - lastFixAtMs) / 1000}s during live session, restarting updates")
+        if (!incomingStaleNotified) {
+            incomingStaleNotified = true
+            showNotification(context.getString(R.string.live_send_stalled), openAppIntent())
+        }
+        locationHelper?.stopLiveTracking()
+        locationHelper?.startLiveTracking(callback, intervalMillis = incomingIntervalMs, maxDurationMillis = remainingMs)
+        // finestra piena prima di un eventuale prossimo restart
+        lastFixAtMs = nowMs
     }
 
     private fun handleLivePoint(message: JSONObject, fromHash: String) {
@@ -443,6 +512,8 @@ class NtfyService(private val context: Context) : PushEngine {
             locJson.optDouble("acc", 0.0).toFloat(),
             System.currentTimeMillis()
         )
+        lastLivePointAtMs = System.currentTimeMillis()
+        liveStaleNotified = false
         pendingRequests.remove(fromHash)
         LocalBroadcastManager.getInstance(context)
             .sendBroadcast(Intent(Push.ACTION_CONTACTS_UPDATED))
@@ -529,11 +600,47 @@ class NtfyService(private val context: Context) : PushEngine {
         val ownHash = TopicScheme.own(prefs)
 
         val durationMs = durationMinutes * 60 * 1000L
-        ntfyClient.sendLiveStart(targetTopic, ownHash, sessionId, durationMinutes, intervalSeconds = 10)
+        liveDeadlineMs = LiveSessionPolicy.deadlineMs(System.currentTimeMillis(), durationMinutes)
+        lastLivePointAtMs = 0L
+        liveStaleNotified = false
+        ntfyClient.sendLiveStart(targetTopic, ownHash, sessionId, durationMinutes, intervalSeconds = LIVE_INTERVAL_SEC)
         liveHandler.postDelayed({ stopLiveTracking() }, durationMs)
+        liveHandler.postDelayed(outgoingWatchdog, LiveSessionPolicy.WATCHDOG_TICK_MS)
         Log.i(TAG, "Remote live tracking requested for ${contact.name}, session=$sessionId, duration=${durationMinutes}min")
         showNotification(context.getString(R.string.location_live_started, contact.name, durationMinutes), liveMapIntent(sessionId, contact.name))
         return true
+    }
+
+    // Watchdog lato viewer: chiude la sessione a deadline (anche se il timer
+    // uptime è in ritardo) e avvisa se i punti smettono di arrivare.
+    private val outgoingWatchdog = object : Runnable {
+        override fun run() {
+            val session = liveSessionId ?: return
+            val now = System.currentTimeMillis()
+            if (LiveSessionPolicy.isExpired(liveDeadlineMs, now)) {
+                stopLiveTracking()
+                return
+            }
+            if (!liveStaleNotified && LiveSessionPolicy.isStale(lastLivePointAtMs, LIVE_INTERVAL_MS, now)) {
+                liveStaleNotified = true
+                val name = prefs.getContacts().find { it.number == liveContactNumber }?.name ?: "?"
+                val staleSec = (now - lastLivePointAtMs) / 1000
+                showNotification(
+                    context.getString(R.string.live_updates_stalled, name, staleSec),
+                    liveMapIntent(session, name)
+                )
+            }
+            liveHandler.postDelayed(this, LiveSessionPolicy.WATCHDOG_TICK_MS)
+        }
+    }
+
+    override fun heartbeat(nowMs: Long) {
+        if (liveSessionId != null && LiveSessionPolicy.isExpired(liveDeadlineMs, nowMs)) {
+            stopLiveTracking()
+        }
+        if (incomingLiveSessionId != null && LiveSessionPolicy.isExpired(incomingDeadlineMs, nowMs)) {
+            stopIncomingLiveTracking(sendStop = true)
+        }
     }
 
     override fun stopLiveTracking() {
@@ -556,6 +663,9 @@ class NtfyService(private val context: Context) : PushEngine {
         liveSessionId = null
         liveTargetTopic = null
         liveContactNumber = null
+        liveDeadlineMs = 0L
+        lastLivePointAtMs = 0L
+        liveStaleNotified = false
         LocalBroadcastManager.getInstance(context)
             .sendBroadcast(Intent(Push.ACTION_CONTACTS_UPDATED))
     }
@@ -569,6 +679,10 @@ class NtfyService(private val context: Context) : PushEngine {
         incomingLiveSessionId = null
         incomingLiveRequesterHash = null
         incomingLiveRequesterNumber = null
+        incomingLiveCallback = null
+        incomingDeadlineMs = 0L
+        lastFixAtMs = 0L
+        incomingStaleNotified = false
         if (sendStop && activeSession != null && requesterHash != null) {
             ntfyClient.sendLiveStop(requesterHash, TopicScheme.own(prefs), activeSession)
         }

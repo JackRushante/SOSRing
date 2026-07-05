@@ -17,9 +17,10 @@ object NtfyRequestFactory {
             .build()
     }
 
-    fun sse(serverUrl: String, topic: String, token: String): Request {
+    fun sse(serverUrl: String, topic: String, token: String, sinceUnixSeconds: Long? = null): Request {
+        val since = if (sinceUnixSeconds != null && sinceUnixSeconds > 0) "?since=$sinceUnixSeconds" else ""
         return Request.Builder()
-            .url("${serverUrl.trimEnd('/')}/$topic/sse")
+            .url("${serverUrl.trimEnd('/')}/$topic/sse$since")
             .withAuth(token)
             .build()
     }

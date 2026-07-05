@@ -120,6 +120,9 @@
     <string name="live_map_status_ended">Sessione terminata</string>
     <string name="live_map_status_live_now">Live - aggiornato ora</string>
     <string name="live_map_status_live_ago">Live - ultimo aggiornamento %1$ds fa</string>
+    <string name="live_map_status_stalled">Live - nessun aggiornamento da %1$ds</string>
+    <string name="live_updates_stalled">Nessun aggiornamento live da %1$s da %2$ds</string>
+    <string name="live_send_stalled">Tracking live: GPS fermo, riavvio gli aggiornamenti</string>
     <string name="live_map_status_history_one">Storico: 1 punto</string>
     <string name="live_map_status_history_many">Storico: %1$d punti</string>
     <string name="path_open_external">Apri con app mappe</string>

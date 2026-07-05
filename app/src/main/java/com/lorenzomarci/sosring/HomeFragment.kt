@@ -49,6 +49,8 @@ class HomeFragment : Fragment() {
     private val liveRefreshRunnable = object : Runnable {
         override fun run() {
             if (_binding != null && ::adapter.isInitialized) {
+                // chiude le sessioni scadute prima di ridisegnare le icone
+                Push.liveEngine()?.heartbeat(System.currentTimeMillis())
                 adapter.notifyDataSetChanged()
                 liveRefreshHandler.postDelayed(this, 10_000)
             }
