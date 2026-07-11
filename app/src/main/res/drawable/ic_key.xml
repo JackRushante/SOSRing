@@ -8,7 +8,7 @@
     android:viewportHeight="24"
     android:tint="?attr/colorControlNormal">
     <path
-        android:pathData="M12 12h9M18 12v3.2M21 12v2.4 M4,12 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0 Z"
+        android:pathData="M12,12 L21,12 M18,12 L18,15.2 M21,12 L21,14.4 M4,12 C4,14.2091 5.7909,16 8,16 C10.2091,16 12,14.2091 12,12 C12,9.7909 10.2091,8 8,8 C5.7909,8 4,9.7909 4,12 Z"
         android:strokeColor="#FF000000"
         android:strokeWidth="1.8"
         android:strokeLineCap="round"

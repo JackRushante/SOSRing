@@ -72,7 +72,7 @@
                 app:cardBackgroundColor="@color/primary"
                 app:cardCornerRadius="26dp"
                 app:cardElevation="3dp"
-                app:contentPadding="20dp">
+                app:contentPadding="18dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -86,13 +86,13 @@
                         android:orientation="horizontal">
 
                         <FrameLayout
-                            android:layout_width="72dp"
-                            android:layout_height="72dp"
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
                             android:background="@drawable/bg_hero_ring">
 
                             <ImageView
-                                android:layout_width="50dp"
-                                android:layout_height="50dp"
+                                android:layout_width="46dp"
+                                android:layout_height="46dp"
                                 android:layout_gravity="center"
                                 android:background="@drawable/bg_hero_dot"
                                 android:contentDescription="@null"
@@ -104,7 +104,7 @@
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
+                            android:layout_marginStart="12dp"
                             android:layout_weight="1"
                             android:orientation="vertical">
 
@@ -116,29 +116,33 @@
                                 android:textColor="@color/primary_faded"
                                 android:textFontWeight="700"
                                 android:textSize="12sp" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/home_service_title"
-                                android:textColor="@color/on_primary"
-                                android:textFontWeight="800"
-                                android:textSize="24sp" />
                         </LinearLayout>
 
                         <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/switchService"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:minHeight="48dp" />
+                            android:minHeight="48dp"
+                            app:thumbTint="@color/switch_hero_thumb"
+                            app:trackTint="@color/switch_hero_track" />
                     </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/home_service_title"
+                        android:textColor="@color/on_primary"
+                        android:textFontWeight="800"
+                        android:textSize="24sp" />
 
                     <com.google.android.material.chip.ChipGroup
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
                         app:chipSpacingHorizontal="6dp"
-                        app:singleLine="true">
+                        app:chipSpacingVertical="4dp"
+                        app:singleLine="false">
 
                         <com.google.android.material.chip.Chip
                             style="@style/Widget.Material3.Chip.Assist"
@@ -146,7 +150,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/hero_silent"
                             android:textColor="@color/primary_faded"
-                            app:chipBackgroundColor="#24FFFFFF"
+                            app:chipBackgroundColor="@color/primary_dark"
                             app:chipIcon="@drawable/ic_check"
                             app:chipIconTint="@color/primary_faded" />
 
@@ -156,7 +160,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/hero_vibrate"
                             android:textColor="@color/primary_faded"
-                            app:chipBackgroundColor="#24FFFFFF"
+                            app:chipBackgroundColor="@color/primary_dark"
                             app:chipIcon="@drawable/ic_check"
                             app:chipIconTint="@color/primary_faded" />
 
@@ -166,7 +170,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/hero_dnd"
                             android:textColor="@color/primary_faded"
-                            app:chipBackgroundColor="#24FFFFFF"
+                            app:chipBackgroundColor="@color/primary_dark"
                             app:chipIcon="@drawable/ic_check"
                             app:chipIconTint="@color/primary_faded" />
                     </com.google.android.material.chip.ChipGroup>
