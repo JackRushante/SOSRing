@@ -28,7 +28,7 @@
                 android:contentDescription="@null"
                 android:padding="9dp"
                 android:src="@drawable/ic_phone"
-                app:tint="@color/primary_accent" />
+                app:tint="?attr/tokenAccent" />
 
             <LinearLayout
                 android:layout_width="0dp"

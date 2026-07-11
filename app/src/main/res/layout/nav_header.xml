@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/hero_bg"
+    android:background="?attr/tokenHeroBg"
     android:fitsSystemWindows="true"
     android:orientation="vertical">
 
@@ -41,7 +41,7 @@
         android:layout_marginTop="4dp"
         android:text="@string/subtitle"
         android:lineSpacingExtra="1dp"
-        android:textColor="@color/hero_on_muted"
+        android:textColor="?attr/tokenFaded"
         android:textSize="13sp" />
     </LinearLayout>
 </LinearLayout>

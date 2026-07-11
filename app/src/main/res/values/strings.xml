@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">SOS Ring</string>
+    <string name="appearance_title">Appearance</string>
+    <string name="appearance_palette">Color theme</string>
+    <string name="appearance_mode">Light / dark</string>
+    <string name="palette_indaco">Indigo</string>
+    <string name="palette_teal">Teal</string>
+    <string name="palette_argilla">Clay</string>
+    <string name="palette_ardesia">Slate</string>
+    <string name="mode_system">System</string>
+    <string name="mode_light">Light</string>
+    <string name="mode_dark">Dark</string>
     <string name="subtitle">Force ringtone for important calls</string>
     <string name="service_label">Monitoring active</string>
     <string name="home_monitoring_label">MONITORING</string>

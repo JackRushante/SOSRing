@@ -282,19 +282,34 @@ private fun setupRecyclerView() {
             if (isActive) R.string.home_service_state_on else R.string.home_service_state_off
         )
 
-        val backgroundColor = if (isActive) R.color.hero_bg else R.color.hero_off_bg
-        val stateColor = if (isActive) R.color.hero_on else R.color.hero_off_on
-        val labelColor = if (isActive) R.color.hero_on_muted else R.color.hero_off_muted
+        val backgroundColor = if (isActive) {
+            ThemeManager.color(context, R.attr.tokenHeroBg)
+        } else {
+            ContextCompat.getColor(context, R.color.hero_off_bg)
+        }
+        val stateColor = ContextCompat.getColor(
+            context,
+            if (isActive) R.color.hero_on else R.color.hero_off_on
+        )
+        val labelColor = if (isActive) {
+            ThemeManager.color(context, R.attr.tokenFaded)
+        } else {
+            ContextCompat.getColor(context, R.color.hero_off_muted)
+        }
         val bellBackground = if (isActive) R.drawable.bg_hero_dot else R.drawable.bg_hero_dot_off
         val bellIcon = if (isActive) R.drawable.ic_bell else R.drawable.ic_bell_off
-        val bellTint = if (isActive) R.color.hero_bg else R.color.hero_off_badge_icon
+        val bellTint = if (isActive) {
+            ThemeManager.color(context, R.attr.tokenHeroBg)
+        } else {
+            ContextCompat.getColor(context, R.color.hero_off_badge_icon)
+        }
 
-        binding.cardService.setCardBackgroundColor(ContextCompat.getColor(context, backgroundColor))
-        binding.tvServiceState.setTextColor(ContextCompat.getColor(context, stateColor))
-        binding.tvHeroLabel.setTextColor(ContextCompat.getColor(context, labelColor))
+        binding.cardService.setCardBackgroundColor(backgroundColor)
+        binding.tvServiceState.setTextColor(stateColor)
+        binding.tvHeroLabel.setTextColor(labelColor)
         binding.imgHeroBell.setBackgroundResource(bellBackground)
         binding.imgHeroBell.setImageResource(bellIcon)
-        binding.imgHeroBell.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(context, bellTint))
+        binding.imgHeroBell.imageTintList = ColorStateList.valueOf(bellTint)
         binding.chipBypass.isVisible = isActive
         binding.tvHeroHint.isVisible = !isActive
 
@@ -607,13 +622,20 @@ private fun setupRecyclerView() {
         }
 
         binding.tvRuntimeStatus.text = getString(if (allRuntimePermissionsGranted) R.string.status_granted else R.string.status_missing)
-        binding.tvRuntimeStatus.setTextColor(ctx.getColor(if (allRuntimePermissionsGranted) R.color.status_ok else R.color.status_missing))
+        binding.tvRuntimeStatus.setTextColor(
+            ThemeManager.color(
+                ctx,
+                if (allRuntimePermissionsGranted) R.attr.tokenStatusOk else com.google.android.material.R.attr.colorError
+            )
+        )
         binding.btnRequestRuntime.isEnabled = !allRuntimePermissionsGranted
         binding.imgRuntimeOk.isVisible = allRuntimePermissionsGranted
         binding.btnRequestRuntime.isVisible = !allRuntimePermissionsGranted
 
         binding.tvDndStatus.text = getString(if (dndOk) R.string.status_granted else R.string.status_missing)
-        binding.tvDndStatus.setTextColor(ctx.getColor(if (dndOk) R.color.status_ok else R.color.status_missing))
+        binding.tvDndStatus.setTextColor(
+            ThemeManager.color(ctx, if (dndOk) R.attr.tokenStatusOk else com.google.android.material.R.attr.colorError)
+        )
         binding.btnRequestDnd.isEnabled = !dndOk
         binding.imgDndOk.isVisible = dndOk
         binding.btnRequestDnd.isVisible = !dndOk

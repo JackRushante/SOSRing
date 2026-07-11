@@ -129,7 +129,7 @@
             android:background="@drawable/bg_pill_soft"
             android:paddingHorizontal="8dp"
             android:paddingVertical="4dp"
-            android:textColor="@color/on_primary_container"
+            android:textColor="?attr/colorOnPrimaryContainer"
             android:visibility="gone"
             android:layout_marginStart="8dp" />
     </LinearLayout>

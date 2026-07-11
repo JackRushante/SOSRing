@@ -20,6 +20,262 @@
         <com.google.android.material.card.MaterialCardView
             style="@style/Widget.SOSRing.Card"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_badge_soft"
+                        android:contentDescription="@null"
+                        android:padding="10dp"
+                        android:src="@drawable/ic_sun"
+                        app:tint="?attr/tokenAccent" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:text="@string/appearance_title"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/appearance_palette"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="12sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal"
+                    android:weightSum="4">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/swatchIndaco"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="3dp"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:contentDescription="@string/palette_indaco"
+                        android:focusable="true"
+                        app:cardBackgroundColor="@android:color/transparent"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        android:checkable="true"
+                        app:checkedIcon="@null"
+                        app:strokeColor="?attr/colorOutline"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="6dp">
+
+                            <View
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:background="@drawable/swatch_indaco" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:text="@string/palette_indaco"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/swatchTeal"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="3dp"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:contentDescription="@string/palette_teal"
+                        android:focusable="true"
+                        app:cardBackgroundColor="@android:color/transparent"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        android:checkable="true"
+                        app:checkedIcon="@null"
+                        app:strokeColor="?attr/colorOutline"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="6dp">
+
+                            <View
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:background="@drawable/swatch_teal" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:text="@string/palette_teal"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/swatchArgilla"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="3dp"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:contentDescription="@string/palette_argilla"
+                        android:focusable="true"
+                        app:cardBackgroundColor="@android:color/transparent"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        android:checkable="true"
+                        app:checkedIcon="@null"
+                        app:strokeColor="?attr/colorOutline"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="6dp">
+
+                            <View
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:background="@drawable/swatch_argilla" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:text="@string/palette_argilla"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/swatchArdesia"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="3dp"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:contentDescription="@string/palette_ardesia"
+                        android:focusable="true"
+                        app:cardBackgroundColor="@android:color/transparent"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        android:checkable="true"
+                        app:checkedIcon="@null"
+                        app:strokeColor="?attr/colorOutline"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="6dp">
+
+                            <View
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:background="@drawable/swatch_ardesia" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:text="@string/palette_ardesia"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:text="@string/appearance_mode"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="12sp" />
+
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/toggleThemeMode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnModeSystem"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/mode_system"
+                        android:textSize="12sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnModeLight"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/mode_light"
+                        android:textSize="12sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnModeDark"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/mode_dark"
+                        android:textSize="12sp" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.SOSRing.Card"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <LinearLayout
@@ -41,7 +297,7 @@
                         android:contentDescription="@null"
                         android:padding="10dp"
                         android:src="@drawable/ic_volume"
-                        app:tint="@color/primary_accent" />
+                        app:tint="?attr/tokenAccent" />
 
                     <TextView
                         android:layout_width="0dp"
@@ -60,7 +316,7 @@
                         android:background="@drawable/bg_pill_soft"
                         android:paddingHorizontal="12dp"
                         android:paddingVertical="6dp"
-                        android:textColor="@color/on_primary_container"
+                        android:textColor="?attr/colorOnPrimaryContainer"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         tools:text="100%" />
@@ -74,9 +330,9 @@
                     android:stepSize="5"
                     android:valueFrom="25"
                     android:valueTo="100"
-                    app:haloColor="@color/primary_container"
-                    app:thumbColor="@color/primary_accent"
-                    app:trackColorActive="@color/primary_accent"
+                    app:haloColor="?attr/colorPrimaryContainer"
+                    app:thumbColor="?attr/tokenAccent"
+                    app:trackColorActive="?attr/tokenAccent"
                     app:trackColorInactive="@color/track_inactive" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -106,7 +362,7 @@
                         android:contentDescription="@null"
                         android:padding="10dp"
                         android:src="@drawable/ic_bell"
-                        app:tint="@color/primary_accent" />
+                        app:tint="?attr/tokenAccent" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -168,7 +424,7 @@
                         android:contentDescription="@null"
                         android:padding="10dp"
                         android:src="@drawable/ic_moon"
-                        app:tint="@color/primary_accent" />
+                        app:tint="?attr/tokenAccent" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -211,7 +467,7 @@
                     android:layout_marginTop="4dp"
                     android:text="@string/quiet_add_rule"
                     app:icon="@drawable/ic_plus"
-                    app:iconTint="@color/primary_accent" />
+                    app:iconTint="?attr/tokenAccent" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -241,7 +497,7 @@
                         android:contentDescription="@null"
                         android:padding="10dp"
                         android:src="@drawable/ic_gps"
-                        app:tint="@color/primary_accent" />
+                        app:tint="?attr/tokenAccent" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -417,7 +673,7 @@
                         android:contentDescription="@null"
                         android:padding="10dp"
                         android:src="@drawable/ic_download"
-                        app:tint="@color/primary_accent" />
+                        app:tint="?attr/tokenAccent" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -437,7 +693,7 @@
                     android:layout_marginTop="16dp"
                     android:text="@string/backup_export"
                     app:icon="@drawable/ic_upload"
-                    app:iconTint="@color/on_primary" />
+                    app:iconTint="?attr/colorOnPrimary" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnImportConfig"

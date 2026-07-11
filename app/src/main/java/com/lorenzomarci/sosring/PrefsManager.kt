@@ -3,6 +3,7 @@ package com.lorenzomarci.sosring
 import android.app.NotificationManager
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.appcompat.app.AppCompatDelegate
 import java.util.Calendar
 import org.json.JSONArray
 import org.json.JSONObject
@@ -23,6 +24,17 @@ data class LocationLogEntry(
     val timestamp: Long,
     val type: String  // "incoming" or "outgoing"
 )
+
+enum class AppPalette {
+    INDACO,
+    TEAL,
+    ARGILLA,
+    ARDESIA;
+
+    companion object {
+        fun fromStoredOrdinal(value: Int): AppPalette = values().getOrElse(value) { INDACO }
+    }
+}
 
 class PrefsManager(context: Context) {
 
@@ -68,6 +80,9 @@ class PrefsManager(context: Context) {
 
         private const val KEY_PENDING_UPDATE_TOKEN = "pending_update_token"
 
+        private const val KEY_THEME_PALETTE = "theme_palette"
+        private const val KEY_THEME_MODE = "theme_mode"
+
         fun applyLocationEnabledUpdate(contacts: List<VipContact>, number: String, enabled: Boolean): List<VipContact> =
             contacts.map { c -> if (PhoneUtils.matches(c.number, number)) c.copy(locationEnabled = enabled) else c }
     }
@@ -75,6 +90,29 @@ class PrefsManager(context: Context) {
     var isServiceEnabled: Boolean
         get() = prefs.getBoolean(KEY_SERVICE_ENABLED, false)
         set(value) = prefs.edit().putBoolean(KEY_SERVICE_ENABLED, value).apply()
+
+    var themePalette: AppPalette
+        get() = AppPalette.fromStoredOrdinal(prefs.getInt(KEY_THEME_PALETTE, AppPalette.INDACO.ordinal))
+        set(value) = prefs.edit().putInt(KEY_THEME_PALETTE, value.ordinal).apply()
+
+    var themeMode: Int
+        get() = prefs.getInt(KEY_THEME_MODE, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM).let { stored ->
+            when (stored) {
+                AppCompatDelegate.MODE_NIGHT_NO,
+                AppCompatDelegate.MODE_NIGHT_YES,
+                AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM -> stored
+                else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            }
+        }
+        set(value) {
+            val safeValue = when (value) {
+                AppCompatDelegate.MODE_NIGHT_NO,
+                AppCompatDelegate.MODE_NIGHT_YES,
+                AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM -> value
+                else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            }
+            prefs.edit().putInt(KEY_THEME_MODE, safeValue).apply()
+        }
 
     var volumePercent: Int
         get() = prefs.getInt(KEY_VOLUME_PERCENT, DEFAULT_VOLUME_PERCENT)

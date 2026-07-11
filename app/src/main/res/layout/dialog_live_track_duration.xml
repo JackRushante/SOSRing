@@ -14,7 +14,7 @@
         android:contentDescription="@null"
         android:padding="12dp"
         android:src="@drawable/ic_clock"
-        app:tint="@color/primary_accent" />
+        app:tint="?attr/tokenAccent" />
 
     <NumberPicker
         android:id="@+id/npDuration"

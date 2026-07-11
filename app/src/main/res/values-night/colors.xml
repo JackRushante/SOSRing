@@ -6,14 +6,9 @@
   di notte SOLO se ridichiari i nomi. Tieni gli stessi nomi di values/colors.xml.
 -->
 <resources>
-    <!-- Brand / primario (scuro) -->
-    <color name="primary">#7C8AF0</color>          <!-- primario piu' chiaro per contrasto su fondo scuro -->
+    <!-- Launcher e contenuti a contrasto fisso -->
     <color name="primary_dark">#0F1017</color>
-    <color name="primary_accent">#7C8AF0</color>
     <color name="on_primary">#14151C</color>       <!-- glifo scuro sopra primario chiaro -->
-    <color name="primary_container">#232640</color>
-    <color name="on_primary_container">#C7CEF5</color>
-    <color name="primary_faded">#9CA6E8</color>
 
     <!-- Superfici (scuro) -->
     <color name="bg">#14151C</color>
@@ -29,21 +24,15 @@
     <color name="ink_muted">#6E7286</color>
 
     <!-- Semantici (scuro) -->
-    <color name="status_ok">#7C8AF0</color>
     <color name="status_missing">#F08A7A</color>
     <color name="status_missing_bg">#2E1E1B</color>
     <color name="warning">#E5A94A</color>
     <color name="warning_bg">#221C16</color>
     <color name="danger">#F0655A</color>
 
-    <color name="secondary">#B3A0E6</color>
-    <color name="secondary_bg">#2A2740</color>
-
     <!-- Hero e drawer mantengono lo stesso contrasto del tema chiaro -->
-    <color name="hero_bg">#3D4DB7</color>
     <color name="hero_on">#FFFFFF</color>
     <color name="hero_on_muted">#C7CEF5</color>
-    <color name="hero_chip_bg">#5C69C2</color>
     <color name="hero_chip_on">#FFFFFF</color>
 
     <!-- Hero quando il monitoraggio e' in pausa -->

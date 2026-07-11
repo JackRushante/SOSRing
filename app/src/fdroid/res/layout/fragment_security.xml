@@ -40,7 +40,7 @@
                         android:contentDescription="@null"
                         android:padding="11dp"
                         android:src="@drawable/ic_shield_check"
-                        app:tint="@color/primary_accent" />
+                        app:tint="?attr/tokenAccent" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -80,7 +80,7 @@
                     android:padding="12dp"
                     android:textColor="@color/ink_secondary"
                     android:textSize="14sp"
-                    app:drawableTint="@color/status_ok" />
+                    app:drawableTint="?attr/tokenStatusOk" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnShowMyQr"
@@ -90,7 +90,7 @@
                     android:layout_marginTop="16dp"
                     android:text="@string/p2p_btn_show_qr"
                     app:icon="@drawable/ic_qr"
-                    app:iconTint="@color/on_primary" />
+                    app:iconTint="?attr/colorOnPrimary" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -171,7 +171,7 @@
                         android:contentDescription="@null"
                         android:padding="10dp"
                         android:src="@drawable/ic_radio"
-                        app:tint="@color/primary_accent" />
+                        app:tint="?attr/tokenAccent" />
 
                     <TextView
                         android:layout_width="0dp"

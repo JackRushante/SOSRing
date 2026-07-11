@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="appearance_title">Aspetto</string>
+    <string name="appearance_palette">Tema colore</string>
+    <string name="appearance_mode">Chiaro / scuro</string>
+    <string name="palette_indaco">Indaco</string>
+    <string name="palette_teal">Marea</string>
+    <string name="palette_argilla">Argilla</string>
+    <string name="palette_ardesia">Ardesia</string>
+    <string name="mode_system">Sistema</string>
+    <string name="mode_light">Chiaro</string>
+    <string name="mode_dark">Scuro</string>
     <string name="subtitle">Forza la suoneria per le chiamate importanti</string>
     <string name="service_label">Monitoraggio attivo</string>
     <string name="home_monitoring_label">MONITORAGGIO</string>

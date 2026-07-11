@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import com.lorenzomarci.sosring.databinding.ActivityLiveMapBinding
 import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraPosition
@@ -29,7 +28,7 @@ import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.LineString
 import org.maplibre.geojson.Point
 
-class LiveMapActivity : AppCompatActivity() {
+class LiveMapActivity : BaseActivity() {
 
     private lateinit var binding: ActivityLiveMapBinding
     private lateinit var database: SosRingDatabase

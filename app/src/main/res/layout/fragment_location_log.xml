@@ -26,7 +26,7 @@
             android:contentDescription="@null"
             android:padding="10dp"
             android:src="@drawable/ic_history"
-            app:tint="@color/primary_accent" />
+            app:tint="?attr/tokenAccent" />
 
         <TextView
             android:layout_width="0dp"

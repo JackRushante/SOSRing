@@ -50,7 +50,7 @@
                         android:contentDescription="@null"
                         android:padding="10dp"
                         android:src="@drawable/ic_shield"
-                        app:tint="@color/primary_accent" />
+                        app:tint="?attr/tokenAccent" />
 
                     <TextView
                         android:layout_width="0dp"
@@ -69,10 +69,10 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:text="@string/privacy_chip_no_tracking"
-                    android:textColor="@color/on_primary_container"
-                    app:chipBackgroundColor="@color/primary_container"
+                    android:textColor="?attr/colorOnPrimaryContainer"
+                    app:chipBackgroundColor="?attr/colorPrimaryContainer"
                     app:chipIcon="@drawable/ic_check"
-                    app:chipIconTint="@color/primary_accent" />
+                    app:chipIconTint="?attr/tokenAccent" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -110,7 +110,7 @@
                         android:contentDescription="@null"
                         android:padding="10dp"
                         android:src="@drawable/ic_info"
-                        app:tint="@color/primary_accent" />
+                        app:tint="?attr/tokenAccent" />
 
                     <TextView
                         android:layout_width="0dp"
@@ -129,10 +129,10 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:text="@string/privacy_chip_encrypted"
-                    android:textColor="@color/on_primary_container"
-                    app:chipBackgroundColor="@color/primary_container"
+                    android:textColor="?attr/colorOnPrimaryContainer"
+                    app:chipBackgroundColor="?attr/colorPrimaryContainer"
                     app:chipIcon="@drawable/ic_lock"
-                    app:chipIconTint="@color/primary_accent" />
+                    app:chipIconTint="?attr/tokenAccent" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -170,7 +170,7 @@
                         android:contentDescription="@null"
                         android:padding="10dp"
                         android:src="@drawable/ic_user"
-                        app:tint="@color/primary_accent" />
+                        app:tint="?attr/tokenAccent" />
 
                     <TextView
                         android:layout_width="0dp"
@@ -189,10 +189,10 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:text="@string/privacy_chip_no_ads"
-                    android:textColor="@color/on_primary_container"
-                    app:chipBackgroundColor="@color/primary_container"
+                    android:textColor="?attr/colorOnPrimaryContainer"
+                    app:chipBackgroundColor="?attr/colorPrimaryContainer"
                     app:chipIcon="@drawable/ic_check"
-                    app:chipIconTint="@color/primary_accent" />
+                    app:chipIconTint="?attr/tokenAccent" />
 
                 <TextView
                     android:layout_width="match_parent"
