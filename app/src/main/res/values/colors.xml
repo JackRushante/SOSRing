@@ -41,4 +41,11 @@
 
     <!-- Launcher -->
     <color name="ic_launcher_background">#3D4DB7</color>
+
+    <!-- Hero e drawer: indaco profondo e contrasto stabile in chiaro/scuro -->
+    <color name="hero_bg">#3D4DB7</color>
+    <color name="hero_on">#FFFFFF</color>
+    <color name="hero_on_muted">#C7CEF5</color>
+    <color name="hero_chip_bg">#5C69C2</color>
+    <color name="hero_chip_on">#FFFFFF</color>
 </resources>

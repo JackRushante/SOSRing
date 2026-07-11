@@ -38,4 +38,11 @@
 
     <color name="secondary">#B3A0E6</color>
     <color name="secondary_bg">#2A2740</color>
+
+    <!-- Hero e drawer mantengono lo stesso contrasto del tema chiaro -->
+    <color name="hero_bg">#3D4DB7</color>
+    <color name="hero_on">#FFFFFF</color>
+    <color name="hero_on_muted">#C7CEF5</color>
+    <color name="hero_chip_bg">#5C69C2</color>
+    <color name="hero_chip_on">#FFFFFF</color>
 </resources>

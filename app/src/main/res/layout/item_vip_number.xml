@@ -2,6 +2,7 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     style="@style/Widget.SOSRing.Card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -21,13 +22,15 @@
             android:layout_marginEnd="12dp"
             android:background="@drawable/bg_avatar_circle">
 
-            <ImageView
+            <TextView
+                android:id="@+id/tvAvatar"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:contentDescription="@null"
-                android:padding="10dp"
-                android:src="@drawable/ic_user"
-                app:tint="@color/primary_accent" />
+                android:gravity="center"
+                android:textColor="@color/primary_accent"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="MM" />
         </FrameLayout>
 
         <LinearLayout

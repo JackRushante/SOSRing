@@ -22,6 +22,7 @@ import android.widget.NumberPicker
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -103,6 +104,7 @@ class HomeFragment : Fragment() {
         super.onResume()
         updatePermissionStatus()
         binding.switchService.isChecked = prefs.isServiceEnabled
+        updateServiceHero(binding.switchService.isChecked)
         loadContacts()
         updateMuteTimerUI()
         if (prefs.isMuted) {
@@ -115,6 +117,7 @@ class HomeFragment : Fragment() {
         super.onPause()
         countdownHandler.removeCallbacks(countdownRunnable)
         liveRefreshHandler.removeCallbacks(liveRefreshRunnable)
+        (binding.imgHeroPulse.drawable as? android.graphics.drawable.Animatable)?.stop()
     }
 
     override fun onDestroyView() {
@@ -219,6 +222,7 @@ private fun setupRecyclerView() {
 
     private fun setupListeners() {
         binding.switchService.setOnCheckedChangeListener { _, isChecked ->
+            updateServiceHero(isChecked)
             if (isChecked) {
                 if (checkAllPermissions()) {
                     startMonitoring()
@@ -265,6 +269,23 @@ private fun setupRecyclerView() {
             } else {
                 showMuteTimerDialog()
             }
+        }
+        binding.cardMuteTimer.setOnClickListener {
+            binding.btnMuteTimer.performClick()
+        }
+    }
+
+    private fun updateServiceHero(isActive: Boolean) {
+        binding.tvServiceState.setText(
+            if (isActive) R.string.home_service_state_on else R.string.home_service_state_off
+        )
+        val pulse = binding.imgHeroPulse.drawable as? android.graphics.drawable.Animatable
+        if (isActive) {
+            binding.imgHeroPulse.alpha = 1f
+            pulse?.start()
+        } else {
+            pulse?.stop()
+            binding.imgHeroPulse.alpha = 0.35f
         }
     }
 
@@ -566,13 +587,17 @@ private fun setupRecyclerView() {
             ContextCompat.checkSelfPermission(ctx, it) == PackageManager.PERMISSION_GRANTED
         }
 
-        binding.tvRuntimeStatus.text = getString(if (allOk) R.string.status_granted else R.string.status_missing)
-        binding.tvRuntimeStatus.setTextColor(ctx.getColor(if (allOk) R.color.status_ok else R.color.status_missing))
+        binding.tvRuntimeStatus.text = getString(if (allRuntimePermissionsGranted) R.string.status_granted else R.string.status_missing)
+        binding.tvRuntimeStatus.setTextColor(ctx.getColor(if (allRuntimePermissionsGranted) R.color.status_ok else R.color.status_missing))
         binding.btnRequestRuntime.isEnabled = !allRuntimePermissionsGranted
+        binding.imgRuntimeOk.isVisible = allRuntimePermissionsGranted
+        binding.btnRequestRuntime.isVisible = !allRuntimePermissionsGranted
 
         binding.tvDndStatus.text = getString(if (dndOk) R.string.status_granted else R.string.status_missing)
         binding.tvDndStatus.setTextColor(ctx.getColor(if (dndOk) R.color.status_ok else R.color.status_missing))
         binding.btnRequestDnd.isEnabled = !dndOk
+        binding.imgDndOk.isVisible = dndOk
+        binding.btnRequestDnd.isVisible = !dndOk
 
         binding.switchService.isEnabled = allOk || prefs.isServiceEnabled
         updateWarningBanner()

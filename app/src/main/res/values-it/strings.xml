@@ -2,8 +2,10 @@
 <resources>
     <string name="subtitle">Forza la suoneria per le chiamate importanti</string>
     <string name="service_label">Monitoraggio attivo</string>
-    <string name="home_monitoring_label">SOS RING</string>
+    <string name="home_monitoring_label">MONITORAGGIO</string>
     <string name="home_service_title">Monitoraggio chiamate</string>
+    <string name="home_service_state_on">Attivo</string>
+    <string name="home_service_state_off">In pausa</string>
     <string name="hero_silent">Silenzioso</string>
     <string name="hero_vibrate">Vibrazione</string>
     <string name="hero_dnd">DND</string>
@@ -135,8 +137,9 @@
     <string name="live_map_status_history_many">Storico: %1$d punti</string>
     <string name="path_open_external">Apri con app mappe</string>
     <!-- Mute Timer -->
-    <string name="mute_button">Disattiva suoneria</string>
-    <string name="mute_button_cancel">Riattiva suoneria</string>
+    <string name="mute_button">Metti in pausa il Monitoraggio</string>
+    <string name="mute_button_cancel">Riattiva il Monitoraggio</string>
+    <string name="mute_subtitle">Pausa temporanea 1–12 ore</string>
     <string name="mute_dialog_title">Disattiva suoneria</string>
     <string name="mute_dialog_message">La suoneria di override sarà disabilitata per la durata selezionata. La condivisione posizione GPS rimarrà attiva.</string>
     <string name="mute_dialog_hours">ore</string>
