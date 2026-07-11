@@ -87,7 +87,9 @@
 
                         <FrameLayout
                             android:layout_width="72dp"
-                            android:layout_height="72dp">
+                            android:layout_height="72dp"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
 
                             <ImageView
                                 android:id="@+id/imgHeroPulse"
@@ -97,12 +99,14 @@
                                 android:src="@drawable/pulse_ring" />
 
                             <FrameLayout
+                                android:id="@+id/heroBellRing"
                                 android:layout_width="60dp"
                                 android:layout_height="60dp"
                                 android:layout_gravity="center"
                                 android:background="@drawable/bg_hero_ring">
 
                                 <ImageView
+                                    android:id="@+id/imgHeroBell"
                                     android:layout_width="44dp"
                                     android:layout_height="44dp"
                                     android:layout_gravity="center"
@@ -122,6 +126,7 @@
                             android:orientation="vertical">
 
                             <TextView
+                                android:id="@+id/tvHeroLabel"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:letterSpacing="0.04"
@@ -138,6 +143,16 @@
                                 android:textColor="@color/hero_on"
                                 android:textFontWeight="800"
                                 android:textSize="26sp" />
+
+                            <TextView
+                                android:id="@+id/tvHeroHint"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:text="@string/home_service_hint_off"
+                                android:textColor="@color/hero_off_muted"
+                                android:textSize="13sp"
+                                android:visibility="gone" />
                         </LinearLayout>
 
                         <com.google.android.material.materialswitch.MaterialSwitch
@@ -151,6 +166,7 @@
                     </LinearLayout>
 
                     <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipBypass"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"

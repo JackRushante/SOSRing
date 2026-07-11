@@ -77,7 +77,7 @@
                     app:haloColor="@color/primary_container"
                     app:thumbColor="@color/primary_accent"
                     app:trackColorActive="@color/primary_accent"
-                    app:trackColorInactive="@color/outline_strong" />
+                    app:trackColorInactive="@color/track_inactive" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -371,8 +371,7 @@
                         android:id="@+id/ivLocationStatus"
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:layout_marginEnd="8dp"
-                        app:tint="@color/primary_accent" />
+                        android:layout_marginEnd="8dp" />
 
                     <TextView
                         android:id="@+id/tvLocationStatus"

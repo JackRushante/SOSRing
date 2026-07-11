@@ -45,4 +45,14 @@
     <color name="hero_on_muted">#C7CEF5</color>
     <color name="hero_chip_bg">#5C69C2</color>
     <color name="hero_chip_on">#FFFFFF</color>
+
+    <!-- Hero quando il monitoraggio e' in pausa -->
+    <color name="hero_off_bg">#1B1D28</color>
+    <color name="hero_off_on">#C9CCDD</color>
+    <color name="hero_off_muted">#9195A8</color>
+    <color name="hero_off_badge_bg">#262A3D</color>
+    <color name="hero_off_badge_icon">#7C8194</color>
+
+    <!-- Binario inattivo degli slider -->
+    <color name="track_inactive">#343A55</color>
 </resources>

@@ -1,5 +1,6 @@
 package com.lorenzomarci.sosring
 
+import android.content.res.ColorStateList
 import android.content.DialogInterface
 import android.os.Bundle
 import android.text.InputType
@@ -11,6 +12,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -349,6 +351,9 @@ class SettingsFragment : Fragment() {
         binding.layoutLocationStatus.visibility = View.VISIBLE
         binding.tvLocationStatus.text = getString(R.string.location_status_checking)
         binding.ivLocationStatus.setImageResource(android.R.drawable.ic_popup_sync)
+        binding.ivLocationStatus.imageTintList = ColorStateList.valueOf(
+            ContextCompat.getColor(requireContext(), R.color.primary_accent)
+        )
 
         Thread {
             val status = Push.verifySetup(requireContext())
@@ -366,6 +371,12 @@ class SettingsFragment : Fragment() {
 
         binding.ivLocationStatus.setImageResource(
             if (success && !keyMissing) android.R.drawable.presence_online else android.R.drawable.presence_busy
+        )
+        binding.ivLocationStatus.imageTintList = ColorStateList.valueOf(
+            ContextCompat.getColor(
+                requireContext(),
+                if (success && !keyMissing) R.color.status_ok else R.color.status_missing
+            )
         )
         binding.tvLocationStatus.setTextColor(
             requireContext().getColor(if (success && !keyMissing) R.color.status_ok else R.color.status_missing)

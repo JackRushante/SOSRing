@@ -6,6 +6,7 @@
     <string name="home_service_title">Monitoraggio chiamate</string>
     <string name="home_service_state_on">Attivo</string>
     <string name="home_service_state_off">In pausa</string>
+    <string name="home_service_hint_off">Attiva il monitoraggio per far squillare i VIP anche in silenzioso.</string>
     <string name="hero_silent">Silenzioso</string>
     <string name="hero_vibrate">Vibrazione</string>
     <string name="hero_dnd">DND</string>

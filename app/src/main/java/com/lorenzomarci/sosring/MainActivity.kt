@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_privacy -> loadFragment(PrivacyFragment(), getString(R.string.nav_privacy))
                 R.id.nav_security -> loadFragment(SecurityFragment(), getString(R.string.security_title))
             }
+            menuItem.isChecked = true
             binding.drawerLayout.closeDrawer(GravityCompat.START)
             true
         }

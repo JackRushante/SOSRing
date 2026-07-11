@@ -7,6 +7,7 @@
     <string name="home_service_title">Call monitoring</string>
     <string name="home_service_state_on">Active</string>
     <string name="home_service_state_off">Paused</string>
+    <string name="home_service_hint_off">Turn on monitoring to make VIPs ring even in silent mode.</string>
     <string name="hero_silent">Silent</string>
     <string name="hero_vibrate">Vibrate</string>
     <string name="hero_dnd">DND</string>

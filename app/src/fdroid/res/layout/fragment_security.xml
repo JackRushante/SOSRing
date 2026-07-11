@@ -79,7 +79,8 @@
                     android:minHeight="50dp"
                     android:padding="12dp"
                     android:textColor="@color/ink_secondary"
-                    android:textSize="14sp" />
+                    android:textSize="14sp"
+                    app:drawableTint="@color/status_ok" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnShowMyQr"

@@ -40,8 +40,11 @@
         android:background="@color/surface"
         android:fitsSystemWindows="true"
         app:headerLayout="@layout/nav_header"
-        app:itemIconTint="@color/primary_accent"
-        app:itemTextColor="@color/ink"
+        app:itemBackground="@drawable/nav_item_bg"
+        app:itemIconTint="@color/nav_item_icon"
+        app:itemShapeInsetEnd="8dp"
+        app:itemShapeInsetStart="8dp"
+        app:itemTextColor="@color/nav_item_text"
         app:menu="@menu/nav_menu" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
