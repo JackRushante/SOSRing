@@ -1,30 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp"
-    android:paddingBottom="16dp"
-    android:paddingTop="48dp"
-    android:background="?colorPrimary"
-    android:fitsSystemWindows="true">
+    android:background="?attr/tokenHeroBg"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="22dp"
+        android:paddingTop="20dp"
+        android:paddingEnd="22dp"
+        android:paddingBottom="22dp">
+
+    <ImageView
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:background="@drawable/bg_chip_glass"
+        android:contentDescription="@null"
+        android:padding="13dp"
+        android:src="@drawable/ic_bell"
+        app:tint="@color/hero_on" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="@string/app_name"
+        android:textColor="@color/hero_on"
         android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="@android:color/white" />
+        android:textStyle="bold" />
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:text="@string/subtitle"
-        android:textSize="13sp"
-        android:textColor="@android:color/white"
-        android:alpha="0.8"
-        android:layout_marginTop="4dp" />
+        android:lineSpacingExtra="1dp"
+        android:textColor="?attr/tokenFaded"
+        android:textSize="13sp" />
+    </LinearLayout>
 </LinearLayout>

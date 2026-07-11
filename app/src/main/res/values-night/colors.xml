@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SOS Ring — Stile 2A "Indaco"  ·  values-night/colors.xml (tema SCURO)
+  NUOVO file: crea app/src/main/res/values-night/colors.xml
+  Il tema è Theme.Material3.DayNight: questi valori sostituiscono i corrispondenti
+  di notte SOLO se ridichiari i nomi. Tieni gli stessi nomi di values/colors.xml.
+-->
+<resources>
+    <!-- Launcher e contenuti a contrasto fisso -->
+    <color name="primary_dark">#0F1017</color>
+    <color name="on_primary">#14151C</color>       <!-- glifo scuro sopra primario chiaro -->
+
+    <!-- Superfici (scuro) -->
+    <color name="bg">#14151C</color>
+    <color name="surface">#1B1D28</color>
+    <color name="surface_alt">#232640</color>
+    <color name="outline">#2A2D3C</color>
+    <color name="outline_strong">#2E3350</color>
+
+    <!-- Testo (scuro) -->
+    <color name="ink">#ECEDF3</color>
+    <color name="ink_heading">#C9CCDD</color>
+    <color name="ink_secondary">#9195A8</color>
+    <color name="ink_muted">#6E7286</color>
+
+    <!-- Semantici (scuro) -->
+    <color name="status_missing">#F08A7A</color>
+    <color name="status_missing_bg">#2E1E1B</color>
+    <color name="warning">#E5A94A</color>
+    <color name="warning_bg">#221C16</color>
+    <color name="danger">#F0655A</color>
+
+    <!-- Hero e drawer mantengono lo stesso contrasto del tema chiaro -->
+    <color name="hero_on">#FFFFFF</color>
+    <color name="hero_on_muted">#C7CEF5</color>
+    <color name="hero_chip_on">#FFFFFF</color>
+
+    <!-- Hero quando il monitoraggio e' in pausa -->
+    <color name="hero_off_bg">#1B1D28</color>
+    <color name="hero_off_on">#C9CCDD</color>
+    <color name="hero_off_muted">#9195A8</color>
+    <color name="hero_off_badge_bg">#262A3D</color>
+    <color name="hero_off_badge_icon">#7C8194</color>
+
+    <!-- Binario inattivo degli slider -->
+    <color name="track_inactive">#343A55</color>
+</resources>

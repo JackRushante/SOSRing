@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="72dp"
+            android:height="72dp"
+            android:viewportWidth="24"
+            android:viewportHeight="24">
+            <group
+                android:name="ring1"
+                android:pivotX="12"
+                android:pivotY="12"
+                android:scaleX="1.15"
+                android:scaleY="1.15">
+                <path
+                    android:name="p1"
+                    android:pathData="M6,12 C6,8.6863 8.6863,6 12,6 C15.3137,6 18,8.6863 18,12 C18,15.3137 15.3137,18 12,18 C8.6863,18 6,15.3137 6,12 Z"
+                    android:strokeAlpha="0.6"
+                    android:strokeColor="#FFFFFF"
+                    android:strokeWidth="0.9" />
+            </group>
+            <group
+                android:name="ring2"
+                android:pivotX="12"
+                android:pivotY="12"
+                android:scaleX="1.15"
+                android:scaleY="1.15">
+                <path
+                    android:name="p2"
+                    android:pathData="M6,12 C6,8.6863 8.6863,6 12,6 C15.3137,6 18,8.6863 18,12 C18,15.3137 15.3137,18 12,18 C8.6863,18 6,15.3137 6,12 Z"
+                    android:strokeAlpha="0.6"
+                    android:strokeColor="#FFFFFF"
+                    android:strokeWidth="0.9" />
+            </group>
+        </vector>
+    </aapt:attr>
+
+    <target android:name="ring1">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="3200"
+                    android:interpolator="@android:interpolator/decelerate_quad"
+                    android:propertyName="scaleX"
+                    android:repeatCount="infinite"
+                    android:valueFrom="1.15"
+                    android:valueTo="1.9" />
+                <objectAnimator
+                    android:duration="3200"
+                    android:interpolator="@android:interpolator/decelerate_quad"
+                    android:propertyName="scaleY"
+                    android:repeatCount="infinite"
+                    android:valueFrom="1.15"
+                    android:valueTo="1.9" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="p1">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="3200"
+                android:propertyName="strokeAlpha"
+                android:repeatCount="infinite"
+                android:valueFrom="0.6"
+                android:valueTo="0" />
+        </aapt:attr>
+    </target>
+    <target android:name="ring2">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="3200"
+                    android:interpolator="@android:interpolator/decelerate_quad"
+                    android:propertyName="scaleX"
+                    android:repeatCount="infinite"
+                    android:startOffset="1600"
+                    android:valueFrom="1.15"
+                    android:valueTo="1.9" />
+                <objectAnimator
+                    android:duration="3200"
+                    android:interpolator="@android:interpolator/decelerate_quad"
+                    android:propertyName="scaleY"
+                    android:repeatCount="infinite"
+                    android:startOffset="1600"
+                    android:valueFrom="1.15"
+                    android:valueTo="1.9" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="p2">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="3200"
+                android:propertyName="strokeAlpha"
+                android:repeatCount="infinite"
+                android:startOffset="1600"
+                android:valueFrom="0.6"
+                android:valueTo="0" />
+        </aapt:attr>
+    </target>
+</animated-vector>

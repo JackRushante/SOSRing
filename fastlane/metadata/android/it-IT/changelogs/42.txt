@@ -1,0 +1,7 @@
+Nuova interfaccia moderna e controlli aspetto:
+- Restyling completo di tutte le schermate
+- Quattro temi colore: Indaco, Marea, Argilla e Ardesia
+- Modalità Sistema, sempre Chiaro o sempre Scuro
+- Contrasto corretto delle barre Android anche forzando la modalità
+- Stato monitoraggio, permessi e navigazione più chiari
+- Funzioni di monitoraggio, sicurezza e posizione invariate

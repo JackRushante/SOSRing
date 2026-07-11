@@ -3,14 +3,15 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/bg">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true"
         android:clipToPadding="false"
-        android:paddingBottom="72dp">
+        android:fillViewport="true"
+        android:paddingBottom="80dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -20,111 +21,285 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/warningBanner"
+                style="@style/Widget.SOSRing.Card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 android:visibility="gone"
-                app:cardBackgroundColor="#FFF3E0"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="1dp">
+                app:cardBackgroundColor="@color/warning_bg"
+                app:cardCornerRadius="16dp"
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:padding="12dp">
+                    android:orientation="horizontal"
+                    android:padding="14dp">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_badge_warning"
+                        android:contentDescription="@null"
+                        android:padding="9dp"
+                        android:src="@drawable/ic_alert"
+                        app:tint="@color/warning" />
 
                     <TextView
                         android:id="@+id/tvWarning"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
                         android:layout_weight="1"
-                        android:textColor="#5D4037" />
+                        android:textColor="@color/ink"
+                        android:textSize="13sp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnWarningAction"
                         style="@style/Widget.Material3.Button.TextButton"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/home_warn_action_fix" />
+                        android:layout_height="48dp"
+                        android:text="@string/home_warn_action_fix"
+                        android:textColor="@color/warning" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Service Toggle -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardService"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardElevation="2dp"
-                app:cardCornerRadius="12dp">
+                app:cardBackgroundColor="?attr/tokenHeroBg"
+                app:cardCornerRadius="26dp"
+                app:cardElevation="0dp"
+                app:contentPadding="18dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:padding="16dp">
+                    android:orientation="vertical">
 
-                    <TextView
-                        android:layout_width="0dp"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/service_label"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switchService"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        <FrameLayout
+                            android:layout_width="72dp"
+                            android:layout_height="72dp"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
+
+                            <ImageView
+                                android:id="@+id/imgHeroPulse"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:contentDescription="@null"
+                                android:src="@drawable/pulse_ring" />
+
+                            <FrameLayout
+                                android:id="@+id/heroBellRing"
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_gravity="center"
+                                android:background="@drawable/bg_hero_ring">
+
+                                <ImageView
+                                    android:id="@+id/imgHeroBell"
+                                    android:layout_width="44dp"
+                                    android:layout_height="44dp"
+                                    android:layout_gravity="center"
+                                    android:background="@drawable/bg_hero_dot"
+                                    android:contentDescription="@null"
+                                    android:padding="12dp"
+                                    android:src="@drawable/ic_bell"
+                                    app:tint="?attr/tokenHeroBg" />
+                            </FrameLayout>
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="14dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvHeroLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:letterSpacing="0.04"
+                                android:text="@string/home_monitoring_label"
+                                android:textColor="?attr/tokenFaded"
+                                android:textFontWeight="700"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/tvServiceState"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/home_service_state_on"
+                                android:textColor="@color/hero_on"
+                                android:textFontWeight="800"
+                                android:textSize="26sp" />
+
+                            <TextView
+                                android:id="@+id/tvHeroHint"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:text="@string/home_service_hint_off"
+                                android:textColor="@color/hero_off_muted"
+                                android:textSize="13sp"
+                                android:visibility="gone" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switchService"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minHeight="48dp"
+                            app:thumbTint="@color/switch_hero_thumb"
+                            app:trackDecorationTint="@android:color/transparent"
+                            app:trackTint="@color/switch_hero_track" />
+                    </LinearLayout>
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipBypass"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        app:chipSpacingHorizontal="6dp"
+                        app:chipSpacingVertical="4dp"
+                        app:singleLine="false">
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/hero_silent"
+                            android:textColor="@color/hero_chip_on"
+                            app:chipBackgroundColor="?attr/tokenHeroChipBg"
+                            app:chipIcon="@drawable/ic_check"
+                            app:chipIconTint="@color/hero_chip_on"
+                            app:chipStrokeWidth="0dp" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/hero_vibrate"
+                            android:textColor="@color/hero_chip_on"
+                            app:chipBackgroundColor="?attr/tokenHeroChipBg"
+                            app:chipIcon="@drawable/ic_check"
+                            app:chipIconTint="@color/hero_chip_on"
+                            app:chipStrokeWidth="0dp" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/hero_dnd"
+                            android:textColor="@color/hero_chip_on"
+                            app:chipBackgroundColor="?attr/tokenHeroChipBg"
+                            app:chipIcon="@drawable/ic_check"
+                            app:chipIconTint="@color/hero_chip_on"
+                            app:chipStrokeWidth="0dp" />
+                    </com.google.android.material.chip.ChipGroup>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Mute Timer -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardMuteTimer"
+                style="@style/Widget.SOSRing.Card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardElevation="2dp"
-                app:cardCornerRadius="12dp">
+                android:layout_marginTop="12dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="12dp">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnMuteTimer"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:backgroundTint="#E53935"
-                        android:textColor="#000000"
-                        android:textStyle="bold"
-                        android:text="@string/mute_button" />
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="46dp"
+                            android:layout_height="46dp"
+                            android:background="@drawable/bg_badge_warning"
+                            android:contentDescription="@null"
+                            android:padding="12dp"
+                            android:src="@drawable/ic_bell_off"
+                            app:tint="@color/warning" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnMuteTimer"
+                                style="@style/Widget.Material3.Button.TextButton"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="start|center_vertical"
+                                android:insetTop="0dp"
+                                android:insetBottom="0dp"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:paddingHorizontal="0dp"
+                                android:text="@string/mute_button"
+                                android:textAllCaps="false"
+                                android:textColor="@color/ink"
+                                android:textFontWeight="700"
+                                android:textSize="15sp"
+                                app:rippleColor="@android:color/transparent" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/mute_subtitle"
+                                android:textColor="@color/ink_secondary"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_chevron"
+                            app:tint="@color/ink_muted" />
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/tvMuteCountdown"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textSize="13sp"
-                        android:textColor="?colorPrimary"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/bg_badge_warning"
                         android:gravity="center"
-                        android:visibility="gone"
-                        android:layout_marginTop="8dp" />
+                        android:padding="12dp"
+                        android:textColor="@color/warning"
+                        android:textFontWeight="700"
+                        android:textSize="13sp"
+                        android:visibility="gone" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Permissions -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardPermissions"
+                style="@style/Widget.SOSRing.Card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardElevation="2dp"
-                app:cardCornerRadius="12dp">
+                android:layout_marginTop="12dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -135,21 +310,31 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
                         android:text="@string/permissions_title"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="12dp" />
+                        android:textColor="@color/ink_heading"
+                        android:textFontWeight="700"
+                        android:textSize="15sp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="@drawable/bg_badge_soft"
+                            android:contentDescription="@null"
+                            android:padding="10dp"
+                            android:src="@drawable/ic_phone"
+                            app:tint="?attr/tokenAccent" />
 
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
                             android:layout_weight="1"
                             android:orientation="vertical">
 
@@ -157,7 +342,9 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/runtime_perm_label"
-                                android:textSize="14sp" />
+                                android:textColor="@color/ink"
+                                android:textFontWeight="600"
+                                android:textSize="13sp" />
 
                             <TextView
                                 android:id="@+id/tvRuntimeStatus"
@@ -166,24 +353,49 @@
                                 android:textSize="12sp" />
                         </LinearLayout>
 
+                        <ImageView
+                            android:id="@+id/imgRuntimeOk"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:contentDescription="@string/status_granted"
+                            android:src="@drawable/ic_shield_check"
+                            android:visibility="gone"
+                            app:tint="?attr/tokenStatusOk" />
+
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnRequestRuntime"
-                            style="@style/Widget.Material3.Button.TonalButton"
+                            style="@style/Widget.SOSRing.Button"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_height="44dp"
                             android:text="@string/authorize"
                             android:textSize="12sp" />
                     </LinearLayout>
 
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="10dp"
+                        android:background="@color/outline" />
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="@drawable/bg_badge_soft"
+                            android:contentDescription="@null"
+                            android:padding="10dp"
+                            android:src="@drawable/ic_bell"
+                            app:tint="?attr/tokenAccent" />
 
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
                             android:layout_weight="1"
                             android:orientation="vertical">
 
@@ -191,7 +403,9 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/dnd_perm_label"
-                                android:textSize="14sp" />
+                                android:textColor="@color/ink"
+                                android:textFontWeight="600"
+                                android:textSize="13sp" />
 
                             <TextView
                                 android:id="@+id/tvDndStatus"
@@ -200,26 +414,36 @@
                                 android:textSize="12sp" />
                         </LinearLayout>
 
+                        <ImageView
+                            android:id="@+id/imgDndOk"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:contentDescription="@string/status_granted"
+                            android:src="@drawable/ic_shield_check"
+                            android:visibility="gone"
+                            app:tint="?attr/tokenStatusOk" />
+
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnRequestDnd"
-                            style="@style/Widget.Material3.Button.TonalButton"
+                            style="@style/Widget.SOSRing.Button"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_height="44dp"
                             android:text="@string/configure"
                             android:textSize="12sp" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- VIP Contacts header -->
             <TextView
                 android:id="@+id/tvContactsTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:letterSpacing="0.02"
                 android:text="@string/contacts_title"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginTop="20dp" />
+                android:textColor="@color/ink_heading"
+                android:textFontWeight="700"
+                android:textSize="14sp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvContacts"
@@ -232,11 +456,12 @@
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAdd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        style="@style/Widget.SOSRing.Fab"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:contentDescription="@string/add_contact"
-        app:srcCompat="@android:drawable/ic_input_add"
-        android:layout_gravity="bottom|end" />
+        app:srcCompat="@drawable/ic_plus" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

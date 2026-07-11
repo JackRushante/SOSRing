@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.net.Uri
@@ -22,6 +23,7 @@ import android.widget.NumberPicker
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -103,6 +105,7 @@ class HomeFragment : Fragment() {
         super.onResume()
         updatePermissionStatus()
         binding.switchService.isChecked = prefs.isServiceEnabled
+        updateServiceHero(binding.switchService.isChecked)
         loadContacts()
         updateMuteTimerUI()
         if (prefs.isMuted) {
@@ -115,6 +118,7 @@ class HomeFragment : Fragment() {
         super.onPause()
         countdownHandler.removeCallbacks(countdownRunnable)
         liveRefreshHandler.removeCallbacks(liveRefreshRunnable)
+        (binding.imgHeroPulse.drawable as? android.graphics.drawable.Animatable)?.stop()
     }
 
     override fun onDestroyView() {
@@ -219,6 +223,7 @@ private fun setupRecyclerView() {
 
     private fun setupListeners() {
         binding.switchService.setOnCheckedChangeListener { _, isChecked ->
+            updateServiceHero(isChecked)
             if (isChecked) {
                 if (checkAllPermissions()) {
                     startMonitoring()
@@ -265,6 +270,56 @@ private fun setupRecyclerView() {
             } else {
                 showMuteTimerDialog()
             }
+        }
+        binding.cardMuteTimer.setOnClickListener {
+            binding.btnMuteTimer.performClick()
+        }
+    }
+
+    private fun updateServiceHero(isActive: Boolean) {
+        val context = requireContext()
+        binding.tvServiceState.setText(
+            if (isActive) R.string.home_service_state_on else R.string.home_service_state_off
+        )
+
+        val backgroundColor = if (isActive) {
+            ThemeManager.color(context, R.attr.tokenHeroBg)
+        } else {
+            ContextCompat.getColor(context, R.color.hero_off_bg)
+        }
+        val stateColor = ContextCompat.getColor(
+            context,
+            if (isActive) R.color.hero_on else R.color.hero_off_on
+        )
+        val labelColor = if (isActive) {
+            ThemeManager.color(context, R.attr.tokenFaded)
+        } else {
+            ContextCompat.getColor(context, R.color.hero_off_muted)
+        }
+        val bellBackground = if (isActive) R.drawable.bg_hero_dot else R.drawable.bg_hero_dot_off
+        val bellIcon = if (isActive) R.drawable.ic_bell else R.drawable.ic_bell_off
+        val bellTint = if (isActive) {
+            ThemeManager.color(context, R.attr.tokenHeroBg)
+        } else {
+            ContextCompat.getColor(context, R.color.hero_off_badge_icon)
+        }
+
+        binding.cardService.setCardBackgroundColor(backgroundColor)
+        binding.tvServiceState.setTextColor(stateColor)
+        binding.tvHeroLabel.setTextColor(labelColor)
+        binding.imgHeroBell.setBackgroundResource(bellBackground)
+        binding.imgHeroBell.setImageResource(bellIcon)
+        binding.imgHeroBell.imageTintList = ColorStateList.valueOf(bellTint)
+        binding.chipBypass.isVisible = isActive
+        binding.tvHeroHint.isVisible = !isActive
+
+        val pulse = binding.imgHeroPulse.drawable as? android.graphics.drawable.Animatable
+        if (isActive) {
+            binding.imgHeroPulse.alpha = 1f
+            pulse?.start()
+        } else {
+            pulse?.stop()
+            binding.imgHeroPulse.alpha = 0f
         }
     }
 
@@ -566,13 +621,24 @@ private fun setupRecyclerView() {
             ContextCompat.checkSelfPermission(ctx, it) == PackageManager.PERMISSION_GRANTED
         }
 
-        binding.tvRuntimeStatus.text = getString(if (allOk) R.string.status_granted else R.string.status_missing)
-        binding.tvRuntimeStatus.setTextColor(ctx.getColor(if (allOk) R.color.status_ok else R.color.status_missing))
+        binding.tvRuntimeStatus.text = getString(if (allRuntimePermissionsGranted) R.string.status_granted else R.string.status_missing)
+        binding.tvRuntimeStatus.setTextColor(
+            ThemeManager.color(
+                ctx,
+                if (allRuntimePermissionsGranted) R.attr.tokenStatusOk else com.google.android.material.R.attr.colorError
+            )
+        )
         binding.btnRequestRuntime.isEnabled = !allRuntimePermissionsGranted
+        binding.imgRuntimeOk.isVisible = allRuntimePermissionsGranted
+        binding.btnRequestRuntime.isVisible = !allRuntimePermissionsGranted
 
         binding.tvDndStatus.text = getString(if (dndOk) R.string.status_granted else R.string.status_missing)
-        binding.tvDndStatus.setTextColor(ctx.getColor(if (dndOk) R.color.status_ok else R.color.status_missing))
+        binding.tvDndStatus.setTextColor(
+            ThemeManager.color(ctx, if (dndOk) R.attr.tokenStatusOk else com.google.android.material.R.attr.colorError)
+        )
         binding.btnRequestDnd.isEnabled = !dndOk
+        binding.imgDndOk.isVisible = dndOk
+        binding.btnRequestDnd.isVisible = !dndOk
 
         binding.switchService.isEnabled = allOk || prefs.isServiceEnabled
         updateWarningBanner()

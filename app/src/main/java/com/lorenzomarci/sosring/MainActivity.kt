@@ -8,12 +8,11 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.lorenzomarci.sosring.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var prefs: PrefsManager
@@ -51,6 +50,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_privacy -> loadFragment(PrivacyFragment(), getString(R.string.nav_privacy))
                 R.id.nav_security -> loadFragment(SecurityFragment(), getString(R.string.security_title))
             }
+            menuItem.isChecked = true
             binding.drawerLayout.closeDrawer(GravityCompat.START)
             true
         }

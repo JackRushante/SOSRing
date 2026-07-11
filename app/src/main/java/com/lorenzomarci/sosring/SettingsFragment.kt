@@ -1,5 +1,6 @@
 package com.lorenzomarci.sosring
 
+import android.content.res.ColorStateList
 import android.content.DialogInterface
 import android.os.Bundle
 import android.text.InputType
@@ -11,6 +12,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -48,6 +50,7 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         prefs = PrefsManager(requireContext())
+        setupAppearance()
         setupVolumeSlider()
         setupSoundType()
         setupQuietHours()
@@ -58,6 +61,52 @@ class SettingsFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun setupAppearance() {
+        val swatches = mapOf(
+            AppPalette.INDACO to binding.swatchIndaco,
+            AppPalette.TEAL to binding.swatchTeal,
+            AppPalette.ARGILLA to binding.swatchArgilla,
+            AppPalette.ARDESIA to binding.swatchArdesia
+        )
+        val density = resources.displayMetrics.density
+        val selectedWidth = (3 * density).toInt()
+        val defaultWidth = (1 * density).toInt()
+        val selectedColor = ThemeManager.color(requireContext(), com.google.android.material.R.attr.colorPrimary)
+        val defaultColor = ThemeManager.color(requireContext(), com.google.android.material.R.attr.colorOutline)
+
+        swatches.forEach { (palette, card) ->
+            val selected = palette == prefs.themePalette
+            card.isChecked = selected
+            card.strokeWidth = if (selected) selectedWidth else defaultWidth
+            card.strokeColor = if (selected) selectedColor else defaultColor
+            card.setOnClickListener {
+                if (palette != prefs.themePalette) {
+                    prefs.themePalette = palette
+                    requireActivity().recreate()
+                }
+            }
+        }
+
+        val checkedMode = when (prefs.themeMode) {
+            AppCompatDelegate.MODE_NIGHT_NO -> R.id.btnModeLight
+            AppCompatDelegate.MODE_NIGHT_YES -> R.id.btnModeDark
+            else -> R.id.btnModeSystem
+        }
+        binding.toggleThemeMode.check(checkedMode)
+        binding.toggleThemeMode.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (!isChecked) return@addOnButtonCheckedListener
+            val mode = when (checkedId) {
+                R.id.btnModeLight -> AppCompatDelegate.MODE_NIGHT_NO
+                R.id.btnModeDark -> AppCompatDelegate.MODE_NIGHT_YES
+                else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            }
+            if (mode != prefs.themeMode) {
+                prefs.themeMode = mode
+                ThemeManager.applyNightMode(mode)
+            }
+        }
     }
 
     private fun setupVolumeSlider() {
@@ -349,6 +398,9 @@ class SettingsFragment : Fragment() {
         binding.layoutLocationStatus.visibility = View.VISIBLE
         binding.tvLocationStatus.text = getString(R.string.location_status_checking)
         binding.ivLocationStatus.setImageResource(android.R.drawable.ic_popup_sync)
+        binding.ivLocationStatus.imageTintList = ColorStateList.valueOf(
+            ThemeManager.color(requireContext(), R.attr.tokenAccent)
+        )
 
         Thread {
             val status = Push.verifySetup(requireContext())
@@ -367,8 +419,17 @@ class SettingsFragment : Fragment() {
         binding.ivLocationStatus.setImageResource(
             if (success && !keyMissing) android.R.drawable.presence_online else android.R.drawable.presence_busy
         )
+        binding.ivLocationStatus.imageTintList = ColorStateList.valueOf(
+            ThemeManager.color(
+                requireContext(),
+                if (success && !keyMissing) R.attr.tokenStatusOk else com.google.android.material.R.attr.colorError
+            )
+        )
         binding.tvLocationStatus.setTextColor(
-            requireContext().getColor(if (success && !keyMissing) R.color.status_ok else R.color.status_missing)
+            ThemeManager.color(
+                requireContext(),
+                if (success && !keyMissing) R.attr.tokenStatusOk else com.google.android.material.R.attr.colorError
+            )
         )
 
         binding.tvLocationStatus.text = when {

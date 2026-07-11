@@ -1,10 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  SOS Ring — Stile 2A "Indaco"  ·  values/colors.xml (tema CHIARO)
+  Sostituisce app/src/main/res/values/colors.xml
+  Vale per ENTRAMBI i flavor (family + fdroid): le risorse in src/main sono condivise.
+-->
 <resources>
-    <color name="primary">#FF6D00</color>
-    <color name="primary_dark">#E65100</color>
+    <!-- Launcher e contenuti a contrasto fisso -->
+    <color name="primary_dark">#2F3C99</color>      <!-- status bar / pressed -->
     <color name="on_primary">#FFFFFF</color>
-    <color name="secondary">#1565C0</color>
-    <color name="status_ok">#2E7D32</color>
-    <color name="status_missing">#C62828</color>
-    <color name="ic_launcher_background">#FF6D00</color>
+
+    <!-- Superfici (chiaro) -->
+    <color name="bg">#ECEDF3</color>                <!-- sfondo schermata -->
+    <color name="surface">#FFFFFF</color>           <!-- card -->
+    <color name="surface_alt">#F1F2F8</color>       <!-- riquadri interni -->
+    <color name="outline">#E1E3EC</color>           <!-- bordi hairline -->
+    <color name="outline_strong">#CDD1E4</color>    <!-- bottoni outlined -->
+
+    <!-- Testo (chiaro) -->
+    <color name="ink">#191B24</color>               <!-- titoli / testo primario -->
+    <color name="ink_heading">#33374A</color>       <!-- intestazioni sezione -->
+    <color name="ink_secondary">#6E7286</color>     <!-- sottotitoli -->
+    <color name="ink_muted">#9CA0B4</color>         <!-- disabilitato / chevron -->
+
+    <!-- Semantici (invariati tra chiaro/scuro nella tinta base) -->
+    <color name="status_missing">#D85B4B</color>    <!-- errore / permesso mancante -->
+    <color name="status_missing_bg">#FBE6E1</color>
+    <color name="warning">#C77E1E</color>           <!-- mute / avvisi -->
+    <color name="warning_bg">#FBEFDD</color>
+    <color name="danger">#D85B4B</color>            <!-- Stop tracking / rimuovi -->
+
+    <!-- Launcher -->
+    <color name="ic_launcher_background">#3D4DB7</color>
+
+    <!-- Hero e drawer: indaco profondo e contrasto stabile in chiaro/scuro -->
+    <color name="hero_on">#FFFFFF</color>
+    <color name="hero_on_muted">#C7CEF5</color>
+    <color name="hero_chip_on">#FFFFFF</color>
+
+    <!-- Hero quando il monitoraggio e' in pausa -->
+    <color name="hero_off_bg">#FFFFFF</color>
+    <color name="hero_off_on">#33374A</color>
+    <color name="hero_off_muted">#6E7286</color>
+    <color name="hero_off_badge_bg">#ECEDF3</color>
+    <color name="hero_off_badge_icon">#9CA0B4</color>
+
+    <!-- Binario inattivo degli slider -->
+    <color name="track_inactive">#D3D7E6</color>
 </resources>

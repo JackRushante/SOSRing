@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- bg_card_soft.xml — riquadro interno soft (es. singola regola orari silenziosi). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/surface_alt" />
+    <corners android:radius="14dp" />
+</shape>

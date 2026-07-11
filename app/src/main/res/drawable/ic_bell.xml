@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ic_bell.xml — da i-bell (icons-2a.svg). Tint via android:tint (default ?attr/colorControlNormal);
+     sovrascrivi al punto d'uso con app:tint="@color/...". Il colore path e' un placeholder neutro. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="?attr/colorControlNormal">
+    <path
+        android:pathData="M18,8 C18,4.6863 15.3137,2 12,2 C8.6863,2 6,4.6863 6,8 C6,14 3,16 3,16 L21,16 C21,16 18,14 18,8 Z M13.7,20 C13.3353,20.5884 12.6923,20.9464 12,20.9464 C11.3077,20.9464 10.6647,20.5884 10.3,20"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

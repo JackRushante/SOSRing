@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -91,7 +92,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             tools:text="09:00"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            app:icon="@drawable/ic_clock" />
     </LinearLayout>
 
     <!-- To row -->
@@ -115,7 +117,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             tools:text="18:00"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            app:icon="@drawable/ic_clock" />
 
         <TextView
             android:id="@+id/tvCrossMidnightHint"
@@ -123,7 +126,10 @@
             android:layout_height="wrap_content"
             android:text="@string/quiet_next_day"
             android:textSize="12sp"
-            android:textColor="?colorPrimary"
+            android:background="@drawable/bg_pill_soft"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:textColor="?attr/colorOnPrimaryContainer"
             android:visibility="gone"
             android:layout_marginStart="8dp" />
     </LinearLayout>

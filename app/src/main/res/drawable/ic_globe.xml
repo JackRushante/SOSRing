@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ic_globe.xml — da i-globe (icons-2a.svg). Tint via android:tint (default ?attr/colorControlNormal);
+     sovrascrivi al punto d'uso con app:tint="@color/...". Il colore path e' un placeholder neutro. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="?attr/colorControlNormal">
+    <path
+        android:pathData="M3,12 L21,12 M12,3 C16,8.3333 16,15.6667 12,21 M12,3 C8,8.3333 8,15.6667 12,21 M3,12 C3,16.9706 7.0294,21 12,21 C16.9706,21 21,16.9706 21,12 C21,7.0294 16.9706,3 12,3 C7.0294,3 3,7.0294 3,12 Z"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

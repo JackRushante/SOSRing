@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="indaco_primary">#7C8AF0</color>
+    <color name="indaco_accent">#7C8AF0</color>
+    <color name="indaco_container">#232640</color>
+    <color name="indaco_on_container">#C7CEF5</color>
+    <color name="indaco_faded">#9CA6E8</color>
+    <color name="indaco_status_ok">#7C8AF0</color>
+    <color name="indaco_secondary">#B3A0E6</color>
+    <color name="indaco_secondary_bg">#2A2740</color>
+    <color name="indaco_hero_bg">#3D4DB7</color>
+    <color name="indaco_hero_chip_bg">#6471C5</color>
+
+    <color name="teal_primary">#45C7B8</color>
+    <color name="teal_accent">#45C7B8</color>
+    <color name="teal_container">#143231</color>
+    <color name="teal_on_container">#B4E6E0</color>
+    <color name="teal_faded">#7FD3C8</color>
+    <color name="teal_status_ok">#45C7B8</color>
+    <color name="teal_secondary">#E0A08A</color>
+    <color name="teal_secondary_bg">#2E211B</color>
+    <color name="teal_hero_bg">#0F8A80</color>
+    <color name="teal_hero_chip_bg">#3FA199</color>
+
+    <color name="argilla_primary">#E8836A</color>
+    <color name="argilla_accent">#E8836A</color>
+    <color name="argilla_container">#38221B</color>
+    <color name="argilla_on_container">#F3CDBF</color>
+    <color name="argilla_faded">#E0A492</color>
+    <color name="argilla_status_ok">#E8836A</color>
+    <color name="argilla_secondary">#8FBECB</color>
+    <color name="argilla_secondary_bg">#17282E</color>
+    <color name="argilla_hero_bg">#C0563B</color>
+    <color name="argilla_hero_chip_bg">#CD7862</color>
+
+    <color name="ardesia_primary">#7FB0DC</color>
+    <color name="ardesia_accent">#7FB0DC</color>
+    <color name="ardesia_container">#16283A</color>
+    <color name="ardesia_on_container">#BFD6EC</color>
+    <color name="ardesia_faded">#A9C8E4</color>
+    <color name="ardesia_status_ok">#7FB0DC</color>
+    <color name="ardesia_secondary">#B3A0E6</color>
+    <color name="ardesia_secondary_bg">#241E33</color>
+    <color name="ardesia_hero_bg">#2F5E8C</color>
+    <color name="ardesia_hero_chip_bg">#597EA3</color>
+</resources>

@@ -12,7 +12,7 @@
 
     <!-- Screen -->
     <path
-        android:fillColor="#FF6D00"
+        android:fillColor="@color/primary_dark"
         android:pathData="M45,38 L63,38 L63,68 L45,68 Z" />
 
     <!-- Home button -->

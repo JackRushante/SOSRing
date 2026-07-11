@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ic_home.xml — da i-home (icons-2a.svg). Tint via android:tint (default ?attr/colorControlNormal);
+     sovrascrivi al punto d'uso con app:tint="@color/...". Il colore path e' un placeholder neutro. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="?attr/colorControlNormal">
+    <path
+        android:pathData="M4,11 L12,4.5 L20,11 L20,19 C20,19.8284 19.3284,20.5 18.5,20.5 L5.5,20.5 C4.6716,20.5 4,19.8284 4,19 L4,11 Z M9.5,20.5 L9.5,14 L14.5,14 L14.5,20.5"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

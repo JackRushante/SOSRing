@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.lorenzomarci.sosring.databinding.ItemVipNumberBinding
+import java.util.Locale
 
 class VipNumbersAdapter(
     private val onEdit: (Int, VipContact) -> Unit,
@@ -29,6 +30,7 @@ class VipNumbersAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(contact: VipContact, position: Int) {
+            binding.tvAvatar.text = contactInitials(contact.name)
             binding.tvName.text = contact.name
             binding.tvNumber.text = contact.number
 
@@ -78,5 +80,15 @@ class VipNumbersAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(getItem(position), position)
+    }
+
+    private fun contactInitials(name: String): String {
+        val parts = name.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+        val initials = when {
+            parts.size >= 2 -> "${parts.first().first()}${parts.last().first()}"
+            parts.size == 1 -> parts.first().take(2)
+            else -> "?"
+        }
+        return initials.uppercase(Locale.getDefault())
     }
 }
