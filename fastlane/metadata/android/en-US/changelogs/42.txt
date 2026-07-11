@@ -1,0 +1,7 @@
+New modern interface and appearance controls:
+- Complete visual redesign across all screens
+- Four color themes: Indigo, Teal, Clay and Slate
+- Follow system, always light or always dark appearance
+- Correct status and navigation bar contrast when overriding the system mode
+- Clearer monitoring state, permissions and navigation
+- Existing monitoring, security and location behavior remains unchanged
