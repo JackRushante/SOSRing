@@ -2,18 +2,33 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.SOSRing.Card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    app:cardElevation="1dp"
-    app:cardCornerRadius="8dp">
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="18dp"
+    app:contentPadding="12dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:padding="12dp">
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/bg_avatar_circle">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@null"
+                android:padding="10dp"
+                android:src="@drawable/ic_user"
+                app:tint="@color/primary_accent" />
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -25,57 +40,61 @@
                 android:id="@+id/tvName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textColor="@color/ink"
+                android:textFontWeight="700"
+                android:textSize="15sp" />
 
             <TextView
                 android:id="@+id/tvNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="?android:textColorSecondary" />
+                android:textColor="@color/ink_secondary"
+                android:textSize="12sp" />
         </LinearLayout>
 
         <ImageButton
             android:id="@+id/btnGps"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_mylocation"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="2dp"
+            android:background="@drawable/bg_pill_soft"
             android:contentDescription="@string/gps_icon_desc"
+            android:padding="11dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_gps"
             android:visibility="gone"
-            android:layout_marginEnd="4dp"
-            android:scaleType="centerInside" />
+            app:tint="@color/primary_accent" />
 
         <ImageButton
             android:id="@+id/btnStop"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_stop"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/stop_icon_desc"
+            android:padding="11dp"
+            android:src="@drawable/ic_stop"
             android:visibility="gone"
-            android:layout_marginEnd="4dp"
-            android:scaleType="centerInside" />
+            app:tint="@color/danger" />
 
         <ImageButton
             android:id="@+id/btnMap"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_mapmode"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/view_path_desc"
+            android:padding="11dp"
+            android:src="@drawable/ic_pin"
             android:visibility="gone"
-            android:layout_marginEnd="4dp"
-            android:scaleType="centerInside" />
+            app:tint="@color/primary_accent" />
 
         <ImageButton
             android:id="@+id/btnMore"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_more_vert"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/more_icon_desc"
-            android:scaleType="centerInside" />
+            android:padding="10dp"
+            android:src="@drawable/ic_more_vert"
+            app:tint="@color/ink_muted" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

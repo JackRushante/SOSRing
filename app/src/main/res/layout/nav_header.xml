@@ -1,30 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@color/primary"
+    android:fitsSystemWindows="true"
     android:orientation="vertical"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp"
-    android:paddingBottom="16dp"
+    android:paddingStart="20dp"
     android:paddingTop="48dp"
-    android:background="?colorPrimary"
-    android:fitsSystemWindows="true">
+    android:paddingEnd="20dp"
+    android:paddingBottom="22dp">
+
+    <ImageView
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:background="@drawable/bg_chip_glass"
+        android:contentDescription="@null"
+        android:padding="13dp"
+        android:src="@drawable/ic_bell"
+        app:tint="@color/on_primary" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="@string/app_name"
+        android:textColor="@color/on_primary"
         android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="@android:color/white" />
+        android:textStyle="bold" />
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:text="@string/subtitle"
-        android:textSize="13sp"
-        android:textColor="@android:color/white"
-        android:alpha="0.8"
-        android:layout_marginTop="4dp" />
+        android:textColor="@color/primary_faded"
+        android:textSize="13sp" />
 </LinearLayout>

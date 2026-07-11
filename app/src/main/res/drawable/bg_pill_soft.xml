@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- bg_pill_soft.xml — pill tonda soft per icon-button (es. GPS nella riga contatto). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="@color/primary_container" />
+</shape>

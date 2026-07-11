@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- bg_chip_glass.xml — chip "vetro" sopra l'hero pieno (Silenzioso/Vibrazione/DND). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#24FFFFFF" />
+    <corners android:radius="999dp" />
+</shape>

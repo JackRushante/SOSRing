@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- bg_badge_danger.xml — badge icona per permesso mancante / errore. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/status_missing_bg" />
+    <corners android:radius="12dp" />
+</shape>

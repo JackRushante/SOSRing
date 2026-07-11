@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- bg_badge_warning.xml — badge icona per stati di avviso (es. mute). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/warning_bg" />
+    <corners android:radius="12dp" />
+</shape>

@@ -3,6 +3,14 @@
     <string name="app_name" translatable="false">SOS Ring</string>
     <string name="subtitle">Force ringtone for important calls</string>
     <string name="service_label">Monitoring active</string>
+    <string name="home_monitoring_label">SOS RING</string>
+    <string name="home_service_title">Call monitoring</string>
+    <string name="hero_silent">Silent</string>
+    <string name="hero_vibrate">Vibrate</string>
+    <string name="hero_dnd">DND</string>
+    <string name="privacy_chip_no_tracking">No tracking</string>
+    <string name="privacy_chip_encrypted">Encrypted</string>
+    <string name="privacy_chip_no_ads">No advertising</string>
     <string name="permissions_title">Required permissions</string>
     <string name="runtime_perm_label">Phone, call log, contacts and location</string>
     <string name="dnd_perm_label">Do Not Disturb (DND)</string>

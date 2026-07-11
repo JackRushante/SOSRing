@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ic_lock.xml — da i-lock (icons-2a.svg). Tint via android:tint (default ?attr/colorControlNormal);
+     sovrascrivi al punto d'uso con app:tint="@color/...". Il colore path e' un placeholder neutro. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="?attr/colorControlNormal">
+    <path
+        android:pathData="M8 11V8a4 4 0 018 0v3 M7.4,11 h9.2 a2.4,2.4 0 0 1 2.4,2.4 v4.2 a2.4,2.4 0 0 1 -2.4,2.4 h-9.2 a2.4,2.4 0 0 1 -2.4,-2.4 v-4.2 a2.4,2.4 0 0 1 2.4,-2.4 Z"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

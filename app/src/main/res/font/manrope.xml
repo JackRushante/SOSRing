@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  res/font/manrope.xml — font-family Manrope (statica), pesi 400/500/600/700/800.
+  Referenziata dal tema come @font/manrope.
+  Metti in res/font/ i 5 file TTF con QUESTI nomi (vedi README-FONT.txt):
+    manrope_regular.ttf, manrope_medium.ttf, manrope_semibold.ttf,
+    manrope_bold.ttf, manrope_extrabold.ttf
+-->
+<font-family xmlns:app="http://schemas.android.com/apk/res-auto">
+    <font
+        app:fontStyle="normal"
+        app:fontWeight="400"
+        app:font="@font/manrope_regular" />
+    <font
+        app:fontStyle="normal"
+        app:fontWeight="500"
+        app:font="@font/manrope_medium" />
+    <font
+        app:fontStyle="normal"
+        app:fontWeight="600"
+        app:font="@font/manrope_semibold" />
+    <font
+        app:fontStyle="normal"
+        app:fontWeight="700"
+        app:font="@font/manrope_bold" />
+    <font
+        app:fontStyle="normal"
+        app:fontWeight="800"
+        app:font="@font/manrope_extrabold" />
+</font-family>

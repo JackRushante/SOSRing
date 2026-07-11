@@ -2,6 +2,14 @@
 <resources>
     <string name="subtitle">Forza la suoneria per le chiamate importanti</string>
     <string name="service_label">Monitoraggio attivo</string>
+    <string name="home_monitoring_label">SOS RING</string>
+    <string name="home_service_title">Monitoraggio chiamate</string>
+    <string name="hero_silent">Silenzioso</string>
+    <string name="hero_vibrate">Vibrazione</string>
+    <string name="hero_dnd">DND</string>
+    <string name="privacy_chip_no_tracking">Nessun tracciamento</string>
+    <string name="privacy_chip_encrypted">Cifrato</string>
+    <string name="privacy_chip_no_ads">Nessuna pubblicità</string>
     <string name="permissions_title">Permessi necessari</string>
     <string name="runtime_perm_label">Telefono, registro chiamate, contatti e posizione</string>
     <string name="dnd_perm_label">Non disturbare (DND)</string>

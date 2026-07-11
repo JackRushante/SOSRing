@@ -1,9 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<!--
+  SOS Ring — Stile 2A "Indaco"  ·  values/themes.xml (base + CHIARO)
+  Sostituisce app/src/main/res/values/themes.xml
+  Base Material3 DayNight: i valori di notte arrivano da values-night/ (colors + questo file duplicato).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.SOSRing" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Primario -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="colorPrimaryContainer">@color/primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_container</item>
+
+        <!-- Secondario / accento -->
         <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSecondaryContainer">@color/secondary_bg</item>
+        <item name="colorTertiary">@color/primary_accent</item>
+
+        <!-- Superfici -->
+        <item name="android:colorBackground">@color/bg</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorSurfaceVariant">@color/surface_alt</item>
+        <item name="colorOnSurface">@color/ink</item>
+        <item name="colorOnSurfaceVariant">@color/ink_secondary</item>
+        <item name="colorOutline">@color/outline</item>
+        <item name="colorError">@color/status_missing</item>
+
+        <!-- Forma: raggi generosi (look "Custode") -->
+        <item name="shapeAppearanceCornerSmall">@style/Shape.SOSRing.Small</item>
+        <item name="shapeAppearanceCornerMedium">@style/Shape.SOSRing.Medium</item>
+        <item name="shapeAppearanceCornerLarge">@style/Shape.SOSRing.Large</item>
+
+        <!-- Tipografia -->
+        <item name="fontFamily">@font/manrope</item>
+        <item name="android:fontFamily">@font/manrope</item>
+
+        <!-- System bars -->
+        <item name="android:statusBarColor">@color/bg</item>
+        <item name="android:navigationBarColor">@color/bg</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="23">true</item>
+    </style>
+
+    <!-- Forme -->
+    <style name="Shape.SOSRing.Small" parent="ShapeAppearance.Material3.Corner.Small">
+        <item name="cornerSize">14dp</item>
+    </style>
+    <style name="Shape.SOSRing.Medium" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerSize">20dp</item>
+    </style>
+    <style name="Shape.SOSRing.Large" parent="ShapeAppearance.Material3.Corner.Large">
+        <item name="cornerSize">26dp</item>
+    </style>
+
+    <!-- Bottone principale pieno (es. "Attiva", "Esporta") -->
+    <style name="Widget.SOSRing.Button" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/primary_accent</item>
+        <item name="android:textColor">@color/on_primary</item>
+        <item name="cornerRadius">14dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <!-- FAB indaco -->
+    <style name="Widget.SOSRing.Fab" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="backgroundTint">@color/primary_accent</item>
+        <item name="tint">@color/on_primary</item>
+        <item name="shapeAppearanceOverlay">@style/Shape.SOSRing.Fab</item>
+    </style>
+    <style name="Shape.SOSRing.Fab" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item>
+    </style>
+
+    <!-- Card standard -->
+    <style name="Widget.SOSRing.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">20dp</item>
+        <item name="cardBackgroundColor">@color/surface</item>
+        <item name="strokeColor">@color/outline</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cardElevation">0dp</item>
     </style>
 </resources>

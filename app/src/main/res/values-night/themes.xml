@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SOS Ring — Stile 2A "Indaco"  ·  values-night/themes.xml (override SCURO)
+  NUOVO file: crea app/src/main/res/values-night/themes.xml
+  Serve solo per la status bar chiara/scura; i colori arrivano da values-night/colors.xml.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.SOSRing" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="colorPrimaryContainer">@color/primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_container</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSecondaryContainer">@color/secondary_bg</item>
+        <item name="colorTertiary">@color/primary_accent</item>
+        <item name="android:colorBackground">@color/bg</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorSurfaceVariant">@color/surface_alt</item>
+        <item name="colorOnSurface">@color/ink</item>
+        <item name="colorOnSurfaceVariant">@color/ink_secondary</item>
+        <item name="colorOutline">@color/outline</item>
+        <item name="colorError">@color/status_missing</item>
+
+        <item name="shapeAppearanceCornerSmall">@style/Shape.SOSRing.Small</item>
+        <item name="shapeAppearanceCornerMedium">@style/Shape.SOSRing.Medium</item>
+        <item name="shapeAppearanceCornerLarge">@style/Shape.SOSRing.Large</item>
+
+        <item name="fontFamily">@font/manrope</item>
+        <item name="android:fontFamily">@font/manrope</item>
+
+        <item name="android:statusBarColor">@color/bg</item>
+        <item name="android:navigationBarColor">@color/bg</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="23">false</item>
+    </style>
+</resources>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -17,23 +18,34 @@
         android:layout_marginTop="12dp"
         android:layout_marginEnd="12dp"
         android:background="@drawable/live_map_panel_bg"
-        android:elevation="6dp"
+        android:elevation="8dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="8dp">
 
         <ImageButton
             android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/back"
+            android:padding="13dp"
+            android:src="@drawable/ic_arrow_left"
+            app:tint="@color/ink" />
+
+        <ImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="?selectableItemBackgroundBorderless"
-            android:contentDescription="@string/back"
-            android:src="@android:drawable/ic_menu_close_clear_cancel" />
+            android:background="@drawable/bg_badge_soft"
+            android:contentDescription="@null"
+            android:padding="10dp"
+            android:src="@drawable/ic_wave"
+            app:tint="@color/primary_accent" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="10dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
@@ -43,7 +55,7 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:textColor="#202124"
+                android:textColor="@color/ink"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -53,17 +65,20 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:textColor="#5F6368"
-                android:textSize="13sp" />
+                android:textColor="@color/status_ok"
+                android:textSize="12sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <ImageButton
             android:id="@+id/btnRecenter"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="?selectableItemBackgroundBorderless"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_badge_soft"
             android:contentDescription="@string/live_map_recenter"
-            android:src="@android:drawable/ic_menu_mylocation" />
+            android:padding="11dp"
+            android:src="@drawable/ic_target"
+            app:tint="@color/primary_accent" />
     </LinearLayout>
 
     <TextView
@@ -74,12 +89,9 @@
         android:layout_marginStart="8dp"
         android:layout_marginBottom="8dp"
         android:background="@drawable/live_map_panel_bg"
-        android:paddingStart="6dp"
-        android:paddingTop="3dp"
-        android:paddingEnd="6dp"
-        android:paddingBottom="3dp"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="5dp"
         android:text="@string/live_map_attribution"
-        android:textColor="#202124"
-        android:textSize="11sp" />
-
+        android:textColor="@color/ink_secondary"
+        android:textSize="10sp" />
 </FrameLayout>
