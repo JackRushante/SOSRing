@@ -28,7 +28,7 @@ class WhatsAppNotificationListener : NotificationListenerService() {
         val shortcutId = notification.shortcutId
         val isGroupSummary = notification.flags and Notification.FLAG_GROUP_SUMMARY != 0
 
-        if (sbn.packageName == WHATSAPP_PACKAGE) {
+        if (BuildConfig.DEBUG && sbn.packageName == WHATSAPP_PACKAGE) {
             Log.i(
                 TAG,
                 "WhatsApp callback=$callback summary=$isGroupSummary " +
