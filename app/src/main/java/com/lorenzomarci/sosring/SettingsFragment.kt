@@ -53,6 +53,7 @@ class SettingsFragment : Fragment() {
         setupAppearance()
         setupVolumeSlider()
         setupSoundType()
+        setupMessageAlerts()
         setupQuietHours()
         setupLocationSharing()
         setupBackup()
@@ -128,6 +129,30 @@ class SettingsFragment : Fragment() {
             prefs.overrideSoundType = when (checkedId) {
                 R.id.rbNotification -> PrefsManager.SOUND_TYPE_NOTIFICATION
                 else -> PrefsManager.SOUND_TYPE_RINGTONE
+            }
+        }
+    }
+
+    private fun setupMessageAlerts() {
+        if (!VipMessageAlerts.supported) {
+            binding.cardMessageAlerts.visibility = View.GONE
+            return
+        }
+        binding.cardMessageAlerts.visibility = View.VISIBLE
+        binding.sliderMessageVolume.value = prefs.messageVolumePercent.toFloat()
+        binding.tvMessageVolumeValue.text = "${prefs.messageVolumePercent}%"
+        binding.sliderMessageVolume.addOnChangeListener { _, value, _ ->
+            prefs.messageVolumePercent = value.toInt()
+            binding.tvMessageVolumeValue.text = "${value.toInt()}%"
+        }
+        when (prefs.messageSoundType) {
+            PrefsManager.MESSAGE_SOUND_CONTACT -> binding.rbMessageContactSound.isChecked = true
+            else -> binding.rbMessageDefaultSound.isChecked = true
+        }
+        binding.rgMessageSoundType.setOnCheckedChangeListener { _, checkedId ->
+            prefs.messageSoundType = when (checkedId) {
+                R.id.rbMessageContactSound -> PrefsManager.MESSAGE_SOUND_CONTACT
+                else -> PrefsManager.MESSAGE_SOUND_DEFAULT
             }
         }
     }
@@ -258,6 +283,8 @@ class SettingsFragment : Fragment() {
                 ntfyAuthToken = prefs.ntfyAuthToken,
                 volumePercent = prefs.volumePercent,
                 overrideSoundType = prefs.overrideSoundType,
+                messageVolumePercent = prefs.messageVolumePercent,
+                messageSoundType = prefs.messageSoundType,
                 contacts = prefs.getContacts(),
                 quietRules = prefs.getQuietRules()
             )
@@ -368,6 +395,8 @@ class SettingsFragment : Fragment() {
         prefs.ntfyAuthToken = config.ntfyAuthToken
         prefs.volumePercent = config.volumePercent
         prefs.overrideSoundType = config.overrideSoundType
+        prefs.messageVolumePercent = config.messageVolumePercent
+        prefs.messageSoundType = config.messageSoundType
         prefs.saveContacts(config.contacts)
         prefs.saveQuietRules(config.quietRules)
 

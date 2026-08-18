@@ -5,9 +5,9 @@
 
     <application>
         <service
-            android:name=".WhatsAppNotificationListener"
+            android:name=".VipMessageNotificationListener"
             android:exported="false"
-            android:label="@string/whatsapp_listener_label"
+            android:label="@string/message_listener_label"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />

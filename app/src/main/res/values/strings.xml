@@ -283,4 +283,27 @@
     <string name="whatsapp_pair_success">WhatsApp alerts enabled for %1$s</string>
     <string name="whatsapp_unpaired">WhatsApp alerts disabled for %1$s</string>
     <string name="whatsapp_pair_cancelled">WhatsApp pairing cancelled</string>
+
+    <!-- VIP message alerts (internal flavor only) -->
+    <string name="message_listener_label">SOS Ring — VIP message alerts</string>
+    <string name="message_alerts_menu">VIP message alerts</string>
+    <string name="message_app_whatsapp">WhatsApp</string>
+    <string name="message_app_google_messages">SMS / RCS</string>
+    <string name="message_app_telegram">Telegram</string>
+    <string name="message_pair_app">Pair %1$s</string>
+    <string name="message_pair_cancel_app">Cancel %1$s pairing</string>
+    <string name="message_unpair_app">Disable %1$s alert</string>
+    <string name="message_access_title">Notification access</string>
+    <string name="message_access_message">Allow SOS Ring to access notifications so it can identify direct conversations from VIP contacts. Message text is never stored.</string>
+    <string name="message_pair_title">Pair %1$s conversation</string>
+    <string name="message_pair_message">With %1$s closed, ask %2$s to send a direct message. The next direct conversation in that app will be paired with this VIP.</string>
+    <string name="message_pair_google_message">Ask %1$s to send a direct SMS or RCS message. SOS Ring pairs it automatically when Google Messages exposes the phone number; otherwise the next direct conversation is paired explicitly.</string>
+    <string name="message_pair_success">%1$s alerts enabled for %2$s</string>
+    <string name="message_auto_paired">SMS/RCS alerts automatically enabled for %1$s</string>
+    <string name="message_unpaired">%1$s alerts disabled for %2$s</string>
+    <string name="message_pair_cancelled">%1$s pairing cancelled</string>
+    <string name="message_settings_title">VIP message alerts</string>
+    <string name="message_settings_desc">Separate volume and sound for WhatsApp, SMS/RCS and Telegram</string>
+    <string name="message_sound_default">Default Android notification sound</string>
+    <string name="message_sound_contact">Sound assigned to the VIP contact (default notification if unavailable)</string>
 </resources>

@@ -13,6 +13,8 @@ data class AppConfig(
     val ntfyAuthToken: String,
     val volumePercent: Int,
     val overrideSoundType: Int,
+    val messageVolumePercent: Int,
+    val messageSoundType: Int,
     val contacts: List<VipContact>,
     val quietRules: List<QuietRule>
 )
@@ -38,6 +40,8 @@ object ConfigExporter {
         ntfyAuthToken: String,
         volumePercent: Int,
         overrideSoundType: Int,
+        messageVolumePercent: Int,
+        messageSoundType: Int,
         contacts: List<VipContact>,
         quietRules: List<QuietRule>
     ): AppConfig = AppConfig(
@@ -50,6 +54,8 @@ object ConfigExporter {
         ntfyAuthToken = ntfyAuthToken,
         volumePercent = volumePercent,
         overrideSoundType = overrideSoundType,
+        messageVolumePercent = messageVolumePercent,
+        messageSoundType = messageSoundType,
         contacts = contacts,
         quietRules = quietRules
     )
@@ -84,6 +90,8 @@ object ConfigExporter {
             put("ntfyAuthToken", config.ntfyAuthToken)
             put("volumePercent", config.volumePercent)
             put("overrideSoundType", config.overrideSoundType)
+            put("messageVolumePercent", config.messageVolumePercent)
+            put("messageSoundType", config.messageSoundType)
             put("contacts", contactsArr)
             put("quietRules", rulesArr)
         }
@@ -106,6 +114,11 @@ object ConfigExporter {
             val ntfyAuthToken = root.optString("ntfyAuthToken", "")
             val volumePercent = root.optInt("volumePercent", PrefsManager.DEFAULT_VOLUME_PERCENT)
             val overrideSoundType = root.optInt("overrideSoundType", PrefsManager.SOUND_TYPE_RINGTONE)
+            val messageVolumePercent = root.optInt(
+                "messageVolumePercent",
+                PrefsManager.DEFAULT_MESSAGE_VOLUME_PERCENT
+            )
+            val messageSoundType = root.optInt("messageSoundType", PrefsManager.MESSAGE_SOUND_DEFAULT)
 
             val contactsArr = root.optJSONArray("contacts")
             val contacts = mutableListOf<VipContact>()
@@ -159,6 +172,8 @@ object ConfigExporter {
                 ntfyAuthToken = ntfyAuthToken,
                 volumePercent = volumePercent,
                 overrideSoundType = overrideSoundType,
+                messageVolumePercent = messageVolumePercent,
+                messageSoundType = messageSoundType,
                 contacts = contacts,
                 quietRules = rules
             )

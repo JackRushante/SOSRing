@@ -49,6 +49,12 @@ class PrefsManager(context: Context) {
         const val MAX_VOLUME_PERCENT = 100
         const val DEFAULT_VOLUME_PERCENT = 100
 
+        private const val KEY_MESSAGE_VOLUME_PERCENT = "message_volume_percent"
+        const val DEFAULT_MESSAGE_VOLUME_PERCENT = 100
+        private const val KEY_MESSAGE_SOUND_TYPE = "message_sound_type"
+        const val MESSAGE_SOUND_DEFAULT = 0
+        const val MESSAGE_SOUND_CONTACT = 1
+
         private const val KEY_MUTE_UNTIL = "mute_until_timestamp"
         private const val KEY_OVERRIDE_SOUND_TYPE = "override_sound_type"
         const val SOUND_TYPE_RINGTONE = 0
@@ -117,6 +123,20 @@ class PrefsManager(context: Context) {
     var volumePercent: Int
         get() = prefs.getInt(KEY_VOLUME_PERCENT, DEFAULT_VOLUME_PERCENT)
         set(value) = prefs.edit().putInt(KEY_VOLUME_PERCENT, value.coerceIn(MIN_VOLUME_PERCENT, MAX_VOLUME_PERCENT)).apply()
+
+    var messageVolumePercent: Int
+        get() = prefs.getInt(KEY_MESSAGE_VOLUME_PERCENT, DEFAULT_MESSAGE_VOLUME_PERCENT)
+        set(value) = prefs.edit()
+            .putInt(KEY_MESSAGE_VOLUME_PERCENT, value.coerceIn(MIN_VOLUME_PERCENT, MAX_VOLUME_PERCENT))
+            .apply()
+
+    var messageSoundType: Int
+        get() = prefs.getInt(KEY_MESSAGE_SOUND_TYPE, MESSAGE_SOUND_DEFAULT).let {
+            if (it == MESSAGE_SOUND_CONTACT) MESSAGE_SOUND_CONTACT else MESSAGE_SOUND_DEFAULT
+        }
+        set(value) = prefs.edit()
+            .putInt(KEY_MESSAGE_SOUND_TYPE, if (value == MESSAGE_SOUND_CONTACT) MESSAGE_SOUND_CONTACT else MESSAGE_SOUND_DEFAULT)
+            .apply()
 
     var muteUntilTimestamp: Long
         get() = prefs.getLong(KEY_MUTE_UNTIL, 0L)

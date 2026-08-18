@@ -135,7 +135,7 @@ private fun setupRecyclerView() {
             onTrackTap = { contact -> showTrackChoiceDialog(contact) },
             onStop = { contact -> stopLiveTrackingFor(contact) },
             onViewPath = { contact -> viewContactPath(contact) },
-            onWhatsAppTap = { contact -> handleWhatsAppAlert(contact) },
+            onMessageAlertTap = { contact, app -> handleMessageAlert(contact, app) },
             liveTrackingNumber = {
                 Push.liveEngine()?.liveContactNumber
             }
@@ -144,35 +144,36 @@ private fun setupRecyclerView() {
         binding.rvContacts.adapter = adapter
     }
 
-    private fun handleWhatsAppAlert(contact: VipContact) {
-        when (WhatsAppAlerts.state(requireContext(), contact)) {
-            WhatsAppAlertState.PAIRED -> {
-                WhatsAppAlerts.unpair(requireContext(), contact)
+    private fun handleMessageAlert(contact: VipContact, app: MessageApp) {
+        val appName = messageAppName(app)
+        when (VipMessageAlerts.state(requireContext(), contact, app)) {
+            MessageAlertState.PAIRED -> {
+                VipMessageAlerts.unpair(requireContext(), contact, app)
                 Toast.makeText(
                     requireContext(),
-                    getString(R.string.whatsapp_unpaired, contact.name),
+                    getString(R.string.message_unpaired, appName, contact.name),
                     Toast.LENGTH_SHORT
                 ).show()
                 adapter.notifyDataSetChanged()
             }
-            WhatsAppAlertState.PAIRING -> {
-                WhatsAppAlerts.cancelPairing(requireContext())
+            MessageAlertState.PAIRING -> {
+                VipMessageAlerts.cancelPairing(requireContext())
                 Toast.makeText(
                     requireContext(),
-                    getString(R.string.whatsapp_pair_cancelled),
+                    getString(R.string.message_pair_cancelled, appName),
                     Toast.LENGTH_SHORT
                 ).show()
                 adapter.notifyDataSetChanged()
             }
-            WhatsAppAlertState.UNPAIRED -> {
-                if (WhatsAppAlerts.hasNotificationAccess(requireContext())) {
-                    beginWhatsAppPairing(contact)
+            MessageAlertState.UNPAIRED -> {
+                if (VipMessageAlerts.hasNotificationAccess(requireContext())) {
+                    beginMessagePairing(contact, app)
                 } else {
                     MaterialAlertDialogBuilder(requireContext())
-                        .setTitle(getString(R.string.whatsapp_access_title))
-                        .setMessage(getString(R.string.whatsapp_access_message))
+                        .setTitle(getString(R.string.message_access_title))
+                        .setMessage(getString(R.string.message_access_message))
                         .setPositiveButton(getString(R.string.btn_open_settings)) { _, _ ->
-                            WhatsAppAlerts.beginPairing(requireContext(), contact)
+                            VipMessageAlerts.beginPairing(requireContext(), contact, app)
                             startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
                         }
                         .setNegativeButton(getString(R.string.btn_cancel), null)
@@ -182,19 +183,34 @@ private fun setupRecyclerView() {
         }
     }
 
-    private fun beginWhatsAppPairing(contact: VipContact) {
-        WhatsAppAlerts.beginPairing(requireContext(), contact)
+    private fun beginMessagePairing(contact: VipContact, app: MessageApp) {
+        val appName = messageAppName(app)
+        VipMessageAlerts.beginPairing(requireContext(), contact, app)
         adapter.notifyDataSetChanged()
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle(getString(R.string.whatsapp_pair_title))
-            .setMessage(getString(R.string.whatsapp_pair_message, contact.name))
+            .setTitle(getString(R.string.message_pair_title, appName))
+            .setMessage(
+                if (app == MessageApp.GOOGLE_MESSAGES) {
+                    getString(R.string.message_pair_google_message, contact.name)
+                } else {
+                    getString(R.string.message_pair_message, appName, contact.name)
+                }
+            )
             .setPositiveButton(getString(R.string.btn_continue), null)
             .setNegativeButton(getString(R.string.btn_cancel)) { _, _ ->
-                WhatsAppAlerts.cancelPairing(requireContext())
+                VipMessageAlerts.cancelPairing(requireContext())
                 adapter.notifyDataSetChanged()
             }
             .show()
     }
+
+    private fun messageAppName(app: MessageApp): String = getString(
+        when (app) {
+            MessageApp.WHATSAPP -> R.string.message_app_whatsapp
+            MessageApp.GOOGLE_MESSAGES -> R.string.message_app_google_messages
+            MessageApp.TELEGRAM -> R.string.message_app_telegram
+        }
+    )
 
     private fun showTrackChoiceDialog(contact: VipContact) {
         if (!Push.supportsLiveTracking) {
@@ -601,7 +617,7 @@ private fun setupRecyclerView() {
                 val name = etName.text.toString().trim()
                 val number = etNumber.text.toString().trim()
                 if (name.isNotEmpty() && number.length > 3) {
-                    WhatsAppAlerts.onContactChanged(requireContext(), contact.number, number)
+                    VipMessageAlerts.onContactChanged(requireContext(), contact.number, number)
                     contacts[position] = contact.copy(name = name, number = number)
                     saveAndRefresh()
                 } else {
@@ -618,7 +634,7 @@ private fun setupRecyclerView() {
             .setTitle(getString(R.string.remove_contact_title))
             .setMessage(getString(R.string.remove_contact_msg, contact.name, contact.number))
             .setPositiveButton(getString(R.string.btn_remove)) { _, _ ->
-                WhatsAppAlerts.onContactRemoved(requireContext(), contact.number)
+                VipMessageAlerts.onContactRemoved(requireContext(), contact.number)
                 contacts.removeAt(position)
                 saveAndRefresh()
             }

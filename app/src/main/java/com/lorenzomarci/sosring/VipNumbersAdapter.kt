@@ -16,7 +16,7 @@ class VipNumbersAdapter(
     private val onTrackTap: ((VipContact) -> Unit)? = null,
     private val onStop: ((VipContact) -> Unit)? = null,
     private val onViewPath: ((VipContact) -> Unit)? = null,
-    private val onWhatsAppTap: ((VipContact) -> Unit)? = null,
+    private val onMessageAlertTap: ((VipContact, MessageApp) -> Unit)? = null,
     private val liveTrackingNumber: () -> String? = { null }
 ) : ListAdapter<VipContact, VipNumbersAdapter.ViewHolder>(DiffCallback) {
 
@@ -61,23 +61,44 @@ class VipNumbersAdapter(
         private fun showMoreMenu(anchor: View, position: Int, contact: VipContact) {
             val menu = PopupMenu(anchor.context, anchor)
             menu.menuInflater.inflate(R.menu.vip_row_menu, menu.menu)
-            menu.menu.findItem(R.id.action_whatsapp_alert)?.apply {
-                isVisible = WhatsAppAlerts.supported && onWhatsAppTap != null
-                title = when (WhatsAppAlerts.state(anchor.context, contact)) {
-                    WhatsAppAlertState.UNPAIRED -> anchor.context.getString(R.string.whatsapp_pair)
-                    WhatsAppAlertState.PAIRING -> anchor.context.getString(R.string.whatsapp_pair_cancel)
-                    WhatsAppAlertState.PAIRED -> anchor.context.getString(R.string.whatsapp_unpair)
-                }
+            menu.menu.findItem(R.id.action_message_alerts)?.isVisible =
+                VipMessageAlerts.supported && onMessageAlertTap != null
+            val appItems = mapOf(
+                MessageApp.WHATSAPP to R.id.action_whatsapp_alert,
+                MessageApp.GOOGLE_MESSAGES to R.id.action_google_messages_alert,
+                MessageApp.TELEGRAM to R.id.action_telegram_alert
+            )
+            appItems.forEach { (app, itemId) ->
+                menu.menu.findItem(itemId)?.title = messageMenuTitle(anchor, contact, app)
             }
             menu.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.action_edit -> { onEdit(position, contact); true }
-                    R.id.action_whatsapp_alert -> { onWhatsAppTap?.invoke(contact); true }
+                    R.id.action_whatsapp_alert -> { onMessageAlertTap?.invoke(contact, MessageApp.WHATSAPP); true }
+                    R.id.action_google_messages_alert -> {
+                        onMessageAlertTap?.invoke(contact, MessageApp.GOOGLE_MESSAGES); true
+                    }
+                    R.id.action_telegram_alert -> { onMessageAlertTap?.invoke(contact, MessageApp.TELEGRAM); true }
                     R.id.action_delete -> { onDelete(position); true }
                     else -> false
                 }
             }
             menu.show()
+        }
+
+        private fun messageMenuTitle(anchor: View, contact: VipContact, app: MessageApp): String {
+            val appName = anchor.context.getString(
+                when (app) {
+                    MessageApp.WHATSAPP -> R.string.message_app_whatsapp
+                    MessageApp.GOOGLE_MESSAGES -> R.string.message_app_google_messages
+                    MessageApp.TELEGRAM -> R.string.message_app_telegram
+                }
+            )
+            return when (VipMessageAlerts.state(anchor.context, contact, app)) {
+                MessageAlertState.UNPAIRED -> anchor.context.getString(R.string.message_pair_app, appName)
+                MessageAlertState.PAIRING -> anchor.context.getString(R.string.message_pair_cancel_app, appName)
+                MessageAlertState.PAIRED -> anchor.context.getString(R.string.message_unpair_app, appName)
+            }
         }
     }
 
