@@ -34,7 +34,8 @@ class VipMessageNotificationListener : NotificationListenerService() {
             false
         )
 
-        if (BuildConfig.DEBUG) {
+        val diagnosticsEnabled = BuildConfig.DEBUG || Log.isLoggable(TAG, Log.DEBUG)
+        if (diagnosticsEnabled) {
             Log.i(
                 TAG,
                 "Message callback=$callback app=${app.storageId} summary=$isGroupSummary " +
@@ -72,6 +73,9 @@ class VipMessageNotificationListener : NotificationListenerService() {
             GoogleMessagesVipResolver.candidateNumbers(this, notification, rawMessages)
         } else {
             emptySet()
+        }
+        if (diagnosticsEnabled && app == MessageApp.GOOGLE_MESSAGES) {
+            Log.i(TAG, "Google Messages candidate phone numbers=${googleNumbers.size}")
         }
 
         val pending = store.pending
