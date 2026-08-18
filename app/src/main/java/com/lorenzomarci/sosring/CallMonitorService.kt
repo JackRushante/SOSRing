@@ -35,6 +35,9 @@ class CallMonitorService : Service() {
         private const val OVERRIDE_CHANNEL_ID = "sosring_override"
         private const val OVERRIDE_NOTIFICATION_ID = 2
         private const val PERM_WARNING_NOTIFICATION_ID = 5
+        private const val ACTION_WHATSAPP_ALERT = "com.lorenzomarci.sosring.WHATSAPP_VIP_ALERT"
+        private const val EXTRA_VIP_NUMBER = "vip_number"
+        private const val WHATSAPP_ALERT_TIMEOUT_MS = 15_000L
 
         fun start(context: Context) {
             val intent = Intent(context, CallMonitorService::class.java)
@@ -43,6 +46,18 @@ class CallMonitorService : Service() {
 
         fun stop(context: Context) {
             context.stopService(Intent(context, CallMonitorService::class.java))
+        }
+
+        fun playWhatsAppAlert(context: Context, number: String) {
+            instance?.let {
+                it.overrideWhatsAppAlert(number)
+                return
+            }
+            val intent = Intent(context, CallMonitorService::class.java).apply {
+                action = ACTION_WHATSAPP_ALERT
+                putExtra(EXTRA_VIP_NUMBER, number)
+            }
+            context.startForegroundService(intent)
         }
 
         private var instance: CallMonitorService? = null
@@ -61,8 +76,10 @@ class CallMonitorService : Service() {
     private val updateInterval = 12 * 60 * 60 * 1000L // 12 hours
 
     private var isOverriding = false
+    private var overrideKind: OverrideKind? = null
     private var savedAlarmVolume = 0
     private var savedDndFilter = NotificationManager.INTERRUPTION_FILTER_ALL
+    private val overrideHandler = android.os.Handler(android.os.Looper.getMainLooper())
 
     private var mediaPlayer: MediaPlayer? = null
     private var vibrator: Vibrator? = null
@@ -98,6 +115,9 @@ class CallMonitorService : Service() {
                                 )
                                 if (shouldOverride) {
                                     Log.i(TAG, "VIP call detected! Overriding audio.")
+                                    if (isOverriding && overrideKind == OverrideKind.WHATSAPP) {
+                                        restoreAudio()
+                                    }
                                     overrideAudio(number)
                                 } else {
                                     Log.i(TAG, "VIP call detected but system already audible. Skipping override.")
@@ -109,14 +129,14 @@ class CallMonitorService : Service() {
                     }
                 }
                 TelephonyManager.EXTRA_STATE_IDLE -> {
-                    if (isOverriding) {
+                    if (isOverriding && overrideKind == OverrideKind.CALL) {
                         Log.i(TAG, "Call ended. Restoring audio.")
                         restoreAudio()
                     }
                 }
                 TelephonyManager.EXTRA_STATE_OFFHOOK -> {
                     // Call answered — stop ringtone/vibration, restore audio on IDLE
-                    if (isOverriding) {
+                    if (isOverriding && overrideKind == OverrideKind.CALL) {
                         Log.i(TAG, "Call answered. Stopping ringtone.")
                         stopRingtoneAndVibration()
                     }
@@ -160,6 +180,9 @@ class CallMonitorService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_WHATSAPP_ALERT) {
+            intent.getStringExtra(EXTRA_VIP_NUMBER)?.let(::overrideWhatsAppAlert)
+        }
         return START_STICKY
     }
 
@@ -192,6 +215,7 @@ class CallMonitorService : Service() {
 
     override fun onDestroy() {
         updateHandler.removeCallbacksAndMessages(null)
+        overrideHandler.removeCallbacksAndMessages(null)
         pushEngine?.stop()
         pushEngine = null
         stopRingtoneAndVibration()
@@ -212,6 +236,7 @@ class CallMonitorService : Service() {
         savedAlarmVolume = prefs.savedAlarmVolume
         savedDndFilter = prefs.savedDndFilter
         isOverriding = true
+        overrideKind = OverrideKind.CALL
 
         if (OverrideStatePolicy.shouldRestoreOnStart(persistedOverriding, isCallStateIdle())) {
             Log.i(TAG, "Self-healing stale override state after process restart.")
@@ -268,23 +293,55 @@ class CallMonitorService : Service() {
 
     @Suppress("DEPRECATION")
     private fun overrideAudio(number: String) {
-        if (isOverriding) return
+        if (!beginAudioOverride(number, OverrideKind.CALL)) return
 
-        if (!AudioOverridePolicy.shouldOverride(audioManager.ringerMode, audioManager.getStreamVolume(AudioManager.STREAM_RING), notificationManager.currentInterruptionFilter)) {
-            Log.i(TAG, "Phone already allows calls, skipping override.")
-            return
+        startOverrideSound()
+
+        // Start vibration
+        startVibration()
+        notificationManager.notify(OVERRIDE_NOTIFICATION_ID, buildOverrideNotification())
+    }
+
+    private fun overrideWhatsAppAlert(number: String) {
+        if (!prefs.isServiceEnabled || prefs.isMuted || prefs.isInQuietPeriod()) return
+        if (!beginAudioOverride(number, OverrideKind.WHATSAPP)) return
+
+        val defaultUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+        val candidates = listOfNotNull(
+            defaultUri?.let { it to "default notification" },
+            alarmUri?.let { it to "alarm" }
+        )
+        val finish = {
+            if (isOverriding && overrideKind == OverrideKind.WHATSAPP) restoreAudio()
+        }
+        playCandidate(candidates, 0, looping = false, onCompletion = finish, onAllFailed = finish)
+        overrideHandler.postDelayed(finish, WHATSAPP_ALERT_TIMEOUT_MS)
+    }
+
+    @Suppress("DEPRECATION")
+    private fun beginAudioOverride(number: String, kind: OverrideKind): Boolean {
+        if (isOverriding) return false
+        if (!AudioOverridePolicy.shouldOverride(
+                audioManager.ringerMode,
+                audioManager.getStreamVolume(AudioManager.STREAM_RING),
+                notificationManager.currentInterruptionFilter
+            )) {
+            Log.i(TAG, "System already audible; ${kind.name.lowercase()} override skipped.")
+            return false
         }
 
         currentRingingNumber = number
+        savedAlarmVolume = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
+        savedDndFilter = notificationManager.currentInterruptionFilter
+        isOverriding = true
+        overrideKind = kind
+        prefs.savedAlarmVolume = savedAlarmVolume
+        prefs.savedDndFilter = savedDndFilter
+        prefs.overrideActive = true
 
-        try {
-            // Save the state changed by SOS Ring.
-            savedAlarmVolume = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
-            savedDndFilter = notificationManager.currentInterruptionFilter
-
+        return try {
             Log.d(TAG, "Saved state: alarmVol=$savedAlarmVolume, dnd=$savedDndFilter")
-
-            // 1. Override DND FIRST
             if (notificationManager.isNotificationPolicyAccessGranted) {
                 notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
                 Log.d(TAG, "DND overridden to FILTER_ALL")
@@ -302,28 +359,18 @@ class CallMonitorService : Service() {
                 )
             }
 
-            val volumePercent = prefs.volumePercent
             val alarmMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
-            val alarmTarget = (alarmMax * volumePercent / 100).coerceAtLeast(1)
+            val alarmTarget = (alarmMax * prefs.volumePercent / 100).coerceAtLeast(1)
             val alarmCurrent = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
             val alarmFinal = maxOf(alarmTarget, alarmCurrent)
             audioManager.setStreamVolume(AudioManager.STREAM_ALARM, alarmFinal, 0)
             Log.d(TAG, "Override playback: alarm volume=$alarmFinal (app=$alarmTarget, system=$alarmCurrent)")
-
+            true
         } catch (e: Exception) {
             Log.e(TAG, "Error during audio override: ${e.message}", e)
+            restoreAudio()
+            false
         }
-
-        startOverrideSound()
-
-        // Start vibration
-        startVibration()
-
-        isOverriding = true
-        prefs.savedAlarmVolume = savedAlarmVolume
-        prefs.savedDndFilter = savedDndFilter
-        prefs.overrideActive = true
-        notificationManager.notify(OVERRIDE_NOTIFICATION_ID, buildOverrideNotification())
     }
 
     private fun startOverrideSound() {
@@ -342,12 +389,19 @@ class CallMonitorService : Service() {
             defaultUri?.let { it to "default ringtone" },
             alarmUri?.let { it to "alarm" }
         )
-        playCandidate(candidates, 0)
+        playCandidate(candidates, 0, looping = prefs.overrideSoundType != PrefsManager.SOUND_TYPE_NOTIFICATION)
     }
 
-    private fun playCandidate(candidates: List<Pair<Uri, String>>, index: Int) {
+    private fun playCandidate(
+        candidates: List<Pair<Uri, String>>,
+        index: Int,
+        looping: Boolean,
+        onCompletion: (() -> Unit)? = null,
+        onAllFailed: (() -> Unit)? = null
+    ) {
         if (index >= candidates.size) {
             Log.e(TAG, "Failed to play override sound: all URIs failed")
+            onAllFailed?.invoke()
             return
         }
 
@@ -364,7 +418,7 @@ class CallMonitorService : Service() {
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                     .build()
             )
-            mp.isLooping = prefs.overrideSoundType != PrefsManager.SOUND_TYPE_NOTIFICATION
+            mp.isLooping = looping
             mp.setVolume(vol, vol)
             mp.setOnPreparedListener { player ->
                 if (mediaPlayer !== player) return@setOnPreparedListener
@@ -375,13 +429,16 @@ class CallMonitorService : Service() {
                     Log.e(TAG, "Failed to start prepared override sound: ${e.message}")
                 }
             }
+            mp.setOnCompletionListener { player ->
+                if (mediaPlayer === player) onCompletion?.invoke()
+            }
             mp.setOnErrorListener { player, what, extra ->
                 Log.e(TAG, "MediaPlayer error preparing override sound: what=$what extra=$extra")
                 if (mediaPlayer === player) {
                     mediaPlayer = null
                     try { player.release() } catch (_: Exception) {}
                     Log.w(TAG, "Override sound ($label) failed asynchronously, advancing fallback chain.")
-                    playCandidate(candidates, index + 1)
+                    playCandidate(candidates, index + 1, looping, onCompletion, onAllFailed)
                 } else {
                     try { player.release() } catch (_: Exception) {}
                 }
@@ -392,7 +449,7 @@ class CallMonitorService : Service() {
         } catch (e: Exception) {
             Log.w(TAG, "Failed to play URI: ${e.message}")
             try { mp.release() } catch (_: Exception) {}
-            playCandidate(candidates, index + 1)
+            playCandidate(candidates, index + 1, looping, onCompletion, onAllFailed)
         }
     }
 
@@ -439,6 +496,8 @@ class CallMonitorService : Service() {
     private fun restoreAudio() {
         if (!isOverriding) return
 
+        overrideHandler.removeCallbacksAndMessages(null)
+
         Log.d(TAG, "Restoring state: alarmVol=$savedAlarmVolume, dnd=$savedDndFilter")
 
         // 1. Stop our sound and vibration
@@ -459,9 +518,15 @@ class CallMonitorService : Service() {
         }
 
         isOverriding = false
+        overrideKind = null
         prefs.overrideActive = false
         notificationManager.cancel(OVERRIDE_NOTIFICATION_ID)
         currentRingingNumber = null
+    }
+
+    private enum class OverrideKind {
+        CALL,
+        WHATSAPP
     }
 
     private fun createNotificationChannels() {

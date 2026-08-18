@@ -135,12 +135,65 @@ private fun setupRecyclerView() {
             onTrackTap = { contact -> showTrackChoiceDialog(contact) },
             onStop = { contact -> stopLiveTrackingFor(contact) },
             onViewPath = { contact -> viewContactPath(contact) },
+            onWhatsAppTap = { contact -> handleWhatsAppAlert(contact) },
             liveTrackingNumber = {
                 Push.liveEngine()?.liveContactNumber
             }
         )
         binding.rvContacts.layoutManager = LinearLayoutManager(requireContext())
         binding.rvContacts.adapter = adapter
+    }
+
+    private fun handleWhatsAppAlert(contact: VipContact) {
+        when (WhatsAppAlerts.state(requireContext(), contact)) {
+            WhatsAppAlertState.PAIRED -> {
+                WhatsAppAlerts.unpair(requireContext(), contact)
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.whatsapp_unpaired, contact.name),
+                    Toast.LENGTH_SHORT
+                ).show()
+                adapter.notifyDataSetChanged()
+            }
+            WhatsAppAlertState.PAIRING -> {
+                WhatsAppAlerts.cancelPairing(requireContext())
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.whatsapp_pair_cancelled),
+                    Toast.LENGTH_SHORT
+                ).show()
+                adapter.notifyDataSetChanged()
+            }
+            WhatsAppAlertState.UNPAIRED -> {
+                if (WhatsAppAlerts.hasNotificationAccess(requireContext())) {
+                    beginWhatsAppPairing(contact)
+                } else {
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(getString(R.string.whatsapp_access_title))
+                        .setMessage(getString(R.string.whatsapp_access_message))
+                        .setPositiveButton(getString(R.string.btn_open_settings)) { _, _ ->
+                            WhatsAppAlerts.beginPairing(requireContext(), contact)
+                            startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                        }
+                        .setNegativeButton(getString(R.string.btn_cancel), null)
+                        .show()
+                }
+            }
+        }
+    }
+
+    private fun beginWhatsAppPairing(contact: VipContact) {
+        WhatsAppAlerts.beginPairing(requireContext(), contact)
+        adapter.notifyDataSetChanged()
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.whatsapp_pair_title))
+            .setMessage(getString(R.string.whatsapp_pair_message, contact.name))
+            .setPositiveButton(getString(R.string.btn_continue), null)
+            .setNegativeButton(getString(R.string.btn_cancel)) { _, _ ->
+                WhatsAppAlerts.cancelPairing(requireContext())
+                adapter.notifyDataSetChanged()
+            }
+            .show()
     }
 
     private fun showTrackChoiceDialog(contact: VipContact) {
@@ -548,6 +601,7 @@ private fun setupRecyclerView() {
                 val name = etName.text.toString().trim()
                 val number = etNumber.text.toString().trim()
                 if (name.isNotEmpty() && number.length > 3) {
+                    WhatsAppAlerts.onContactChanged(requireContext(), contact.number, number)
                     contacts[position] = contact.copy(name = name, number = number)
                     saveAndRefresh()
                 } else {
@@ -564,6 +618,7 @@ private fun setupRecyclerView() {
             .setTitle(getString(R.string.remove_contact_title))
             .setMessage(getString(R.string.remove_contact_msg, contact.name, contact.number))
             .setPositiveButton(getString(R.string.btn_remove)) { _, _ ->
+                WhatsAppAlerts.onContactRemoved(requireContext(), contact.number)
                 contacts.removeAt(position)
                 saveAndRefresh()
             }

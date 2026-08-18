@@ -270,4 +270,16 @@
     <string name="backup_import_password_message">Inserisci la password del backup.</string>
     <string name="backup_import_wrong_password">Password errata o file danneggiato</string>
     <string name="backup_import_legacy_rejected">Questo backup non è cifrato e non è più supportato. Creane uno nuovo.</string>
+    <!-- Avvisi WhatsApp VIP (solo flavor internal) -->
+    <string name="whatsapp_listener_label">SOS Ring — avvisi WhatsApp VIP</string>
+    <string name="whatsapp_pair">Associa chat WhatsApp</string>
+    <string name="whatsapp_unpair">Disattiva avviso WhatsApp</string>
+    <string name="whatsapp_pair_cancel">Annulla associazione WhatsApp</string>
+    <string name="whatsapp_access_title">Accesso alle notifiche</string>
+    <string name="whatsapp_access_message">Per riconoscere i messaggi di questa chat WhatsApp, autorizza SOS Ring ad accedere alle notifiche. Poi torna qui e invia un messaggio WhatsApp diretto dal VIP. SOS Ring elabora solo i metadati WhatsApp e non salva mai il testo dei messaggi.</string>
+    <string name="whatsapp_pair_title">Associa chat WhatsApp</string>
+    <string name="whatsapp_pair_message">Con WhatsApp chiuso, invia un messaggio diretto da %1$s. La prossima conversazione WhatsApp diretta verrà associata a questo VIP.</string>
+    <string name="whatsapp_pair_success">Avvisi WhatsApp attivati per %1$s</string>
+    <string name="whatsapp_unpaired">Avvisi WhatsApp disattivati per %1$s</string>
+    <string name="whatsapp_pair_cancelled">Associazione WhatsApp annullata</string>
 </resources>
