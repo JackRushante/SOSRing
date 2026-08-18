@@ -19,6 +19,15 @@ class WhatsAppNotificationPolicyTest {
                 messageCount = 1
             )
         )
+        assertTrue(
+            WhatsAppNotificationPolicy.shouldInspect(
+                packageName = "com.whatsapp",
+                isGroupSummary = false,
+                category = null,
+                shortcutId = "conversation-id",
+                messageCount = 1
+            )
+        )
     }
 
     @Test

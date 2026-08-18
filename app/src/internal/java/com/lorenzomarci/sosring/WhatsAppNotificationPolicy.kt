@@ -13,7 +13,7 @@ object WhatsAppNotificationPolicy {
         messageCount: Int
     ): Boolean = packageName == PACKAGE_WHATSAPP &&
         !isGroupSummary &&
-        category == "msg" &&
+        (category == null || category == "msg") &&
         !shortcutId.isNullOrBlank() &&
         messageCount > 0
 
