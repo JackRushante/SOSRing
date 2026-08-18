@@ -3,6 +3,7 @@ package com.lorenzomarci.sosring
 import android.app.Notification
 import android.os.Bundle
 import android.service.notification.NotificationListenerService
+import android.service.notification.NotificationListenerService.RankingMap
 import android.service.notification.StatusBarNotification
 import android.util.Log
 import android.widget.Toast
@@ -10,17 +11,39 @@ import android.widget.Toast
 class WhatsAppNotificationListener : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
+        handleNotification(sbn, "legacy")
+    }
+
+    override fun onNotificationPosted(sbn: StatusBarNotification, rankingMap: RankingMap) {
+        handleNotification(sbn, "ranking")
+    }
+
+    @Suppress("DEPRECATION")
+    private fun handleNotification(sbn: StatusBarNotification, callback: String) {
         val notification = sbn.notification ?: return
-        val messages = messageBundles(notification.extras)
+        val rawMessages = notification.extras
+            .getParcelableArray(Notification.EXTRA_MESSAGES)
+            .orEmpty()
+        val messages = rawMessages.mapNotNull { it as? Bundle }
         val shortcutId = notification.shortcutId
         val isGroupSummary = notification.flags and Notification.FLAG_GROUP_SUMMARY != 0
+
+        if (sbn.packageName == WHATSAPP_PACKAGE) {
+            Log.i(
+                TAG,
+                "WhatsApp callback=$callback summary=$isGroupSummary " +
+                    "category=${notification.category} shortcut=${shortcutId != null} " +
+                    "messages=${rawMessages.size} bundles=${messages.size} " +
+                    "group=${notification.extras.getBoolean(Notification.EXTRA_IS_GROUP_CONVERSATION, false)}"
+            )
+        }
 
         if (!WhatsAppNotificationPolicy.shouldInspect(
                 packageName = sbn.packageName,
                 isGroupSummary = isGroupSummary,
                 category = notification.category,
                 shortcutId = shortcutId,
-                messageCount = messages.size
+                messageCount = rawMessages.size
             )) return
 
         if (notification.extras.getBoolean(Notification.EXTRA_IS_GROUP_CONVERSATION, false)) {
@@ -36,7 +59,7 @@ class WhatsAppNotificationListener : NotificationListenerService() {
         val eventFingerprint = WhatsAppNotificationPolicy.eventFingerprint(
             shortcutId = shortcutId,
             latestMessageTime = latestMessageTime,
-            messageCount = messages.size
+            messageCount = rawMessages.size
         )
 
         val store = WhatsAppBindingStore(this)
@@ -72,14 +95,9 @@ class WhatsAppNotificationListener : NotificationListenerService() {
         CallMonitorService.playWhatsAppAlert(this, contact.number)
     }
 
-    @Suppress("DEPRECATION")
-    private fun messageBundles(extras: Bundle): List<Bundle> =
-        extras.getParcelableArray(Notification.EXTRA_MESSAGES)
-            ?.mapNotNull { it as? Bundle }
-            .orEmpty()
-
     companion object {
         private const val TAG = "SOSRingWhatsApp"
+        private const val WHATSAPP_PACKAGE = "com.whatsapp"
         private const val MESSAGE_TIME_KEY = "time"
     }
 }
