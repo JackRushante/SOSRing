@@ -7,6 +7,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Parcelable
 import android.provider.ContactsContract
 import androidx.core.content.ContextCompat
@@ -19,10 +20,12 @@ object GoogleMessagesVipResolver {
         rawMessages: Array<out Parcelable>
     ): Set<String> {
         val uris = linkedSetOf<String>()
-        try {
-            Notification.MessagingStyle.Message.getMessagesFromBundleArray(rawMessages)
-                .mapNotNullTo(uris) { it.senderPerson?.uri }
-        } catch (_: Exception) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                Notification.MessagingStyle.Message.getMessagesFromBundleArray(rawMessages)
+                    .mapNotNullTo(uris) { it.senderPerson?.uri }
+            } catch (_: Exception) {
+            }
         }
         people(notification).mapNotNullTo(uris) { it.uri }
         return uris.flatMapTo(linkedSetOf()) { numbersForUri(context, it) }
