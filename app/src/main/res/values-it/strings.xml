@@ -151,12 +151,12 @@
     <string name="mute_button">Metti in pausa il Monitoraggio</string>
     <string name="mute_button_cancel">Riattiva il Monitoraggio</string>
     <string name="mute_subtitle">Pausa temporanea 1–12 ore</string>
-    <string name="mute_dialog_title">Disattiva suoneria</string>
-    <string name="mute_dialog_message">La suoneria di override sarà disabilitata per la durata selezionata. La condivisione posizione GPS rimarrà attiva.</string>
+    <string name="mute_dialog_title">Metti in pausa gli avvisi VIP</string>
+    <string name="mute_dialog_message">La suoneria e i suoni dei messaggi VIP saranno disabilitati per la durata selezionata. La condivisione posizione GPS rimarrà attiva.</string>
     <string name="mute_dialog_hours">ore</string>
-    <string name="mute_countdown">Suoneria disattivata — riattivazione tra %1$dh %2$dm</string>
-    <string name="mute_activated">Suoneria disattivata per %1$d ore</string>
-    <string name="mute_cancelled">Suoneria riattivata</string>
+    <string name="mute_countdown">Avvisi VIP in pausa — riattivazione tra %1$dh %2$dm</string>
+    <string name="mute_activated">Avvisi VIP in pausa per %1$d ore</string>
+    <string name="mute_cancelled">Avvisi VIP riattivati</string>
     <!-- Settings -->
     <string name="settings_sound_title">Suono di override</string>
     <string name="settings_sound_ringtone">Suoneria telefono</string>
@@ -303,6 +303,7 @@
     <string name="message_pair_cancelled">Associazione %1$s annullata</string>
     <string name="message_settings_title">Avvisi messaggi VIP</string>
     <string name="message_settings_desc">Volume e suono separati per WhatsApp, SMS/RCS e Telegram</string>
+    <string name="message_sound_enabled">Riproduci un suono per i messaggi VIP</string>
     <string name="message_sound_default">Suono di notifica Android predefinito</string>
     <string name="message_sound_contact">Suono assegnato al contatto VIP (notifica predefinita se assente)</string>
 </resources>

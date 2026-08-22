@@ -139,6 +139,13 @@ class SettingsFragment : Fragment() {
             return
         }
         binding.cardMessageAlerts.visibility = View.VISIBLE
+        binding.switchMessageSound.isChecked = prefs.messageSoundEnabled
+        updateMessageSoundControls(prefs.messageSoundEnabled)
+        binding.switchMessageSound.setOnCheckedChangeListener { _, enabled ->
+            prefs.messageSoundEnabled = enabled
+            updateMessageSoundControls(enabled)
+            if (!enabled) CallMonitorService.getInstance()?.suspendActiveAlert()
+        }
         binding.sliderMessageVolume.value = prefs.messageVolumePercent.toFloat()
         binding.tvMessageVolumeValue.text = "${prefs.messageVolumePercent}%"
         binding.sliderMessageVolume.addOnChangeListener { _, value, _ ->
@@ -155,6 +162,16 @@ class SettingsFragment : Fragment() {
                 else -> PrefsManager.MESSAGE_SOUND_DEFAULT
             }
         }
+    }
+
+    private fun updateMessageSoundControls(enabled: Boolean) {
+        binding.sliderMessageVolume.isEnabled = enabled
+        binding.rgMessageSoundType.isEnabled = enabled
+        binding.rbMessageDefaultSound.isEnabled = enabled
+        binding.rbMessageContactSound.isEnabled = enabled
+        binding.tvMessageVolumeValue.alpha = if (enabled) 1f else 0.45f
+        binding.sliderMessageVolume.alpha = if (enabled) 1f else 0.45f
+        binding.rgMessageSoundType.alpha = if (enabled) 1f else 0.45f
     }
 
     private fun setupQuietHours() {
@@ -284,6 +301,7 @@ class SettingsFragment : Fragment() {
                 volumePercent = prefs.volumePercent,
                 overrideSoundType = prefs.overrideSoundType,
                 messageVolumePercent = prefs.messageVolumePercent,
+                messageSoundEnabled = prefs.messageSoundEnabled,
                 messageSoundType = prefs.messageSoundType,
                 contacts = prefs.getContacts(),
                 quietRules = prefs.getQuietRules()
@@ -396,6 +414,7 @@ class SettingsFragment : Fragment() {
         prefs.volumePercent = config.volumePercent
         prefs.overrideSoundType = config.overrideSoundType
         prefs.messageVolumePercent = config.messageVolumePercent
+        prefs.messageSoundEnabled = config.messageSoundEnabled
         prefs.messageSoundType = config.messageSoundType
         prefs.saveContacts(config.contacts)
         prefs.saveQuietRules(config.quietRules)
@@ -621,6 +640,7 @@ class SettingsFragment : Fragment() {
             val rule = QuietRule(selectedDays, fromHour, fromMinute, toHour, toMinute)
             quietRules.add(rule)
             prefs.saveQuietRules(quietRules)
+            if (prefs.isInQuietPeriod()) CallMonitorService.getInstance()?.suspendActiveAlert()
             refreshQuietRulesUI()
             dialog.dismiss()
         }

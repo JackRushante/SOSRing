@@ -408,6 +408,7 @@ private fun setupRecyclerView() {
                 val hours = picker.value
                 val muteUntil = System.currentTimeMillis() + hours * 3600_000L
                 prefs.muteUntilTimestamp = muteUntil
+                CallMonitorService.getInstance()?.suspendActiveAlert()
                 BootReceiver.scheduleMuteAlarm(requireContext(), muteUntil)
                 Toast.makeText(requireContext(), getString(R.string.mute_activated, hours), Toast.LENGTH_SHORT).show()
                 updateMuteTimerUI()

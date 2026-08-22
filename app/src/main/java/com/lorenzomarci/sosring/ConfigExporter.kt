@@ -14,6 +14,7 @@ data class AppConfig(
     val volumePercent: Int,
     val overrideSoundType: Int,
     val messageVolumePercent: Int,
+    val messageSoundEnabled: Boolean,
     val messageSoundType: Int,
     val contacts: List<VipContact>,
     val quietRules: List<QuietRule>
@@ -41,6 +42,7 @@ object ConfigExporter {
         volumePercent: Int,
         overrideSoundType: Int,
         messageVolumePercent: Int,
+        messageSoundEnabled: Boolean,
         messageSoundType: Int,
         contacts: List<VipContact>,
         quietRules: List<QuietRule>
@@ -55,6 +57,7 @@ object ConfigExporter {
         volumePercent = volumePercent,
         overrideSoundType = overrideSoundType,
         messageVolumePercent = messageVolumePercent,
+        messageSoundEnabled = messageSoundEnabled,
         messageSoundType = messageSoundType,
         contacts = contacts,
         quietRules = quietRules
@@ -91,6 +94,7 @@ object ConfigExporter {
             put("volumePercent", config.volumePercent)
             put("overrideSoundType", config.overrideSoundType)
             put("messageVolumePercent", config.messageVolumePercent)
+            put("messageSoundEnabled", config.messageSoundEnabled)
             put("messageSoundType", config.messageSoundType)
             put("contacts", contactsArr)
             put("quietRules", rulesArr)
@@ -117,6 +121,10 @@ object ConfigExporter {
             val messageVolumePercent = root.optInt(
                 "messageVolumePercent",
                 PrefsManager.DEFAULT_MESSAGE_VOLUME_PERCENT
+            )
+            val messageSoundEnabled = root.optBoolean(
+                "messageSoundEnabled",
+                PrefsManager.DEFAULT_MESSAGE_SOUND_ENABLED
             )
             val messageSoundType = root.optInt("messageSoundType", PrefsManager.MESSAGE_SOUND_DEFAULT)
 
@@ -173,6 +181,7 @@ object ConfigExporter {
                 volumePercent = volumePercent,
                 overrideSoundType = overrideSoundType,
                 messageVolumePercent = messageVolumePercent,
+                messageSoundEnabled = messageSoundEnabled,
                 messageSoundType = messageSoundType,
                 contacts = contacts,
                 quietRules = rules

@@ -120,7 +120,13 @@ class VipMessageNotificationListener : NotificationListenerService() {
     }
 
     private fun playAlertIfAllowed(prefs: PrefsManager, contact: VipContact, app: MessageApp) {
-        if (!prefs.isServiceEnabled || prefs.isMuted || prefs.isInQuietPeriod()) {
+        if (!AlertGatePolicy.allowsMessage(
+                monitoringEnabled = prefs.isServiceEnabled,
+                paused = prefs.isMuted,
+                quietHours = prefs.isInQuietPeriod(),
+                messageSoundEnabled = prefs.messageSoundEnabled
+            )
+        ) {
             Log.i(TAG, "VIP message alert skipped by monitoring state; app=${app.storageId}")
             return
         }

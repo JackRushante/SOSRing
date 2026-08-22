@@ -38,6 +38,7 @@ class CallMonitorService : Service() {
         private const val ACTION_MESSAGE_ALERT = "com.lorenzomarci.sosring.MESSAGE_VIP_ALERT"
         private const val EXTRA_VIP_NUMBER = "vip_number"
         private const val MESSAGE_ALERT_TIMEOUT_MS = 15_000L
+        private const val ALERT_GATE_CHECK_MS = 1_000L
 
         fun start(context: Context) {
             val intent = Intent(context, CallMonitorService::class.java)
@@ -106,8 +107,13 @@ class CallMonitorService : Service() {
                     this@CallMonitorService.warnIfCriticalPermsMissing()
                     if (number != null) {
                         val vipContact = findVipContact(number)
-                        if (vipContact != null && !prefs.isInQuietPeriod()) {
-                            if (!prefs.isMuted) {
+                        if (vipContact != null) {
+                            if (AlertGatePolicy.allowsCall(
+                                    monitoringEnabled = prefs.isServiceEnabled,
+                                    paused = prefs.isMuted,
+                                    quietHours = prefs.isInQuietPeriod()
+                                )
+                            ) {
                                 val shouldOverride = AudioOverridePolicy.shouldOverride(
                                     audioManager.ringerMode,
                                     audioManager.getStreamVolume(AudioManager.STREAM_RING),
@@ -123,7 +129,7 @@ class CallMonitorService : Service() {
                                     Log.i(TAG, "VIP call detected but system already audible. Skipping override.")
                                 }
                             } else {
-                                Log.i(TAG, "VIP call detected but muted. Skipping override.")
+                                Log.i(TAG, "VIP call skipped by monitoring state.")
                             }
                         }
                     }
@@ -303,7 +309,13 @@ class CallMonitorService : Service() {
     }
 
     private fun overrideMessageAlert(number: String) {
-        if (!prefs.isServiceEnabled || prefs.isMuted || prefs.isInQuietPeriod()) return
+        if (!AlertGatePolicy.allowsMessage(
+                monitoringEnabled = prefs.isServiceEnabled,
+                paused = prefs.isMuted,
+                quietHours = prefs.isInQuietPeriod(),
+                messageSoundEnabled = prefs.messageSoundEnabled
+            )
+        ) return
         if (!beginAudioOverride(number, OverrideKind.MESSAGE, prefs.messageVolumePercent)) return
 
         val customUri = if (prefs.messageSoundType == PrefsManager.MESSAGE_SOUND_CONTACT) {
@@ -366,17 +378,54 @@ class CallMonitorService : Service() {
             }
 
             val alarmMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
-            val alarmTarget = (alarmMax * volumePercent / 100).coerceAtLeast(1)
             val alarmCurrent = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
-            val alarmFinal = maxOf(alarmTarget, alarmCurrent)
+            val alarmFinal = AlertVolumePolicy.targetStreamVolume(
+                maxVolume = alarmMax,
+                currentVolume = alarmCurrent,
+                percent = volumePercent,
+                preserveHigherCurrentVolume = kind == OverrideKind.CALL
+            )
             audioManager.setStreamVolume(AudioManager.STREAM_ALARM, alarmFinal, 0)
-            Log.d(TAG, "Override playback: alarm volume=$alarmFinal (app=$alarmTarget, system=$alarmCurrent)")
+            Log.d(TAG, "Override playback: alarm volume=$alarmFinal (app=$volumePercent%, system=$alarmCurrent)")
+            scheduleAlertGateCheck()
             true
         } catch (e: Exception) {
             Log.e(TAG, "Error during audio override: ${e.message}", e)
             restoreAudio()
             false
         }
+    }
+
+    fun suspendActiveAlert() {
+        if (isOverriding) restoreAudio()
+    }
+
+    private fun scheduleAlertGateCheck() {
+        overrideHandler.postDelayed(object : Runnable {
+            override fun run() {
+                if (!isOverriding) return
+                val allowed = when (overrideKind) {
+                    OverrideKind.MESSAGE -> AlertGatePolicy.allowsMessage(
+                        monitoringEnabled = prefs.isServiceEnabled,
+                        paused = prefs.isMuted,
+                        quietHours = prefs.isInQuietPeriod(),
+                        messageSoundEnabled = prefs.messageSoundEnabled
+                    )
+                    OverrideKind.CALL -> AlertGatePolicy.allowsCall(
+                        monitoringEnabled = prefs.isServiceEnabled,
+                        paused = prefs.isMuted,
+                        quietHours = prefs.isInQuietPeriod()
+                    )
+                    null -> false
+                }
+                if (!allowed) {
+                    Log.i(TAG, "Active alert stopped by monitoring state.")
+                    restoreAudio()
+                    return
+                }
+                overrideHandler.postDelayed(this, ALERT_GATE_CHECK_MS)
+            }
+        }, ALERT_GATE_CHECK_MS)
     }
 
     private fun startOverrideSound() {

@@ -152,12 +152,12 @@
     <string name="mute_button">Pause monitoring</string>
     <string name="mute_button_cancel">Resume monitoring</string>
     <string name="mute_subtitle">Temporary pause 1–12 h</string>
-    <string name="mute_dialog_title">Mute ringtone</string>
-    <string name="mute_dialog_message">Override ringtone will be disabled for the selected duration. GPS location sharing will remain active.</string>
+    <string name="mute_dialog_title">Pause VIP alerts</string>
+    <string name="mute_dialog_message">VIP ringtone and message sounds will be disabled for the selected duration. GPS location sharing will remain active.</string>
     <string name="mute_dialog_hours">hours</string>
-    <string name="mute_countdown">Ringtone muted — re-enables in %1$dh %2$dm</string>
-    <string name="mute_activated">Ringtone muted for %1$d hours</string>
-    <string name="mute_cancelled">Ringtone re-enabled</string>
+    <string name="mute_countdown">VIP alerts paused — resume in %1$dh %2$dm</string>
+    <string name="mute_activated">VIP alerts paused for %1$d hours</string>
+    <string name="mute_cancelled">VIP alerts resumed</string>
     <!-- Settings -->
     <string name="settings_sound_title">Override sound</string>
     <string name="settings_sound_ringtone">Phone ringtone</string>
@@ -304,6 +304,7 @@
     <string name="message_pair_cancelled">%1$s pairing cancelled</string>
     <string name="message_settings_title">VIP message alerts</string>
     <string name="message_settings_desc">Separate volume and sound for WhatsApp, SMS/RCS and Telegram</string>
+    <string name="message_sound_enabled">Play a sound for VIP messages</string>
     <string name="message_sound_default">Default Android notification sound</string>
     <string name="message_sound_contact">Sound assigned to the VIP contact (default notification if unavailable)</string>
 </resources>

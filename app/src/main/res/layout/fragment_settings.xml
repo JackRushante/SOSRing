@@ -338,13 +338,21 @@
                         tools:text="100%" />
                 </LinearLayout>
 
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchMessageSound"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:minHeight="48dp"
+                    android:text="@string/message_sound_enabled" />
+
                 <com.google.android.material.slider.Slider
                     android:id="@+id/sliderMessageVolume"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:stepSize="5"
-                    android:valueFrom="25"
+                    android:valueFrom="5"
                     android:valueTo="100"
                     app:haloColor="?attr/colorPrimaryContainer"
                     app:thumbColor="?attr/tokenAccent"
