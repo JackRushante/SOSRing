@@ -1,8 +1,8 @@
 # SOS Ring
 
-**Force the ringtone for VIP contacts even in Silent / Vibrate / Do Not Disturb mode.**
+**Make calls and messages from VIP contacts audible even in Silent / Vibrate / Do Not Disturb mode.**
 
-SOS Ring is a FOSS Android app that overrides Silent, Vibrate, and Do Not Disturb when you receive a call from a whitelisted VIP contact. After the call ends, your phone is restored to its exact previous state.
+SOS Ring is a FOSS Android app that overrides Silent, Vibrate, and Do Not Disturb when you receive a call or supported direct message from a whitelisted VIP contact. After the alert ends, your phone is restored to its exact previous state.
 
 Available on F-Droid.
 
@@ -14,11 +14,12 @@ SOS Ring solves this with a foreground service that monitors incoming calls and,
 
 ## Features
 
-- Pick VIP contacts from the phonebook or enter them manually
-- Configurable override volume (25-100%)
+- Pick VIP contacts from the phonebook or enter them manually; select any or all numbers when a contact has more than one
+- Audible alerts for direct WhatsApp, Google Messages (SMS/RCS), and Telegram conversations from paired VIP contacts
+- Separate controls for calls (25-100%) and messages (on/off, 5-100%, Android default sound or the sound assigned to the VIP contact)
 - Works in **Silent**, **Vibrate**, AND **Do Not Disturb** mode
-- Full state restore after the call (ringer mode, all volumes including alarm, DND)
-- Temporary mute timer (1-12 hours) without turning the service off
+- Full state restore after each alert (ringer mode, all volumes including alarm, DND)
+- Temporary mute timer (1-12 hours) and Quiet Hours apply to both calls and messages
 - Survives reboots (auto-start)
 - Minimal battery usage (event-driven, no polling)
 - Dark mode (follows system), English and Italian
@@ -41,6 +42,7 @@ Entirely optional and off by default. It uses **UnifiedPush** as the transport, 
 | `READ_PHONE_STATE` | Detect incoming calls |
 | `READ_CALL_LOG` | Get the caller's number |
 | `READ_CONTACTS` | Pick VIP contacts from the phonebook |
+| Notification access | Identify paired direct conversations from WhatsApp, Google Messages, and Telegram; message text is processed transiently and never stored |
 | `ACCESS_NOTIFICATION_POLICY` | Override Do Not Disturb |
 | `MODIFY_AUDIO_SETTINGS` | Change ringer mode and volume |
 | `FOREGROUND_SERVICE` (+ `LOCATION`, `SPECIAL_USE`) | Keep the monitoring service alive; foreground type during live sharing |
@@ -48,6 +50,8 @@ Entirely optional and off by default. It uses **UnifiedPush** as the transport, 
 | `POST_NOTIFICATIONS` | Persistent service notification (Android 13+) |
 | `INTERNET` | Optional peer-to-peer location sharing |
 | `ACCESS_FINE_LOCATION` / `ACCESS_BACKGROUND_LOCATION` | Optional location sharing with VIP contacts |
+
+VIP message alerts are optional. Conversation identifiers are stored only as hashes, together with technical deduplication fingerprints. SOS Ring does not store notification message text, contact names, or phone numbers extracted from notifications.
 
 ## Building
 
