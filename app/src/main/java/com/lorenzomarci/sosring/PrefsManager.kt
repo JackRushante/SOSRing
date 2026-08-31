@@ -49,6 +49,15 @@ class PrefsManager(context: Context) {
         const val MAX_VOLUME_PERCENT = 100
         const val DEFAULT_VOLUME_PERCENT = 100
 
+        private const val KEY_MESSAGE_VOLUME_PERCENT = "message_volume_percent"
+        const val MIN_MESSAGE_VOLUME_PERCENT = 5
+        const val DEFAULT_MESSAGE_VOLUME_PERCENT = 100
+        private const val KEY_MESSAGE_SOUND_ENABLED = "message_sound_enabled"
+        const val DEFAULT_MESSAGE_SOUND_ENABLED = true
+        private const val KEY_MESSAGE_SOUND_TYPE = "message_sound_type"
+        const val MESSAGE_SOUND_DEFAULT = 0
+        const val MESSAGE_SOUND_CONTACT = 1
+
         private const val KEY_MUTE_UNTIL = "mute_until_timestamp"
         private const val KEY_OVERRIDE_SOUND_TYPE = "override_sound_type"
         const val SOUND_TYPE_RINGTONE = 0
@@ -117,6 +126,25 @@ class PrefsManager(context: Context) {
     var volumePercent: Int
         get() = prefs.getInt(KEY_VOLUME_PERCENT, DEFAULT_VOLUME_PERCENT)
         set(value) = prefs.edit().putInt(KEY_VOLUME_PERCENT, value.coerceIn(MIN_VOLUME_PERCENT, MAX_VOLUME_PERCENT)).apply()
+
+    var messageVolumePercent: Int
+        get() = prefs.getInt(KEY_MESSAGE_VOLUME_PERCENT, DEFAULT_MESSAGE_VOLUME_PERCENT)
+            .coerceIn(MIN_MESSAGE_VOLUME_PERCENT, MAX_VOLUME_PERCENT)
+        set(value) = prefs.edit()
+            .putInt(KEY_MESSAGE_VOLUME_PERCENT, value.coerceIn(MIN_MESSAGE_VOLUME_PERCENT, MAX_VOLUME_PERCENT))
+            .apply()
+
+    var messageSoundEnabled: Boolean
+        get() = prefs.getBoolean(KEY_MESSAGE_SOUND_ENABLED, DEFAULT_MESSAGE_SOUND_ENABLED)
+        set(value) = prefs.edit().putBoolean(KEY_MESSAGE_SOUND_ENABLED, value).apply()
+
+    var messageSoundType: Int
+        get() = prefs.getInt(KEY_MESSAGE_SOUND_TYPE, MESSAGE_SOUND_DEFAULT).let {
+            if (it == MESSAGE_SOUND_CONTACT) MESSAGE_SOUND_CONTACT else MESSAGE_SOUND_DEFAULT
+        }
+        set(value) = prefs.edit()
+            .putInt(KEY_MESSAGE_SOUND_TYPE, if (value == MESSAGE_SOUND_CONTACT) MESSAGE_SOUND_CONTACT else MESSAGE_SOUND_DEFAULT)
+            .apply()
 
     var muteUntilTimestamp: Long
         get() = prefs.getLong(KEY_MUTE_UNTIL, 0L)
@@ -220,24 +248,7 @@ class PrefsManager(context: Context) {
         val cal = Calendar.getInstance()
         val currentDay = cal.get(Calendar.DAY_OF_WEEK)
         val currentTime = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE)
-
-        val previousDay = if (currentDay == Calendar.SUNDAY) Calendar.SATURDAY
-            else if (currentDay == Calendar.MONDAY) Calendar.SUNDAY
-            else currentDay - 1
-
-        return rules.any { rule ->
-            val start = rule.startHour * 60 + rule.startMinute
-            val end = rule.endHour * 60 + rule.endMinute
-
-            if (end > start) {
-                // Same-day rule: e.g. 09:00-18:00
-                currentDay in rule.days && currentTime >= start && currentTime < end
-            } else {
-                // Cross-midnight rule: e.g. 22:00-06:00
-                (currentDay in rule.days && currentTime >= start) ||
-                (previousDay in rule.days && currentTime < end)
-            }
-        }
+        return QuietHoursPolicy.isQuiet(rules, currentDay, currentTime)
     }
 
     var ownPhoneNumber: String

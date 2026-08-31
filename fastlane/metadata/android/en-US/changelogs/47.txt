@@ -1,0 +1,1 @@
+VIP message alerts are now available for WhatsApp, Google Messages (SMS/RCS), and Telegram, with separate sound, volume, Quiet Hours, and pause controls. Contact import now lets you select one, several, or all phone numbers for a contact; each chosen number becomes a separate labeled VIP entry.

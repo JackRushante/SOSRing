@@ -1,21 +1,25 @@
-SOS Ring forces your phone to ring at full volume when you receive a call from a VIP contact, even if your phone is in Silent, Vibrate, or Do Not Disturb mode.
+SOS Ring makes calls and supported direct messages from VIP contacts audible even if your phone is in Silent, Vibrate, or Do Not Disturb mode.
 
 Perfect for families where someone always keeps their phone on silent but needs to be reachable in emergencies.
 
 HOW IT WORKS:
 • Add your VIP contacts (family, partner, etc.)
 • Enable the monitoring service
-• When a VIP contact calls, SOS Ring overrides Silent/DND mode, plays the ringtone at your chosen volume (50-100%), and vibrates
-• After the call ends (answered, missed, or rejected), your phone is restored to its original state — silent mode, DND, volumes, everything
+• When a VIP contact calls, SOS Ring overrides Silent/DND mode, plays the ringtone at your chosen volume (25-100%), and vibrates
+• Optionally pair their direct WhatsApp, SMS/RCS, or Telegram conversation and choose a separate message volume (5-100%) and sound
+• After the alert ends, your phone is restored to its original state — silent mode, DND, volumes, everything
 
 WHY THIS APP EXISTS:
 Android 14+ removed per-contact DND exceptions. No built-in way exists to let specific contacts bypass silent mode. Google restricts READ_CALL_LOG on the Play Store, so this type of app can't be published there. SOS Ring is free, open source, and works where others can't.
 
 FEATURES:
-• Pick VIP contacts from your phonebook or enter manually
-• Configurable override volume (50-100%)
+• Pick VIP contacts from your phonebook or enter manually; select any or all numbers for contacts with multiple numbers
+• Configurable call override volume (25-100%)
+• Optional VIP message alerts for WhatsApp, Google Messages (SMS/RCS), and Telegram
+• Separate message sound toggle, volume (5-100%), and Android default or VIP contact sound
 • Works in Silent, Vibrate, AND Do Not Disturb mode
 • Full state restore after call (including alarm volume)
+• Quiet Hours and the temporary mute timer stop both call and message overrides
 • Survives phone reboots (auto-start)
 • Minimal battery usage (event-driven, no polling)
 • Dark mode support
@@ -34,6 +38,7 @@ LOCATION SHARING (optional, peer-to-peer):
 PERMISSIONS EXPLAINED:
 • Phone State & Call Log: detect incoming calls and identify the caller
 • Contacts: pick VIP contacts from your phonebook
+• Notification access (optional): identify paired direct conversations; message text is never stored, and conversation identifiers are saved only as hashes
 • Do Not Disturb access: override DND when a VIP calls
 • Notifications: show a small persistent notification while monitoring
 • Location (including background): used only to answer location requests from paired contacts you explicitly authorized, even while the app is not on screen; nothing is collected or sent otherwise

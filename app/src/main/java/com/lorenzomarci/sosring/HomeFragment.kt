@@ -135,6 +135,7 @@ private fun setupRecyclerView() {
             onTrackTap = { contact -> showTrackChoiceDialog(contact) },
             onStop = { contact -> stopLiveTrackingFor(contact) },
             onViewPath = { contact -> viewContactPath(contact) },
+            onMessageAlertTap = { contact, app -> handleMessageAlert(contact, app) },
             liveTrackingNumber = {
                 Push.liveEngine()?.liveContactNumber
             }
@@ -142,6 +143,74 @@ private fun setupRecyclerView() {
         binding.rvContacts.layoutManager = LinearLayoutManager(requireContext())
         binding.rvContacts.adapter = adapter
     }
+
+    private fun handleMessageAlert(contact: VipContact, app: MessageApp) {
+        val appName = messageAppName(app)
+        when (VipMessageAlerts.state(requireContext(), contact, app)) {
+            MessageAlertState.PAIRED -> {
+                VipMessageAlerts.unpair(requireContext(), contact, app)
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.message_unpaired, appName, contact.name),
+                    Toast.LENGTH_SHORT
+                ).show()
+                adapter.notifyDataSetChanged()
+            }
+            MessageAlertState.PAIRING -> {
+                VipMessageAlerts.cancelPairing(requireContext())
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.message_pair_cancelled, appName),
+                    Toast.LENGTH_SHORT
+                ).show()
+                adapter.notifyDataSetChanged()
+            }
+            MessageAlertState.UNPAIRED -> {
+                if (VipMessageAlerts.hasNotificationAccess(requireContext())) {
+                    beginMessagePairing(contact, app)
+                } else {
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(getString(R.string.message_access_title))
+                        .setMessage(getString(R.string.message_access_message))
+                        .setPositiveButton(getString(R.string.btn_open_settings)) { _, _ ->
+                            VipMessageAlerts.beginPairing(requireContext(), contact, app)
+                            startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                        }
+                        .setNegativeButton(getString(R.string.btn_cancel), null)
+                        .show()
+                }
+            }
+        }
+    }
+
+    private fun beginMessagePairing(contact: VipContact, app: MessageApp) {
+        val appName = messageAppName(app)
+        VipMessageAlerts.beginPairing(requireContext(), contact, app)
+        adapter.notifyDataSetChanged()
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.message_pair_title, appName))
+            .setMessage(
+                if (app == MessageApp.GOOGLE_MESSAGES) {
+                    getString(R.string.message_pair_google_message, contact.name)
+                } else {
+                    getString(R.string.message_pair_message, appName, contact.name)
+                }
+            )
+            .setPositiveButton(getString(R.string.btn_continue), null)
+            .setNegativeButton(getString(R.string.btn_cancel)) { _, _ ->
+                VipMessageAlerts.cancelPairing(requireContext())
+                adapter.notifyDataSetChanged()
+            }
+            .show()
+    }
+
+    private fun messageAppName(app: MessageApp): String = getString(
+        when (app) {
+            MessageApp.WHATSAPP -> R.string.message_app_whatsapp
+            MessageApp.GOOGLE_MESSAGES -> R.string.message_app_google_messages
+            MessageApp.TELEGRAM -> R.string.message_app_telegram
+        }
+    )
 
     private fun showTrackChoiceDialog(contact: VipContact) {
         if (!Push.supportsLiveTracking) {
@@ -339,6 +408,7 @@ private fun setupRecyclerView() {
                 val hours = picker.value
                 val muteUntil = System.currentTimeMillis() + hours * 3600_000L
                 prefs.muteUntilTimestamp = muteUntil
+                CallMonitorService.getInstance()?.suspendActiveAlert()
                 BootReceiver.scheduleMuteAlarm(requireContext(), muteUntil)
                 Toast.makeText(requireContext(), getString(R.string.mute_activated, hours), Toast.LENGTH_SHORT).show()
                 updateMuteTimerUI()
@@ -457,7 +527,7 @@ private fun setupRecyclerView() {
 
     private fun handleContactPicked(contactUri: Uri) {
         var name = ""
-        var phone = ""
+        var contactId = ""
         val ctx = requireContext()
 
         val nameCursor: Cursor? = ctx.contentResolver.query(
@@ -467,26 +537,98 @@ private fun setupRecyclerView() {
         nameCursor?.use {
             if (it.moveToFirst()) {
                 name = it.getString(it.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME)) ?: ""
-                val contactId = it.getString(it.getColumnIndexOrThrow(ContactsContract.Contacts._ID))
-                val phoneCursor: Cursor? = ctx.contentResolver.query(
-                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                    arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
-                    "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
-                    arrayOf(contactId), null
-                )
-                phoneCursor?.use { pc ->
-                    if (pc.moveToFirst()) {
-                        phone = pc.getString(pc.getColumnIndexOrThrow(
-                            ContactsContract.CommonDataKinds.Phone.NUMBER)) ?: ""
-                    }
-                }
+                contactId = it.getString(it.getColumnIndexOrThrow(ContactsContract.Contacts._ID)) ?: ""
             }
         }
 
-        if (phone.isEmpty()) {
+        val phoneOptions = readContactPhones(contactId)
+        if (phoneOptions.isEmpty()) {
             Toast.makeText(ctx, getString(R.string.no_phone_found), Toast.LENGTH_LONG).show()
             return
         }
+
+        if (phoneOptions.size == 1) {
+            showContactConfirmation(name, phoneOptions.single().number)
+        } else {
+            showContactNumberSelection(name, phoneOptions)
+        }
+    }
+
+    private fun readContactPhones(contactId: String): List<ContactPhoneOption> {
+        if (contactId.isBlank()) return emptyList()
+        val raw = mutableListOf<ContactPhoneOption>()
+        requireContext().contentResolver.query(
+            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            arrayOf(
+                ContactsContract.CommonDataKinds.Phone.NUMBER,
+                ContactsContract.CommonDataKinds.Phone.TYPE,
+                ContactsContract.CommonDataKinds.Phone.LABEL
+            ),
+            "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
+            arrayOf(contactId),
+            ContactsContract.CommonDataKinds.Phone.IS_PRIMARY + " DESC"
+        )?.use { cursor ->
+            val numberIndex = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER)
+            val typeIndex = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.TYPE)
+            val labelIndex = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.LABEL)
+            while (cursor.moveToNext()) {
+                val number = cursor.getString(numberIndex).orEmpty()
+                val type = cursor.getInt(typeIndex)
+                val customLabel = cursor.getString(labelIndex)
+                val label = ContactsContract.CommonDataKinds.Phone.getTypeLabel(
+                    resources,
+                    type,
+                    customLabel
+                ).toString()
+                raw += ContactPhoneOption(number, label)
+            }
+        }
+        return ContactImportPolicy.uniqueOptions(raw)
+    }
+
+    private fun showContactNumberSelection(name: String, options: List<ContactPhoneOption>) {
+        val checked = BooleanArray(options.size) { true }
+        val labels = options.map { option ->
+            if (option.label.isBlank()) option.number
+            else getString(R.string.contact_number_option, option.label, option.number)
+        }.toTypedArray()
+
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.contact_numbers_title, name))
+            .setMultiChoiceItems(labels, checked) { _, which, selected -> checked[which] = selected }
+            .setPositiveButton(getString(R.string.btn_add), null)
+            .setNegativeButton(getString(R.string.btn_cancel), null)
+            .show()
+
+        dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).setOnClickListener {
+            val selected = options.filterIndexed { index, _ -> checked[index] }
+            if (selected.isEmpty()) {
+                Toast.makeText(requireContext(), R.string.contact_numbers_none_selected, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val additions = ContactImportPolicy.createVipContacts(
+                contactName = name,
+                selected = selected,
+                existing = contacts,
+                includeLabels = true
+            )
+            if (additions.isEmpty()) {
+                Toast.makeText(requireContext(), R.string.contact_numbers_already_added, Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+            contacts.addAll(additions)
+            saveAndRefresh()
+            Toast.makeText(
+                requireContext(),
+                resources.getQuantityString(R.plurals.contact_numbers_added, additions.size, additions.size),
+                Toast.LENGTH_SHORT
+            ).show()
+            dialog.dismiss()
+        }
+    }
+
+    private fun showContactConfirmation(name: String, phone: String) {
+        val ctx = requireContext()
 
         val view = LayoutInflater.from(ctx).inflate(R.layout.dialog_add_number, null)
         val etName = view.findViewById<EditText>(R.id.etDialogName)
@@ -548,6 +690,7 @@ private fun setupRecyclerView() {
                 val name = etName.text.toString().trim()
                 val number = etNumber.text.toString().trim()
                 if (name.isNotEmpty() && number.length > 3) {
+                    VipMessageAlerts.onContactChanged(requireContext(), contact.number, number)
                     contacts[position] = contact.copy(name = name, number = number)
                     saveAndRefresh()
                 } else {
@@ -564,6 +707,7 @@ private fun setupRecyclerView() {
             .setTitle(getString(R.string.remove_contact_title))
             .setMessage(getString(R.string.remove_contact_msg, contact.name, contact.number))
             .setPositiveButton(getString(R.string.btn_remove)) { _, _ ->
+                VipMessageAlerts.onContactRemoved(requireContext(), contact.number)
                 contacts.removeAt(position)
                 saveAndRefresh()
             }

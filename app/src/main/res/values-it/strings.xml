@@ -53,6 +53,14 @@
     <string name="remove_contact_msg">Rimuovere %1$s (%2$s) dalla lista VIP?</string>
     <string name="no_phone_found">Nessun numero trovato per questo contatto</string>
     <string name="contact_invalid_input">Inserisci un nome e un numero di telefono di almeno 4 cifre.</string>
+    <string name="contact_numbers_title">Seleziona i numeri di %1$s</string>
+    <string name="contact_number_option">%1$s — %2$s</string>
+    <string name="contact_numbers_none_selected">Seleziona almeno un numero.</string>
+    <string name="contact_numbers_already_added">I numeri selezionati sono già nella lista VIP.</string>
+    <plurals name="contact_numbers_added">
+        <item quantity="one">%1$d numero aggiunto</item>
+        <item quantity="other">%1$d numeri aggiunti</item>
+    </plurals>
     <string name="dnd_dialog_title">Permesso Non Disturbare</string>
     <string name="dnd_dialog_msg">Per poter disattivare la modalità \"Non disturbare\" quando arriva una chiamata VIP, devi autorizzare SOS Ring nelle impostazioni di sistema.\n\nPremi OK per aprire le impostazioni, poi cerca \"SOS Ring\" e attiva l\'interruttore.</string>
     <string name="btn_open_settings">Apri impostazioni</string>
@@ -151,12 +159,12 @@
     <string name="mute_button">Metti in pausa il Monitoraggio</string>
     <string name="mute_button_cancel">Riattiva il Monitoraggio</string>
     <string name="mute_subtitle">Pausa temporanea 1–12 ore</string>
-    <string name="mute_dialog_title">Disattiva suoneria</string>
-    <string name="mute_dialog_message">La suoneria di override sarà disabilitata per la durata selezionata. La condivisione posizione GPS rimarrà attiva.</string>
+    <string name="mute_dialog_title">Metti in pausa gli avvisi VIP</string>
+    <string name="mute_dialog_message">La suoneria e i suoni dei messaggi VIP saranno disabilitati per la durata selezionata. La condivisione posizione GPS rimarrà attiva.</string>
     <string name="mute_dialog_hours">ore</string>
-    <string name="mute_countdown">Suoneria disattivata — riattivazione tra %1$dh %2$dm</string>
-    <string name="mute_activated">Suoneria disattivata per %1$d ore</string>
-    <string name="mute_cancelled">Suoneria riattivata</string>
+    <string name="mute_countdown">Avvisi VIP in pausa — riattivazione tra %1$dh %2$dm</string>
+    <string name="mute_activated">Avvisi VIP in pausa per %1$d ore</string>
+    <string name="mute_cancelled">Avvisi VIP riattivati</string>
     <!-- Settings -->
     <string name="settings_sound_title">Suono di override</string>
     <string name="settings_sound_ringtone">Suoneria telefono</string>
@@ -229,7 +237,7 @@
     <!-- Privacy -->
     <string name="privacy_title">Privacy e licenze</string>
     <string name="privacy_data_title">Trattamento dati</string>
-    <string name="privacy_data_body">SOS Ring elabora chiamate e contatti sul tuo dispositivo.\n\nLa condivisione posizione usa un canale peer-to-peer (ntfy). Le coordinate sono cifrate end-to-end con AES-256-GCM usando una chiave per-device generata localmente e condivisa con familiari fidati via QR.\n\nIl server (ntfy) non conosce mai la tua chiave. Se perdi il telefono senza backup della chiave, i messaggi cifrati non possono essere recuperati.\n\nQuesto NON è forward-secret e NON protegge da telefono compromesso, malware, screenshot o keylogger.\n\nNessuna analitica, nessun tracciamento, nessuna pubblicità.</string>
+    <string name="privacy_data_body">SOS Ring elabora chiamate e contatti sul tuo dispositivo. Se attivi gli avvisi messaggi VIP, i metadati delle notifiche vengono elaborati localmente per identificare le conversazioni dirette associate; testo dei messaggi, nomi e numeri provenienti dalle notifiche non vengono mai salvati. Sono conservati soltanto identificativi conversazione cifrati con hash e fingerprint tecnici di deduplicazione.\n\nLa condivisione posizione usa un canale peer-to-peer (ntfy). Le coordinate sono cifrate end-to-end con AES-256-GCM usando una chiave per-device generata localmente e condivisa con familiari fidati via QR.\n\nIl server (ntfy) non conosce mai la tua chiave. Se perdi il telefono senza backup della chiave, i messaggi cifrati non possono essere recuperati.\n\nQuesto NON è forward-secret e NON protegge da telefono compromesso, malware, screenshot o keylogger.\n\nNessuna analitica, nessun tracciamento, nessuna pubblicità.</string>
     <string name="privacy_license_title">Licenza</string>
     <string name="privacy_license_body">SOS Ring è software libero con licenza GPL-3.0-or-later.\n\nCodice sorgente: github.com/JackRushante/SOSRing</string>
     <string name="privacy_contact_title">Contatto</string>
@@ -270,4 +278,40 @@
     <string name="backup_import_password_message">Inserisci la password del backup.</string>
     <string name="backup_import_wrong_password">Password errata o file danneggiato</string>
     <string name="backup_import_legacy_rejected">Questo backup non è cifrato e non è più supportato. Creane uno nuovo.</string>
+    <!-- Avvisi WhatsApp VIP (solo flavor internal) -->
+    <string name="whatsapp_listener_label">SOS Ring — avvisi WhatsApp VIP</string>
+    <string name="whatsapp_pair">Associa chat WhatsApp</string>
+    <string name="whatsapp_unpair">Disattiva avviso WhatsApp</string>
+    <string name="whatsapp_pair_cancel">Annulla associazione WhatsApp</string>
+    <string name="whatsapp_access_title">Accesso alle notifiche</string>
+    <string name="whatsapp_access_message">Per riconoscere i messaggi di questa chat WhatsApp, autorizza SOS Ring ad accedere alle notifiche. Poi torna qui e invia un messaggio WhatsApp diretto dal VIP. SOS Ring elabora solo i metadati WhatsApp e non salva mai il testo dei messaggi.</string>
+    <string name="whatsapp_pair_title">Associa chat WhatsApp</string>
+    <string name="whatsapp_pair_message">Con WhatsApp chiuso, invia un messaggio diretto da %1$s. La prossima conversazione WhatsApp diretta verrà associata a questo VIP.</string>
+    <string name="whatsapp_pair_success">Avvisi WhatsApp attivati per %1$s</string>
+    <string name="whatsapp_unpaired">Avvisi WhatsApp disattivati per %1$s</string>
+    <string name="whatsapp_pair_cancelled">Associazione WhatsApp annullata</string>
+
+    <!-- Avvisi messaggi VIP (solo flavor internal) -->
+    <string name="message_listener_label">SOS Ring — avvisi messaggi VIP</string>
+    <string name="message_alerts_menu">Avvisi messaggi VIP</string>
+    <string name="message_app_whatsapp">WhatsApp</string>
+    <string name="message_app_google_messages">SMS / RCS</string>
+    <string name="message_app_telegram">Telegram</string>
+    <string name="message_pair_app">Associa %1$s</string>
+    <string name="message_pair_cancel_app">Annulla associazione %1$s</string>
+    <string name="message_unpair_app">Disattiva avviso %1$s</string>
+    <string name="message_access_title">Accesso alle notifiche</string>
+    <string name="message_access_message">Autorizza SOS Ring ad accedere alle notifiche per identificare le conversazioni dirette dei contatti VIP. Il testo dei messaggi non viene mai salvato.</string>
+    <string name="message_pair_title">Associa conversazione %1$s</string>
+    <string name="message_pair_message">Con %1$s chiuso, chiedi a %2$s di inviare un messaggio diretto. La prossima conversazione diretta di quell’app verrà associata al VIP.</string>
+    <string name="message_pair_google_message">Chiedi a %1$s di inviare un SMS o RCS diretto. SOS Ring lo associa automaticamente quando Google Messaggi espone il numero; altrimenti associa esplicitamente la prossima conversazione diretta.</string>
+    <string name="message_pair_success">Avvisi %1$s attivati per %2$s</string>
+    <string name="message_auto_paired">Avvisi SMS/RCS attivati automaticamente per %1$s</string>
+    <string name="message_unpaired">Avvisi %1$s disattivati per %2$s</string>
+    <string name="message_pair_cancelled">Associazione %1$s annullata</string>
+    <string name="message_settings_title">Avvisi messaggi VIP</string>
+    <string name="message_settings_desc">Volume e suono separati per WhatsApp, SMS/RCS e Telegram</string>
+    <string name="message_sound_enabled">Riproduci un suono per i messaggi VIP</string>
+    <string name="message_sound_default">Suono di notifica Android predefinito</string>
+    <string name="message_sound_contact">Suono assegnato al contatto VIP (notifica predefinita se assente)</string>
 </resources>

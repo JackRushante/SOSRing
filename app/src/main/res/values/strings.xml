@@ -54,6 +54,14 @@
     <string name="remove_contact_msg">Remove %1$s (%2$s) from VIP list?</string>
     <string name="no_phone_found">No phone number found for this contact</string>
     <string name="contact_invalid_input">Enter a name and a phone number with at least 4 digits.</string>
+    <string name="contact_numbers_title">Select numbers for %1$s</string>
+    <string name="contact_number_option">%1$s — %2$s</string>
+    <string name="contact_numbers_none_selected">Select at least one number.</string>
+    <string name="contact_numbers_already_added">The selected numbers are already in the VIP list.</string>
+    <plurals name="contact_numbers_added">
+        <item quantity="one">%1$d number added</item>
+        <item quantity="other">%1$d numbers added</item>
+    </plurals>
     <string name="dnd_dialog_title">Do Not Disturb permission</string>
     <string name="dnd_dialog_msg">To disable \"Do Not Disturb\" when a VIP call arrives, you need to authorize SOS Ring in system settings.\n\nPress OK to open settings, then find \"SOS Ring\" and enable the toggle.</string>
     <string name="btn_open_settings">Open settings</string>
@@ -152,12 +160,12 @@
     <string name="mute_button">Pause monitoring</string>
     <string name="mute_button_cancel">Resume monitoring</string>
     <string name="mute_subtitle">Temporary pause 1–12 h</string>
-    <string name="mute_dialog_title">Mute ringtone</string>
-    <string name="mute_dialog_message">Override ringtone will be disabled for the selected duration. GPS location sharing will remain active.</string>
+    <string name="mute_dialog_title">Pause VIP alerts</string>
+    <string name="mute_dialog_message">VIP ringtone and message sounds will be disabled for the selected duration. GPS location sharing will remain active.</string>
     <string name="mute_dialog_hours">hours</string>
-    <string name="mute_countdown">Ringtone muted — re-enables in %1$dh %2$dm</string>
-    <string name="mute_activated">Ringtone muted for %1$d hours</string>
-    <string name="mute_cancelled">Ringtone re-enabled</string>
+    <string name="mute_countdown">VIP alerts paused — resume in %1$dh %2$dm</string>
+    <string name="mute_activated">VIP alerts paused for %1$d hours</string>
+    <string name="mute_cancelled">VIP alerts resumed</string>
     <!-- Settings -->
     <string name="settings_sound_title">Override sound</string>
     <string name="settings_sound_ringtone">Phone ringtone</string>
@@ -230,7 +238,7 @@
     <!-- Privacy -->
     <string name="privacy_title">Privacy &amp; licenses</string>
     <string name="privacy_data_title">Data handling</string>
-    <string name="privacy_data_body">SOS Ring processes call and contact data on your device.\n\nLocation sharing uses a peer-to-peer channel (ntfy). Coordinates are encrypted end-to-end with AES-256-GCM using a per-device key generated locally and shared with trusted family via QR.\n\nThe server (ntfy) never knows your key. If you lose your phone without a key backup, encrypted messages cannot be recovered.\n\nThis is NOT forward-secret and does NOT protect against a compromised phone, malware, screenshots, or keyloggers.\n\nNo analytics, no tracking, no ads.</string>
+    <string name="privacy_data_body">SOS Ring processes call and contact data on your device. If you enable VIP message alerts, notification metadata is processed locally to identify paired direct conversations; message text, contact names and phone numbers from notifications are never stored. Only hashed conversation identifiers and technical deduplication fingerprints are saved.\n\nLocation sharing uses a peer-to-peer channel (ntfy). Coordinates are encrypted end-to-end with AES-256-GCM using a per-device key generated locally and shared with trusted family via QR.\n\nThe server (ntfy) never knows your key. If you lose your phone without a key backup, encrypted messages cannot be recovered.\n\nThis is NOT forward-secret and does NOT protect against a compromised phone, malware, screenshots, or keyloggers.\n\nNo analytics, no tracking, no ads.</string>
     <string name="privacy_license_title">License</string>
     <string name="privacy_license_body">SOS Ring is free software licensed under GPL-3.0-or-later.\n\nSource code: github.com/JackRushante/SOSRing</string>
     <string name="privacy_contact_title">Contact</string>
@@ -271,4 +279,40 @@
     <string name="backup_import_password_message">Enter the backup password.</string>
     <string name="backup_import_wrong_password">Wrong password or corrupted file</string>
     <string name="backup_import_legacy_rejected">This backup is not encrypted and is no longer supported. Create a new backup.</string>
+    <!-- WhatsApp VIP alerts (internal flavor only) -->
+    <string name="whatsapp_listener_label">SOS Ring — WhatsApp VIP alerts</string>
+    <string name="whatsapp_pair">Pair WhatsApp chat</string>
+    <string name="whatsapp_unpair">Disable WhatsApp alert</string>
+    <string name="whatsapp_pair_cancel">Cancel WhatsApp pairing</string>
+    <string name="whatsapp_access_title">Notification access</string>
+    <string name="whatsapp_access_message">To recognize messages from this WhatsApp chat, allow SOS Ring to access notifications. Then return here and send a direct WhatsApp message from the VIP. SOS Ring processes only WhatsApp metadata and never stores message text.</string>
+    <string name="whatsapp_pair_title">Pair WhatsApp chat</string>
+    <string name="whatsapp_pair_message">With WhatsApp closed, send a direct message from %1$s. The next direct WhatsApp conversation will be paired with this VIP.</string>
+    <string name="whatsapp_pair_success">WhatsApp alerts enabled for %1$s</string>
+    <string name="whatsapp_unpaired">WhatsApp alerts disabled for %1$s</string>
+    <string name="whatsapp_pair_cancelled">WhatsApp pairing cancelled</string>
+
+    <!-- VIP message alerts (internal flavor only) -->
+    <string name="message_listener_label">SOS Ring — VIP message alerts</string>
+    <string name="message_alerts_menu">VIP message alerts</string>
+    <string name="message_app_whatsapp">WhatsApp</string>
+    <string name="message_app_google_messages">SMS / RCS</string>
+    <string name="message_app_telegram">Telegram</string>
+    <string name="message_pair_app">Pair %1$s</string>
+    <string name="message_pair_cancel_app">Cancel %1$s pairing</string>
+    <string name="message_unpair_app">Disable %1$s alert</string>
+    <string name="message_access_title">Notification access</string>
+    <string name="message_access_message">Allow SOS Ring to access notifications so it can identify direct conversations from VIP contacts. Message text is never stored.</string>
+    <string name="message_pair_title">Pair %1$s conversation</string>
+    <string name="message_pair_message">With %1$s closed, ask %2$s to send a direct message. The next direct conversation in that app will be paired with this VIP.</string>
+    <string name="message_pair_google_message">Ask %1$s to send a direct SMS or RCS message. SOS Ring pairs it automatically when Google Messages exposes the phone number; otherwise the next direct conversation is paired explicitly.</string>
+    <string name="message_pair_success">%1$s alerts enabled for %2$s</string>
+    <string name="message_auto_paired">SMS/RCS alerts automatically enabled for %1$s</string>
+    <string name="message_unpaired">%1$s alerts disabled for %2$s</string>
+    <string name="message_pair_cancelled">%1$s pairing cancelled</string>
+    <string name="message_settings_title">VIP message alerts</string>
+    <string name="message_settings_desc">Separate volume and sound for WhatsApp, SMS/RCS and Telegram</string>
+    <string name="message_sound_enabled">Play a sound for VIP messages</string>
+    <string name="message_sound_default">Default Android notification sound</string>
+    <string name="message_sound_contact">Sound assigned to the VIP contact (default notification if unavailable)</string>
 </resources>

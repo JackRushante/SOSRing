@@ -18,6 +18,9 @@ class ConfigExporterTest {
         ntfyAuthToken = "tk_test123",
         volumePercent = 75,
         overrideSoundType = 1,
+        messageVolumePercent = 65,
+        messageSoundEnabled = false,
+        messageSoundType = PrefsManager.MESSAGE_SOUND_CONTACT,
         contacts = listOf(
             VipContact(name = "Clizia", number = "+393515713262", locationEnabled = true, ringtoneEnabled = true),
             VipContact(name = "Mamma", number = "+393515713260", locationEnabled = false, ringtoneEnabled = false)
@@ -44,6 +47,9 @@ class ConfigExporterTest {
         assertEquals(1, parsed.getInt("version"))
         assertEquals("+393932077480", parsed.getString("ownPhoneNumber"))
         assertEquals(75, parsed.getInt("volumePercent"))
+        assertEquals(65, parsed.getInt("messageVolumePercent"))
+        assertFalse(parsed.getBoolean("messageSoundEnabled"))
+        assertEquals(PrefsManager.MESSAGE_SOUND_CONTACT, parsed.getInt("messageSoundType"))
         val contacts = parsed.getJSONArray("contacts")
         assertEquals(2, contacts.length())
     }
@@ -71,6 +77,9 @@ class ConfigExporterTest {
         assertEquals("", restored!!.ownPhoneNumber)
         assertTrue(restored.contacts.isEmpty())
         assertTrue(restored.quietRules.isEmpty())
+        assertEquals(PrefsManager.DEFAULT_MESSAGE_VOLUME_PERCENT, restored.messageVolumePercent)
+        assertEquals(PrefsManager.DEFAULT_MESSAGE_SOUND_ENABLED, restored.messageSoundEnabled)
+        assertEquals(PrefsManager.MESSAGE_SOUND_DEFAULT, restored.messageSoundType)
     }
 
     @Test

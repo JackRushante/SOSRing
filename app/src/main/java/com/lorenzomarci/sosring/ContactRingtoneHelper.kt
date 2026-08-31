@@ -28,7 +28,7 @@ object ContactRingtoneHelper {
                         cursor.getColumnIndexOrThrow(ContactsContract.Contacts.CUSTOM_RINGTONE)
                     )
                     if (!customRingtone.isNullOrBlank()) {
-                        Log.d(TAG, "Custom ringtone found for $phoneNumber: $customRingtone")
+                        Log.d(TAG, "Custom ringtone found for VIP contact")
                         return Uri.parse(customRingtone)
                     }
                 }
@@ -38,7 +38,7 @@ object ContactRingtoneHelper {
             Log.w(TAG, "READ_CONTACTS permission missing: ${e.message}")
             null
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to resolve ringtone for $phoneNumber: ${e.message}")
+            Log.e(TAG, "Failed to resolve ringtone for VIP contact: ${e.message}")
             null
         }
     }
