@@ -527,7 +527,7 @@ private fun setupRecyclerView() {
 
     private fun handleContactPicked(contactUri: Uri) {
         var name = ""
-        var phone = ""
+        var contactId = ""
         val ctx = requireContext()
 
         val nameCursor: Cursor? = ctx.contentResolver.query(
@@ -537,26 +537,98 @@ private fun setupRecyclerView() {
         nameCursor?.use {
             if (it.moveToFirst()) {
                 name = it.getString(it.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME)) ?: ""
-                val contactId = it.getString(it.getColumnIndexOrThrow(ContactsContract.Contacts._ID))
-                val phoneCursor: Cursor? = ctx.contentResolver.query(
-                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                    arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
-                    "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
-                    arrayOf(contactId), null
-                )
-                phoneCursor?.use { pc ->
-                    if (pc.moveToFirst()) {
-                        phone = pc.getString(pc.getColumnIndexOrThrow(
-                            ContactsContract.CommonDataKinds.Phone.NUMBER)) ?: ""
-                    }
-                }
+                contactId = it.getString(it.getColumnIndexOrThrow(ContactsContract.Contacts._ID)) ?: ""
             }
         }
 
-        if (phone.isEmpty()) {
+        val phoneOptions = readContactPhones(contactId)
+        if (phoneOptions.isEmpty()) {
             Toast.makeText(ctx, getString(R.string.no_phone_found), Toast.LENGTH_LONG).show()
             return
         }
+
+        if (phoneOptions.size == 1) {
+            showContactConfirmation(name, phoneOptions.single().number)
+        } else {
+            showContactNumberSelection(name, phoneOptions)
+        }
+    }
+
+    private fun readContactPhones(contactId: String): List<ContactPhoneOption> {
+        if (contactId.isBlank()) return emptyList()
+        val raw = mutableListOf<ContactPhoneOption>()
+        requireContext().contentResolver.query(
+            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            arrayOf(
+                ContactsContract.CommonDataKinds.Phone.NUMBER,
+                ContactsContract.CommonDataKinds.Phone.TYPE,
+                ContactsContract.CommonDataKinds.Phone.LABEL
+            ),
+            "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
+            arrayOf(contactId),
+            ContactsContract.CommonDataKinds.Phone.IS_PRIMARY + " DESC"
+        )?.use { cursor ->
+            val numberIndex = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER)
+            val typeIndex = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.TYPE)
+            val labelIndex = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.LABEL)
+            while (cursor.moveToNext()) {
+                val number = cursor.getString(numberIndex).orEmpty()
+                val type = cursor.getInt(typeIndex)
+                val customLabel = cursor.getString(labelIndex)
+                val label = ContactsContract.CommonDataKinds.Phone.getTypeLabel(
+                    resources,
+                    type,
+                    customLabel
+                ).toString()
+                raw += ContactPhoneOption(number, label)
+            }
+        }
+        return ContactImportPolicy.uniqueOptions(raw)
+    }
+
+    private fun showContactNumberSelection(name: String, options: List<ContactPhoneOption>) {
+        val checked = BooleanArray(options.size) { true }
+        val labels = options.map { option ->
+            if (option.label.isBlank()) option.number
+            else getString(R.string.contact_number_option, option.label, option.number)
+        }.toTypedArray()
+
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.contact_numbers_title, name))
+            .setMultiChoiceItems(labels, checked) { _, which, selected -> checked[which] = selected }
+            .setPositiveButton(getString(R.string.btn_add), null)
+            .setNegativeButton(getString(R.string.btn_cancel), null)
+            .show()
+
+        dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).setOnClickListener {
+            val selected = options.filterIndexed { index, _ -> checked[index] }
+            if (selected.isEmpty()) {
+                Toast.makeText(requireContext(), R.string.contact_numbers_none_selected, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val additions = ContactImportPolicy.createVipContacts(
+                contactName = name,
+                selected = selected,
+                existing = contacts,
+                includeLabels = true
+            )
+            if (additions.isEmpty()) {
+                Toast.makeText(requireContext(), R.string.contact_numbers_already_added, Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+            contacts.addAll(additions)
+            saveAndRefresh()
+            Toast.makeText(
+                requireContext(),
+                resources.getQuantityString(R.plurals.contact_numbers_added, additions.size, additions.size),
+                Toast.LENGTH_SHORT
+            ).show()
+            dialog.dismiss()
+        }
+    }
+
+    private fun showContactConfirmation(name: String, phone: String) {
+        val ctx = requireContext()
 
         val view = LayoutInflater.from(ctx).inflate(R.layout.dialog_add_number, null)
         val etName = view.findViewById<EditText>(R.id.etDialogName)

@@ -54,6 +54,14 @@
     <string name="remove_contact_msg">Remove %1$s (%2$s) from VIP list?</string>
     <string name="no_phone_found">No phone number found for this contact</string>
     <string name="contact_invalid_input">Enter a name and a phone number with at least 4 digits.</string>
+    <string name="contact_numbers_title">Select numbers for %1$s</string>
+    <string name="contact_number_option">%1$s — %2$s</string>
+    <string name="contact_numbers_none_selected">Select at least one number.</string>
+    <string name="contact_numbers_already_added">The selected numbers are already in the VIP list.</string>
+    <plurals name="contact_numbers_added">
+        <item quantity="one">%1$d number added</item>
+        <item quantity="other">%1$d numbers added</item>
+    </plurals>
     <string name="dnd_dialog_title">Do Not Disturb permission</string>
     <string name="dnd_dialog_msg">To disable \"Do Not Disturb\" when a VIP call arrives, you need to authorize SOS Ring in system settings.\n\nPress OK to open settings, then find \"SOS Ring\" and enable the toggle.</string>
     <string name="btn_open_settings">Open settings</string>
@@ -230,7 +238,7 @@
     <!-- Privacy -->
     <string name="privacy_title">Privacy &amp; licenses</string>
     <string name="privacy_data_title">Data handling</string>
-    <string name="privacy_data_body">SOS Ring processes call and contact data on your device.\n\nLocation sharing uses a peer-to-peer channel (ntfy). Coordinates are encrypted end-to-end with AES-256-GCM using a per-device key generated locally and shared with trusted family via QR.\n\nThe server (ntfy) never knows your key. If you lose your phone without a key backup, encrypted messages cannot be recovered.\n\nThis is NOT forward-secret and does NOT protect against a compromised phone, malware, screenshots, or keyloggers.\n\nNo analytics, no tracking, no ads.</string>
+    <string name="privacy_data_body">SOS Ring processes call and contact data on your device. If you enable VIP message alerts, notification metadata is processed locally to identify paired direct conversations; message text, contact names and phone numbers from notifications are never stored. Only hashed conversation identifiers and technical deduplication fingerprints are saved.\n\nLocation sharing uses a peer-to-peer channel (ntfy). Coordinates are encrypted end-to-end with AES-256-GCM using a per-device key generated locally and shared with trusted family via QR.\n\nThe server (ntfy) never knows your key. If you lose your phone without a key backup, encrypted messages cannot be recovered.\n\nThis is NOT forward-secret and does NOT protect against a compromised phone, malware, screenshots, or keyloggers.\n\nNo analytics, no tracking, no ads.</string>
     <string name="privacy_license_title">License</string>
     <string name="privacy_license_body">SOS Ring is free software licensed under GPL-3.0-or-later.\n\nSource code: github.com/JackRushante/SOSRing</string>
     <string name="privacy_contact_title">Contact</string>

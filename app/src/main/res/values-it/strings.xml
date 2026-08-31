@@ -53,6 +53,14 @@
     <string name="remove_contact_msg">Rimuovere %1$s (%2$s) dalla lista VIP?</string>
     <string name="no_phone_found">Nessun numero trovato per questo contatto</string>
     <string name="contact_invalid_input">Inserisci un nome e un numero di telefono di almeno 4 cifre.</string>
+    <string name="contact_numbers_title">Seleziona i numeri di %1$s</string>
+    <string name="contact_number_option">%1$s — %2$s</string>
+    <string name="contact_numbers_none_selected">Seleziona almeno un numero.</string>
+    <string name="contact_numbers_already_added">I numeri selezionati sono già nella lista VIP.</string>
+    <plurals name="contact_numbers_added">
+        <item quantity="one">%1$d numero aggiunto</item>
+        <item quantity="other">%1$d numeri aggiunti</item>
+    </plurals>
     <string name="dnd_dialog_title">Permesso Non Disturbare</string>
     <string name="dnd_dialog_msg">Per poter disattivare la modalità \"Non disturbare\" quando arriva una chiamata VIP, devi autorizzare SOS Ring nelle impostazioni di sistema.\n\nPremi OK per aprire le impostazioni, poi cerca \"SOS Ring\" e attiva l\'interruttore.</string>
     <string name="btn_open_settings">Apri impostazioni</string>
@@ -229,7 +237,7 @@
     <!-- Privacy -->
     <string name="privacy_title">Privacy e licenze</string>
     <string name="privacy_data_title">Trattamento dati</string>
-    <string name="privacy_data_body">SOS Ring elabora chiamate e contatti sul tuo dispositivo.\n\nLa condivisione posizione usa un canale peer-to-peer (ntfy). Le coordinate sono cifrate end-to-end con AES-256-GCM usando una chiave per-device generata localmente e condivisa con familiari fidati via QR.\n\nIl server (ntfy) non conosce mai la tua chiave. Se perdi il telefono senza backup della chiave, i messaggi cifrati non possono essere recuperati.\n\nQuesto NON è forward-secret e NON protegge da telefono compromesso, malware, screenshot o keylogger.\n\nNessuna analitica, nessun tracciamento, nessuna pubblicità.</string>
+    <string name="privacy_data_body">SOS Ring elabora chiamate e contatti sul tuo dispositivo. Se attivi gli avvisi messaggi VIP, i metadati delle notifiche vengono elaborati localmente per identificare le conversazioni dirette associate; testo dei messaggi, nomi e numeri provenienti dalle notifiche non vengono mai salvati. Sono conservati soltanto identificativi conversazione cifrati con hash e fingerprint tecnici di deduplicazione.\n\nLa condivisione posizione usa un canale peer-to-peer (ntfy). Le coordinate sono cifrate end-to-end con AES-256-GCM usando una chiave per-device generata localmente e condivisa con familiari fidati via QR.\n\nIl server (ntfy) non conosce mai la tua chiave. Se perdi il telefono senza backup della chiave, i messaggi cifrati non possono essere recuperati.\n\nQuesto NON è forward-secret e NON protegge da telefono compromesso, malware, screenshot o keylogger.\n\nNessuna analitica, nessun tracciamento, nessuna pubblicità.</string>
     <string name="privacy_license_title">Licenza</string>
     <string name="privacy_license_body">SOS Ring è software libero con licenza GPL-3.0-or-later.\n\nCodice sorgente: github.com/JackRushante/SOSRing</string>
     <string name="privacy_contact_title">Contatto</string>
