@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:orientation="vertical" android:padding="18dp">
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="@string/call_mode_title" android:textSize="16sp" android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface" />
+    <RadioGroup android:id="@+id/rgCallMode" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:layout_marginTop="8dp">
+        <com.google.android.material.radiobutton.MaterialRadioButton android:id="@+id/rbCallFirst"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
+            android:text="@string/call_mode_first" />
+        <com.google.android.material.radiobutton.MaterialRadioButton android:id="@+id/rbCallSecond"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" />
+    </RadioGroup>
+    <com.google.android.material.button.MaterialButton android:id="@+id/btnRepeatWindow"
+        style="?attr/materialButtonOutlinedStyle" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:minHeight="48dp" />
+    <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/switchEscalateCalls"
+        android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
+        android:text="@string/call_escalate_title" />
+    <TextView android:id="@+id/tvEscalatePreview" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:textColor="?attr/colorOnSurfaceVariant" />
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="12dp" android:text="@string/call_mode_help"
+        android:textColor="?attr/colorOnSurfaceVariant" android:textSize="12sp" />
+</LinearLayout>

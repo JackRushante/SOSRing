@@ -15,6 +15,8 @@ Android 14+ ha rimosso le eccezioni DND per contatto. Non esiste un modo nativo 
 FUNZIONALITA:
 • Scegli contatti VIP dalla rubrica o inseriscili manualmente; per i contatti con più numeri puoi selezionarne uno, alcuni o tutti
 • Volume chiamate configurabile (25-100%)
+• Suono dalla prima chiamata VIP o dalla seconda entro 3, 5 o 10 minuti, con eccezioni per numero
+• Raddoppio opzionale del volume fra chiamate successive se il volume base è inferiore al 50%, fino al 100%
 • Avvisi messaggi VIP opzionali per WhatsApp, Google Messaggi (SMS/RCS) e Telegram
 • Toggle, volume (5-100%) e suono dei messaggi separati: predefinito Android o suono assegnato al contatto VIP
 • Funziona in Silenzioso, Vibrazione E Non Disturbare
@@ -24,6 +26,9 @@ FUNZIONALITA:
 • Consumo batteria minimo (basato su eventi, nessun polling)
 • Supporto dark mode
 • Nessuna pubblicita o tracciamento
+
+CHIAMATE RIPETUTE:
+Modalità da Impostazioni, Home o menu VIP. Contano chiamate cellulari distinte dallo stesso numero in una finestra fissa. Risposta o pausa azzera i contatori locali, hash non esportati. Dettagli nel README.
 
 CONDIVISIONE POSIZIONE (opzionale, peer-to-peer):
 • Non serve un server SOS Ring — scegli tu un'app distributore UnifiedPush (es. ntfy su F-Droid); trasmette solo dati cifrati

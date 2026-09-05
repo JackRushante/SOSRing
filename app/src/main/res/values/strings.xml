@@ -315,4 +315,17 @@
     <string name="message_sound_enabled">Play a sound for VIP messages</string>
     <string name="message_sound_default">Default Android notification sound</string>
     <string name="message_sound_contact">Sound assigned to the VIP contact (default notification if unavailable)</string>
+    <string name="call_mode_title">When to sound for VIP calls</string>
+    <string name="call_mode_first">From the first call</string>
+    <string name="call_mode_second">From the second call within %1$d minutes</string>
+    <string name="call_mode_inherit">Use the general setting</string>
+    <string name="call_mode_contact">Call rule for %1$s</string>
+    <string name="call_mode_summary_first">VIP calls: from the first call</string>
+    <string name="call_mode_summary_second">VIP calls: second within %1$d min</string>
+    <string name="call_window_title">Repeat call window</string>
+    <string name="call_window_value">Window: %1$d minutes</string>
+    <string name="call_escalate_title">Double the volume on subsequent calls</string>
+    <string name="call_escalate_high_volume">Applies only when the configured call volume is below 50%. Lower the call volume to enable the progression.</string>
+    <string name="call_escalate_preview">When enabled: %1$d%% → %2$d%% → 100%%, starting from the first call allowed to sound. The original alarm volume is restored afterwards.</string>
+    <string name="call_mode_help">Only separate cellular calls from the same VIP number count. The window starts with the first call; answering resets it. The first call keeps the normal phone sound settings. Pauses and Quiet Hours block all overrides and reset the count. Messages keep their separate sound setting. Each VIP can override the general call rule from its menu.</string>
 </resources>

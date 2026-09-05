@@ -106,6 +106,7 @@ class HomeFragment : Fragment() {
         updatePermissionStatus()
         binding.switchService.isChecked = prefs.isServiceEnabled
         updateServiceHero(binding.switchService.isChecked)
+        updateCallModeSummary()
         loadContacts()
         updateMuteTimerUI()
         if (prefs.isMuted) {
@@ -131,6 +132,7 @@ class HomeFragment : Fragment() {
 private fun setupRecyclerView() {
         adapter = VipNumbersAdapter(
             onEdit = { position, contact -> showEditDialog(position, contact) },
+            onCallMode = { contact -> showContactCallMode(contact) },
             onDelete = { position -> deleteContact(position) },
             onTrackTap = { contact -> showTrackChoiceDialog(contact) },
             onStop = { contact -> stopLiveTrackingFor(contact) },
@@ -291,6 +293,9 @@ private fun setupRecyclerView() {
     }
 
     private fun setupListeners() {
+        binding.btnCallModeSummary.setOnClickListener {
+            CallAlertSettingsUi.show(requireContext(), prefs) { updateCallModeSummary() }
+        }
         binding.switchService.setOnCheckedChangeListener { _, isChecked ->
             updateServiceHero(isChecked)
             if (isChecked) {
@@ -674,6 +679,25 @@ private fun setupRecyclerView() {
             }
             .setNegativeButton(getString(R.string.btn_cancel), null)
             .show()
+    }
+
+    private fun updateCallModeSummary() {
+        binding.btnCallModeSummary.text = CallAlertSettingsUi.summary(requireContext(), prefs)
+    }
+
+    private fun showContactCallMode(contact: VipContact) {
+        val options = arrayOf(getString(R.string.call_mode_inherit), getString(R.string.call_mode_first),
+            getString(R.string.call_mode_second, prefs.repeatCallWindowMinutes))
+        val modes = listOf(CallAlertMode.INHERIT, CallAlertMode.FIRST, CallAlertMode.SECOND)
+        MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.call_mode_contact, contact.name))
+            .setSingleChoiceItems(options, modes.indexOf(contact.callAlertMode)) { dialog, index ->
+                val position = contacts.indexOfFirst { it.number == contact.number }
+                if (position >= 0) {
+                    contacts[position] = contacts[position].copy(callAlertMode = modes[index])
+                    saveAndRefresh()
+                }
+                dialog.dismiss()
+            }.setNegativeButton(R.string.btn_cancel, null).show()
     }
 
     private fun showEditDialog(position: Int, contact: VipContact) {

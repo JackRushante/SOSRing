@@ -68,6 +68,16 @@ class CallMonitorService : Service() {
     private lateinit var prefs: PrefsManager
     private lateinit var audioManager: AudioManager
     private lateinit var notificationManager: NotificationManager
+    private lateinit var repeatCalls: RepeatCallStore
+    private val callPreferencesListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key in setOf("service_enabled", "mute_until_timestamp", "quiet_rules", "vip_contacts",
+                "call_alert_mode", "repeat_call_window_minutes", "escalate_call_volume", "volume_percent")) {
+            repeatCalls.reset()
+            if (!AlertGatePolicy.allowsCall(prefs.isServiceEnabled, prefs.isMuted, prefs.isInQuietPeriod())) {
+                suspendActiveAlert()
+            }
+        }
+    }
 
     var pushEngine: PushEngine? = null
         private set
@@ -90,6 +100,8 @@ class CallMonitorService : Service() {
     private val phoneReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action != TelephonyManager.ACTION_PHONE_STATE_CHANGED) return
+            // Android sends a second, numberless broadcast. Its delivery order is unspecified.
+            if (!intent.hasExtra(TelephonyManager.EXTRA_INCOMING_NUMBER)) return
 
             val state = intent.getStringExtra(TelephonyManager.EXTRA_STATE)
             val number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER)
@@ -105,42 +117,23 @@ class CallMonitorService : Service() {
             when (state) {
                 TelephonyManager.EXTRA_STATE_RINGING -> {
                     this@CallMonitorService.warnIfCriticalPermsMissing()
-                    if (number != null) {
-                        val vipContact = findVipContact(number)
-                        if (vipContact != null) {
-                            if (AlertGatePolicy.allowsCall(
-                                    monitoringEnabled = prefs.isServiceEnabled,
-                                    paused = prefs.isMuted,
-                                    quietHours = prefs.isInQuietPeriod()
-                                )
-                            ) {
-                                val shouldOverride = AudioOverridePolicy.shouldOverride(
-                                    audioManager.ringerMode,
-                                    audioManager.getStreamVolume(AudioManager.STREAM_RING),
-                                    notificationManager.currentInterruptionFilter
-                                )
-                                if (shouldOverride) {
-                                    Log.i(TAG, "VIP call detected! Overriding audio.")
-                                    if (isOverriding && overrideKind == OverrideKind.MESSAGE) {
-                                        restoreAudio()
-                                    }
-                                    overrideAudio(number)
-                                } else {
-                                    Log.i(TAG, "VIP call detected but system already audible. Skipping override.")
-                                }
-                            } else {
-                                Log.i(TAG, "VIP call skipped by monitoring state.")
-                            }
-                        }
+                    if (isOverriding && overrideKind == OverrideKind.MESSAGE) restoreAudio()
+                    val vipContact = number?.let(::findVipContact)
+                    val decision = repeatCalls.onRinging(vipContact)
+                    if (decision?.shouldRing == true && vipContact != null) {
+                        overrideAudio(vipContact.number, decision)
                     }
                 }
                 TelephonyManager.EXTRA_STATE_IDLE -> {
+                    repeatCalls.onIdle()
                     if (isOverriding && overrideKind == OverrideKind.CALL) {
                         Log.i(TAG, "Call ended. Restoring audio.")
                         restoreAudio()
                     }
                 }
                 TelephonyManager.EXTRA_STATE_OFFHOOK -> {
+                    repeatCalls.onAnswered()
+                    if (isOverriding && overrideKind == OverrideKind.MESSAGE) restoreAudio()
                     // Call answered — stop ringtone/vibration, restore audio on IDLE
                     if (isOverriding && overrideKind == OverrideKind.CALL) {
                         Log.i(TAG, "Call answered. Stopping ringtone.")
@@ -157,6 +150,8 @@ class CallMonitorService : Service() {
         prefs = PrefsManager(this)
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        repeatCalls = RepeatCallStore(this, prefs, !isCallStateIdle())
+        prefs.registerChangeListener(callPreferencesListener)
 
         restoreStaleOverrideState()
 
@@ -166,6 +161,9 @@ class CallMonitorService : Service() {
 
         val filter = IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED)
         registerReceiver(phoneReceiver, filter)
+
+        // A call can end between the initial state snapshot and receiver registration.
+        if (repeatCalls.busy && isCallStateIdle()) repeatCalls.onIdle()
 
         if (isOverriding && isCallStateIdle()) {
             Log.i(TAG, "Call went idle before receiver registration; restoring audio.")
@@ -220,6 +218,7 @@ class CallMonitorService : Service() {
     }
 
     override fun onDestroy() {
+        prefs.unregisterChangeListener(callPreferencesListener)
         updateHandler.removeCallbacksAndMessages(null)
         overrideHandler.removeCallbacksAndMessages(null)
         pushEngine?.stop()
@@ -298,8 +297,8 @@ class CallMonitorService : Service() {
     }
 
     @Suppress("DEPRECATION")
-    private fun overrideAudio(number: String) {
-        if (!beginAudioOverride(number, OverrideKind.CALL, prefs.volumePercent)) return
+    private fun overrideAudio(number: String, decision: CallAlertDecision) {
+        if (!beginAudioOverride(number, OverrideKind.CALL, decision.volumePercent, decision.exactVolume)) return
 
         startOverrideSound()
 
@@ -309,6 +308,7 @@ class CallMonitorService : Service() {
     }
 
     private fun overrideMessageAlert(number: String) {
+        if (repeatCalls.busy || !isCallStateIdle()) return
         if (!AlertGatePolicy.allowsMessage(
                 monitoringEnabled = prefs.isServiceEnabled,
                 paused = prefs.isMuted,
@@ -338,7 +338,7 @@ class CallMonitorService : Service() {
     }
 
     @Suppress("DEPRECATION")
-    private fun beginAudioOverride(number: String, kind: OverrideKind, volumePercent: Int): Boolean {
+    private fun beginAudioOverride(number: String, kind: OverrideKind, volumePercent: Int, exactCallVolume: Boolean = false): Boolean {
         if (isOverriding) return false
         if (!AudioOverridePolicy.shouldOverride(
                 audioManager.ringerMode,
@@ -383,7 +383,7 @@ class CallMonitorService : Service() {
                 maxVolume = alarmMax,
                 currentVolume = alarmCurrent,
                 percent = volumePercent,
-                preserveHigherCurrentVolume = kind == OverrideKind.CALL
+                preserveHigherCurrentVolume = kind == OverrideKind.CALL && !exactCallVolume
             )
             audioManager.setStreamVolume(AudioManager.STREAM_ALARM, alarmFinal, 0)
             Log.d(TAG, "Override playback: alarm volume=$alarmFinal (app=$volumePercent%, system=$alarmCurrent)")
@@ -398,6 +398,10 @@ class CallMonitorService : Service() {
 
     fun suspendActiveAlert() {
         if (isOverriding) restoreAudio()
+    }
+
+    fun suspendMessageAlert() {
+        if (isOverriding && overrideKind == OverrideKind.MESSAGE) restoreAudio()
     }
 
     private fun scheduleAlertGateCheck() {

@@ -52,6 +52,7 @@ class SettingsFragment : Fragment() {
         prefs = PrefsManager(requireContext())
         setupAppearance()
         setupVolumeSlider()
+        CallAlertSettingsUi.bind(binding.callAlertSettings.root, prefs)
         setupSoundType()
         setupMessageAlerts()
         setupQuietHours()
@@ -116,6 +117,7 @@ class SettingsFragment : Fragment() {
         binding.sliderVolume.addOnChangeListener { _, value, _ ->
             prefs.volumePercent = value.toInt()
             binding.tvVolumeValue.text = "${value.toInt()}%"
+            CallAlertSettingsUi.refreshVolume(binding.callAlertSettings.root, prefs)
         }
     }
 
@@ -144,7 +146,7 @@ class SettingsFragment : Fragment() {
         binding.switchMessageSound.setOnCheckedChangeListener { _, enabled ->
             prefs.messageSoundEnabled = enabled
             updateMessageSoundControls(enabled)
-            if (!enabled) CallMonitorService.getInstance()?.suspendActiveAlert()
+            if (!enabled) CallMonitorService.getInstance()?.suspendMessageAlert()
         }
         binding.sliderMessageVolume.value = prefs.messageVolumePercent.toFloat()
         binding.tvMessageVolumeValue.text = "${prefs.messageVolumePercent}%"
@@ -304,7 +306,10 @@ class SettingsFragment : Fragment() {
                 messageSoundEnabled = prefs.messageSoundEnabled,
                 messageSoundType = prefs.messageSoundType,
                 contacts = prefs.getContacts(),
-                quietRules = prefs.getQuietRules()
+                quietRules = prefs.getQuietRules(),
+                callAlertMode = prefs.callAlertMode,
+                repeatCallWindowMinutes = prefs.repeatCallWindowMinutes,
+                escalateCallVolume = prefs.escalateCallVolume
             )
             val envelope = ConfigCrypto.encrypt(ConfigExporter.export(config), password)
             requireContext().contentResolver.openOutputStream(uri)?.use { os ->
@@ -416,6 +421,10 @@ class SettingsFragment : Fragment() {
         prefs.messageVolumePercent = config.messageVolumePercent
         prefs.messageSoundEnabled = config.messageSoundEnabled
         prefs.messageSoundType = config.messageSoundType
+        prefs.callAlertMode = config.callAlertMode
+        prefs.repeatCallWindowMinutes = config.repeatCallWindowMinutes
+        prefs.escalateCallVolume = config.escalateCallVolume
+        CallAlertSettingsUi.bind(binding.callAlertSettings.root, prefs)
         prefs.saveContacts(config.contacts)
         prefs.saveQuietRules(config.quietRules)
 

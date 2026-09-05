@@ -15,6 +15,8 @@ Android 14+ removed per-contact DND exceptions. No built-in way exists to let sp
 FEATURES:
 • Pick VIP contacts from your phonebook or enter manually; select any or all numbers for contacts with multiple numbers
 • Configurable call override volume (25-100%)
+• Sound from the first VIP call or the second within 3, 5 or 10 minutes, with per-number exceptions
+• Optional volume doubling between successive calls when the base volume is below 50%, capped at 100%
 • Optional VIP message alerts for WhatsApp, Google Messages (SMS/RCS), and Telegram
 • Separate message sound toggle, volume (5-100%), and Android default or VIP contact sound
 • Works in Silent, Vibrate, AND Do Not Disturb mode
@@ -24,6 +26,9 @@ FEATURES:
 • Minimal battery usage (event-driven, no polling)
 • Dark mode support
 • No ads or tracking
+
+REPEATED CALLS:
+The default remains the first call. Choose the mode in Settings, Home or each VIP's menu. Only distinct cellular calls from the same number count; answering or pausing resets the sequence. The window does not slide. Messages do not count and stay silent during cellular calls. Pending counts use local hashed identifiers, expire within the window and are excluded from exports. See the README for details.
 
 LOCATION SHARING (optional, peer-to-peer):
 • No SOS Ring server required — you pick a UnifiedPush distributor app (e.g. ntfy on F-Droid); it relays only encrypted data

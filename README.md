@@ -17,6 +17,8 @@ SOS Ring solves this with a foreground service that monitors incoming calls and,
 - Pick VIP contacts from the phonebook or enter them manually; select any or all numbers when a contact has more than one
 - Audible alerts for direct WhatsApp, Google Messages (SMS/RCS), and Telegram conversations from paired VIP contacts
 - Separate controls for calls (25-100%) and messages (on/off, 5-100%, Android default sound or the sound assigned to the VIP contact)
+- Choose to sound from the first call or only from the second call within 3, 5, or 10 minutes, with exceptions for individual VIP numbers
+- Optional volume doubling on subsequent calls when the configured call volume is below 50%, up to 100%
 - Works in **Silent**, **Vibrate**, AND **Do Not Disturb** mode
 - Full state restore after each alert (ringer mode, all volumes including alarm, DND)
 - Temporary mute timer (1-12 hours) and Quiet Hours apply to both calls and messages
@@ -25,6 +27,18 @@ SOS Ring solves this with a foreground service that monitors incoming calls and,
 - Dark mode (follows system), English and Italian
 - No ads, no analytics, no tracking
 - **Optional peer-to-peer location sharing and live tracking** (see below)
+
+## Repeated VIP calls
+
+Open **Settings → When to sound for VIP calls**, or tap the call-mode summary on Home. The default remains **From the first call**; the alternative starts overriding the phone's sound settings from the **second call from the same VIP number** within 3, 5 (default), or 10 minutes. The first call keeps the phone's normal sound settings. Each VIP's menu can inherit the general rule or override it.
+
+Only separate incoming cellular calls count, not WhatsApp/Telegram calls or messages. The window starts with the first call and does not slide. An unanswered or rejected call counts; answering resets that number's sequence. Pausing monitoring, Quiet Hours, disabling monitoring, or changing call settings resets pending sequences. Overlapping calls/call waiting do not create additional attempts.
+
+**Double the volume on subsequent calls** is optional and off by default. It applies only when the configured base call volume is below 50%. For example, a 25% base becomes **25% → 50% → 100%**, starting with the first call allowed to sound (the second actual call in second-call mode). This changes volume between calls, not gradually during one call. The original alarm volume is restored after each call. At a base of 50% or higher, the existing volume behavior is unchanged.
+
+Messages retain their separate settings and never advance the call counter. Their sound override is suppressed while a cellular call is ringing or ongoing.
+
+Pending call sequences are stored locally as hashed VIP-number identifiers, monotonic start times and capped counts. They are only valid for the selected window, are not included in configuration exports, and do not survive reboot. If the app restarts during a call whose outcome is unknown, that sequence is discarded conservatively.
 
 ## Location sharing (optional, peer-to-peer)
 
