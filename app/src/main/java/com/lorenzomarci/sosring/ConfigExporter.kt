@@ -17,7 +17,10 @@ data class AppConfig(
     val messageSoundEnabled: Boolean,
     val messageSoundType: Int,
     val contacts: List<VipContact>,
-    val quietRules: List<QuietRule>
+    val quietRules: List<QuietRule>,
+    val callAlertMode: CallAlertMode = CallAlertMode.FIRST,
+    val repeatCallWindowMinutes: Int = 5,
+    val escalateCallVolume: Boolean = false
 )
 
 object ConfigExporter {
@@ -45,7 +48,10 @@ object ConfigExporter {
         messageSoundEnabled: Boolean,
         messageSoundType: Int,
         contacts: List<VipContact>,
-        quietRules: List<QuietRule>
+        quietRules: List<QuietRule>,
+        callAlertMode: CallAlertMode = CallAlertMode.FIRST,
+        repeatCallWindowMinutes: Int = 5,
+        escalateCallVolume: Boolean = false
     ): AppConfig = AppConfig(
         version = CURRENT_VERSION,
         exportedAt = System.currentTimeMillis(),
@@ -60,7 +66,10 @@ object ConfigExporter {
         messageSoundEnabled = messageSoundEnabled,
         messageSoundType = messageSoundType,
         contacts = contacts,
-        quietRules = quietRules
+        quietRules = quietRules,
+        callAlertMode = callAlertMode,
+        repeatCallWindowMinutes = repeatCallWindowMinutes,
+        escalateCallVolume = escalateCallVolume
     )
 
     fun export(config: AppConfig): String {
@@ -71,6 +80,7 @@ object ConfigExporter {
                 put("number", c.number)
                 put("locationEnabled", c.locationEnabled)
                 put("ringtoneEnabled", c.ringtoneEnabled)
+                put("callAlertMode", c.callAlertMode.name)
             })
         }
         val rulesArr = JSONArray()
@@ -96,6 +106,9 @@ object ConfigExporter {
             put("messageVolumePercent", config.messageVolumePercent)
             put("messageSoundEnabled", config.messageSoundEnabled)
             put("messageSoundType", config.messageSoundType)
+            put("callAlertMode", config.callAlertMode.name)
+            put("repeatCallWindowMinutes", config.repeatCallWindowMinutes)
+            put("escalateCallVolume", config.escalateCallVolume)
             put("contacts", contactsArr)
             put("quietRules", rulesArr)
         }
@@ -137,7 +150,8 @@ object ConfigExporter {
                         name = obj.optString("name", ""),
                         number = obj.optString("number", ""),
                         locationEnabled = obj.optBoolean("locationEnabled", false),
-                        ringtoneEnabled = obj.optBoolean("ringtoneEnabled", true)
+                        ringtoneEnabled = obj.optBoolean("ringtoneEnabled", true),
+                        callAlertMode = CallAlertMode.parse(obj.optString("callAlertMode"), CallAlertMode.INHERIT)
                     ))
                 }
             }
@@ -184,7 +198,12 @@ object ConfigExporter {
                 messageSoundEnabled = messageSoundEnabled,
                 messageSoundType = messageSoundType,
                 contacts = contacts,
-                quietRules = rules
+                quietRules = rules,
+                callAlertMode = CallAlertMode.parse(root.optString("callAlertMode")).let {
+                    if (it == CallAlertMode.INHERIT) CallAlertMode.FIRST else it
+                },
+                repeatCallWindowMinutes = RepeatCallPolicy.windowMinutes(root.optInt("repeatCallWindowMinutes", 5)),
+                escalateCallVolume = root.optBoolean("escalateCallVolume", false)
             )
         } catch (e: Exception) {
             null

@@ -8,7 +8,8 @@ import java.util.Calendar
 import org.json.JSONArray
 import org.json.JSONObject
 
-data class VipContact(val name: String, val number: String, val locationEnabled: Boolean = false, val ringtoneEnabled: Boolean = true)
+data class VipContact(val name: String, val number: String, val locationEnabled: Boolean = false,
+    val ringtoneEnabled: Boolean = true, val callAlertMode: CallAlertMode = CallAlertMode.INHERIT)
 
 data class QuietRule(
     val days: Set<Int>,    // Calendar.MONDAY(2)..SUNDAY(1)
@@ -40,6 +41,21 @@ class PrefsManager(context: Context) {
 
     private val prefs: SharedPreferences =
         context.getSharedPreferences("sosring_prefs", Context.MODE_PRIVATE)
+    private val callAttempts = context.getSharedPreferences("sosring_call_attempts", Context.MODE_PRIVATE)
+
+    private fun setCallPreference(key: String, value: Any) {
+        if (prefs.all[key] == value) return
+        // Invalidate persisted attempts even if the monitoring service is not currently running.
+        callAttempts.edit().clear().apply()
+        prefs.edit().apply {
+            when (value) {
+                is Boolean -> putBoolean(key, value)
+                is Int -> putInt(key, value)
+                is Long -> putLong(key, value)
+                is String -> putString(key, value)
+            }
+        }.apply()
+    }
 
     companion object {
         private const val KEY_CONTACTS = "vip_contacts"
@@ -98,7 +114,7 @@ class PrefsManager(context: Context) {
 
     var isServiceEnabled: Boolean
         get() = prefs.getBoolean(KEY_SERVICE_ENABLED, false)
-        set(value) = prefs.edit().putBoolean(KEY_SERVICE_ENABLED, value).apply()
+        set(value) = setCallPreference(KEY_SERVICE_ENABLED, value)
 
     var themePalette: AppPalette
         get() = AppPalette.fromStoredOrdinal(prefs.getInt(KEY_THEME_PALETTE, AppPalette.INDACO.ordinal))
@@ -125,7 +141,27 @@ class PrefsManager(context: Context) {
 
     var volumePercent: Int
         get() = prefs.getInt(KEY_VOLUME_PERCENT, DEFAULT_VOLUME_PERCENT)
-        set(value) = prefs.edit().putInt(KEY_VOLUME_PERCENT, value.coerceIn(MIN_VOLUME_PERCENT, MAX_VOLUME_PERCENT)).apply()
+        set(value) = setCallPreference(KEY_VOLUME_PERCENT, value.coerceIn(MIN_VOLUME_PERCENT, MAX_VOLUME_PERCENT))
+
+    var callAlertMode: CallAlertMode
+        get() = CallAlertMode.parse(prefs.getString("call_alert_mode", null)).let {
+            if (it == CallAlertMode.INHERIT) CallAlertMode.FIRST else it
+        }
+        set(value) = setCallPreference("call_alert_mode", value.name)
+
+    var repeatCallWindowMinutes: Int
+        get() = RepeatCallPolicy.windowMinutes(prefs.getInt("repeat_call_window_minutes", 5))
+        set(value) = setCallPreference("repeat_call_window_minutes", RepeatCallPolicy.windowMinutes(value))
+
+    var escalateCallVolume: Boolean
+        get() = prefs.getBoolean("escalate_call_volume", false)
+        set(value) = setCallPreference("escalate_call_volume", value)
+
+    fun registerChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) =
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+
+    fun unregisterChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) =
+        prefs.unregisterOnSharedPreferenceChangeListener(listener)
 
     var messageVolumePercent: Int
         get() = prefs.getInt(KEY_MESSAGE_VOLUME_PERCENT, DEFAULT_MESSAGE_VOLUME_PERCENT)
@@ -148,7 +184,7 @@ class PrefsManager(context: Context) {
 
     var muteUntilTimestamp: Long
         get() = prefs.getLong(KEY_MUTE_UNTIL, 0L)
-        set(value) = prefs.edit().putLong(KEY_MUTE_UNTIL, value).apply()
+        set(value) = setCallPreference(KEY_MUTE_UNTIL, value)
 
     val isMuted: Boolean
         get() {
@@ -174,7 +210,8 @@ class PrefsManager(context: Context) {
                     name = obj.getString("name"),
                     number = obj.getString("number"),
                     locationEnabled = obj.optBoolean("locationEnabled", false),
-                    ringtoneEnabled = obj.optBoolean("ringtoneEnabled", true)
+                    ringtoneEnabled = obj.optBoolean("ringtoneEnabled", true),
+                    callAlertMode = CallAlertMode.parse(obj.optString("callAlertMode"), CallAlertMode.INHERIT)
                 )
             }
         } catch (e: Exception) {
@@ -190,9 +227,10 @@ class PrefsManager(context: Context) {
                 put("number", c.number)
                 put("locationEnabled", c.locationEnabled)
                 put("ringtoneEnabled", c.ringtoneEnabled)
+                put("callAlertMode", c.callAlertMode.name)
             })
         }
-        prefs.edit().putString(KEY_CONTACTS, arr.toString()).apply()
+        setCallPreference(KEY_CONTACTS, arr.toString())
     }
 
     fun getVipNumbers(): Set<String> {
@@ -238,7 +276,7 @@ class PrefsManager(context: Context) {
                 put("endMinute", r.endMinute)
             })
         }
-        prefs.edit().putString(KEY_QUIET_RULES, arr.toString()).apply()
+        setCallPreference(KEY_QUIET_RULES, arr.toString())
     }
 
     fun isInQuietPeriod(): Boolean {

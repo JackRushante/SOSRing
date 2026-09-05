@@ -17,6 +17,7 @@ class VipNumbersAdapter(
     private val onStop: ((VipContact) -> Unit)? = null,
     private val onViewPath: ((VipContact) -> Unit)? = null,
     private val onMessageAlertTap: ((VipContact, MessageApp) -> Unit)? = null,
+    private val onCallMode: ((VipContact) -> Unit)? = null,
     private val liveTrackingNumber: () -> String? = { null }
 ) : ListAdapter<VipContact, VipNumbersAdapter.ViewHolder>(DiffCallback) {
 
@@ -74,6 +75,7 @@ class VipNumbersAdapter(
             menu.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.action_edit -> { onEdit(position, contact); true }
+                    R.id.action_call_mode -> { onCallMode?.invoke(contact); true }
                     R.id.action_whatsapp_alert -> { onMessageAlertTap?.invoke(contact, MessageApp.WHATSAPP); true }
                     R.id.action_google_messages_alert -> {
                         onMessageAlertTap?.invoke(contact, MessageApp.GOOGLE_MESSAGES); true

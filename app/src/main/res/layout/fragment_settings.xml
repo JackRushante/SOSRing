@@ -446,6 +446,8 @@
                     app:thumbColor="?attr/tokenAccent"
                     app:trackColorActive="?attr/tokenAccent"
                     app:trackColorInactive="@color/track_inactive" />
+
+                <include android:id="@+id/callAlertSettings" layout="@layout/view_call_alert_settings" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

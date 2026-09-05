@@ -314,4 +314,17 @@
     <string name="message_sound_enabled">Riproduci un suono per i messaggi VIP</string>
     <string name="message_sound_default">Suono di notifica Android predefinito</string>
     <string name="message_sound_contact">Suono assegnato al contatto VIP (notifica predefinita se assente)</string>
+    <string name="call_mode_title">Quando suonare per le chiamate VIP</string>
+    <string name="call_mode_first">Dalla prima chiamata</string>
+    <string name="call_mode_second">Dalla seconda chiamata entro %1$d minuti</string>
+    <string name="call_mode_inherit">Usa impostazione generale</string>
+    <string name="call_mode_contact">Regola chiamate per %1$s</string>
+    <string name="call_mode_summary_first">Chiamate VIP: dalla prima</string>
+    <string name="call_mode_summary_second">Chiamate VIP: seconda entro %1$d min</string>
+    <string name="call_window_title">Intervallo tra le chiamate</string>
+    <string name="call_window_value">Intervallo: %1$d minuti</string>
+    <string name="call_escalate_title">Raddoppia il volume alle chiamate successive</string>
+    <string name="call_escalate_high_volume">Si applica solo con volume chiamate configurato sotto il 50%. Abbassa il volume chiamate per usare la progressione.</string>
+    <string name="call_escalate_preview">Se attivo: %1$d%% → %2$d%% → 100%%, dalla prima chiamata autorizzata a suonare. Il volume sveglia originale viene ripristinato al termine.</string>
+    <string name="call_mode_help">Contano solo telefonate cellulari distinte dallo stesso numero VIP. L\'intervallo parte dalla prima chiamata; rispondere azzera il conteggio. La prima chiamata mantiene le normali impostazioni audio del telefono. Pausa e ore silenziose bloccano tutti gli avvisi forzati e azzerano il conteggio. I messaggi mantengono la loro impostazione audio separata. Dal menu di ogni VIP puoi scegliere una regola diversa da quella generale.</string>
 </resources>
