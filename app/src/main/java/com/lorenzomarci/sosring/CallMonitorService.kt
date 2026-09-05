@@ -162,6 +162,9 @@ class CallMonitorService : Service() {
         val filter = IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED)
         registerReceiver(phoneReceiver, filter)
 
+        // A call can end between the initial state snapshot and receiver registration.
+        if (repeatCalls.busy && isCallStateIdle()) repeatCalls.onIdle()
+
         if (isOverriding && isCallStateIdle()) {
             Log.i(TAG, "Call went idle before receiver registration; restoring audio.")
             restoreAudio()
