@@ -154,6 +154,14 @@
     <string name="live_send_stalled">Tracking live: GPS fermo, riavvio gli aggiornamenti</string>
     <string name="live_map_status_history_one">Storico: 1 punto</string>
     <string name="live_map_status_history_many">Storico: %1$d punti</string>
+    <string name="live_map_stats">%1$s · %2$s · media %3$s</string>
+    <string name="live_map_stats_recent">%1$s · %2$s · media %3$s · ora %4$s</string>
+    <string name="live_map_duration_min">%1$d min</string>
+    <string name="live_map_duration_h">%1$d h %2$02d min</string>
+    <string name="live_map_distance_m">%1$d m</string>
+    <string name="live_map_distance_km">%1$.1f km</string>
+    <string name="live_map_speed">%1$.1f km/h</string>
+    <string name="live_map_no_maps_app">Nessuna app mappe disponibile</string>
     <string name="path_open_external">Apri con app mappe</string>
     <!-- Mute Timer -->
     <string name="mute_button">Metti in pausa il Monitoraggio</string>

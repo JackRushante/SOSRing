@@ -1,11 +1,14 @@
 package com.lorenzomarci.sosring
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import androidx.core.net.toUri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import android.widget.Toast
 import com.lorenzomarci.sosring.databinding.ActivityLiveMapBinding
 import org.maplibre.android.MapLibre
@@ -15,18 +18,23 @@ import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.Style
 import org.maplibre.android.style.layers.CircleLayer
+import org.maplibre.android.style.layers.FillLayer
 import org.maplibre.android.style.layers.LineLayer
 import org.maplibre.android.style.layers.PropertyFactory.circleColor
 import org.maplibre.android.style.layers.PropertyFactory.circleRadius
 import org.maplibre.android.style.layers.PropertyFactory.circleStrokeColor
 import org.maplibre.android.style.layers.PropertyFactory.circleStrokeWidth
+import org.maplibre.android.style.layers.PropertyFactory.fillColor
+import org.maplibre.android.style.layers.PropertyFactory.fillOpacity
 import org.maplibre.android.style.layers.PropertyFactory.lineColor
+import org.maplibre.android.style.layers.PropertyFactory.lineOpacity
 import org.maplibre.android.style.layers.PropertyFactory.lineWidth
 import org.maplibre.android.style.sources.GeoJsonSource
 import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.LineString
 import org.maplibre.geojson.Point
+import org.maplibre.geojson.Polygon
 
 class LiveMapActivity : BaseActivity() {
 
@@ -40,6 +48,8 @@ class LiveMapActivity : BaseActivity() {
     private var lastRenderedPointId: Long? = null
     private var hadPoints = false
     private var sessionEnded = false
+    private var followEnabled = true
+    private var hasCentered = false
 
     private val refreshHandler = Handler(Looper.getMainLooper())
     private val refreshRunnable = object : Runnable {
@@ -72,12 +82,21 @@ class LiveMapActivity : BaseActivity() {
         binding.tvContactName.text = contactName
         binding.tvStatus.text = resolveStatusText(LiveMapStateFactory.fromPoints(emptyList(), isLive, System.currentTimeMillis()))
         binding.btnBack.setOnClickListener { finish() }
-        binding.btnRecenter.setOnClickListener { recenterOnLatestPoint(force = true) }
+        binding.btnRecenter.setOnClickListener {
+            setFollowEnabled(true)
+            recenterOnLatestPoint(database.getPointsForSession(sessionId), force = true)
+        }
+        binding.btnOpenMaps.setOnClickListener { openInMaps() }
 
         binding.mapView.onCreate(savedInstanceState)
         binding.mapView.getMapAsync { loadedMap ->
             map = loadedMap
             loadedMap.uiSettings.isLogoEnabled = false
+            loadedMap.addOnCameraMoveStartedListener { reason ->
+                if (reason == MapLibreMap.OnCameraMoveStartedListener.REASON_API_GESTURE) {
+                    setFollowEnabled(false)
+                }
+            }
             loadedMap.setStyle(Style.Builder().fromJson(OSM_RASTER_STYLE_JSON)) { style ->
                 setupLiveLayers(style)
                 styleLoaded = true
@@ -124,12 +143,36 @@ class LiveMapActivity : BaseActivity() {
     }
 
     private fun setupLiveLayers(style: Style) {
+        val pathColor = Color.parseColor(PATH_COLOR)
+        style.addSource(GeoJsonSource(ACCURACY_SOURCE_ID, emptyFeatureCollection()))
         style.addSource(GeoJsonSource(PATH_SOURCE_ID, emptyFeatureCollection()))
+        style.addSource(GeoJsonSource(START_SOURCE_ID, emptyFeatureCollection()))
         style.addSource(GeoJsonSource(LATEST_SOURCE_ID, emptyFeatureCollection()))
         style.addLayer(
+            FillLayer(ACCURACY_FILL_LAYER_ID, ACCURACY_SOURCE_ID).withProperties(
+                fillColor(pathColor),
+                fillOpacity(0.15f)
+            )
+        )
+        style.addLayer(
+            LineLayer(ACCURACY_LINE_LAYER_ID, ACCURACY_SOURCE_ID).withProperties(
+                lineColor(pathColor),
+                lineOpacity(0.45f),
+                lineWidth(1f)
+            )
+        )
+        style.addLayer(
             LineLayer(PATH_LAYER_ID, PATH_SOURCE_ID).withProperties(
-                lineColor(Color.parseColor("#1565C0")),
+                lineColor(pathColor),
                 lineWidth(5f)
+            )
+        )
+        style.addLayer(
+            CircleLayer(START_LAYER_ID, START_SOURCE_ID).withProperties(
+                circleRadius(5f),
+                circleColor(Color.WHITE),
+                circleStrokeColor(pathColor),
+                circleStrokeWidth(3f)
             )
         )
         style.addLayer(
@@ -161,8 +204,9 @@ class LiveMapActivity : BaseActivity() {
         if (points.isNotEmpty()) hadPoints = true
         val state = LiveMapStateFactory.fromPoints(points, isLive, now)
         binding.tvStatus.text = resolveStatusText(state)
+        renderStats(points, includeRecent = state.status == LiveMapStatus.LIVE)
         updateSources(points)
-        recenterOnLatestPoint(force = false)
+        recenterOnLatestPoint(points, force = false)
     }
 
     private fun endSession(nowMs: Long) {
@@ -172,32 +216,96 @@ class LiveMapActivity : BaseActivity() {
         binding.tvStatus.text = resolveStatusText(
             LiveMapStateFactory.fromPoints(points, isLive = false, nowMs = nowMs, sessionEnded = true)
         )
+        renderStats(points, includeRecent = false)
         // il percorso già disegnato resta visibile anche a sessione conclusa
         if (points.isNotEmpty()) updateSources(points)
         refreshHandler.removeCallbacks(refreshRunnable)
     }
+
+    private fun renderStats(points: List<LocationPoint>, includeRecent: Boolean) {
+        binding.btnOpenMaps.visibility = if (points.isEmpty()) View.GONE else View.VISIBLE
+        val stats = LiveTrackStatsPolicy.compute(points, includeRecent)
+        if (stats == null) {
+            binding.tvStats.visibility = View.GONE
+            return
+        }
+        val duration = formatDuration(stats.durationMs)
+        val distance = formatDistance(stats.distanceMeters)
+        val average = formatSpeed(stats.averageKmh)
+        val recent = stats.recentKmh
+        binding.tvStats.text = if (recent != null) {
+            getString(R.string.live_map_stats_recent, duration, distance, average, formatSpeed(recent))
+        } else {
+            getString(R.string.live_map_stats, duration, distance, average)
+        }
+        binding.tvStats.visibility = View.VISIBLE
+    }
+
+    private fun formatDuration(durationMs: Long): String {
+        val totalMinutes = ((durationMs + 30_000L) / 60_000L).coerceAtLeast(1L)
+        return if (totalMinutes < 60L) {
+            getString(R.string.live_map_duration_min, totalMinutes.toInt())
+        } else {
+            getString(R.string.live_map_duration_h, (totalMinutes / 60L).toInt(), (totalMinutes % 60L).toInt())
+        }
+    }
+
+    private fun formatDistance(meters: Double): String {
+        return if (meters < 1_000.0) {
+            getString(R.string.live_map_distance_m, meters.toInt())
+        } else {
+            getString(R.string.live_map_distance_km, meters / 1_000.0)
+        }
+    }
+
+    private fun formatSpeed(kmh: Double): String = getString(R.string.live_map_speed, kmh)
 
     private fun updateSources(points: List<LocationPoint>) {
         val currentStyle = map?.style ?: return
         currentStyle.getSourceAs<GeoJsonSource>(PATH_SOURCE_ID)
             ?.setGeoJson(pathFeatureCollection(points))
         currentStyle.getSourceAs<GeoJsonSource>(LATEST_SOURCE_ID)
-            ?.setGeoJson(latestFeatureCollection(points.lastOrNull()))
+            ?.setGeoJson(pointFeatureCollection(points.lastOrNull()))
+        currentStyle.getSourceAs<GeoJsonSource>(START_SOURCE_ID)
+            ?.setGeoJson(pointFeatureCollection(if (points.size >= 2) points.first() else null))
+        currentStyle.getSourceAs<GeoJsonSource>(ACCURACY_SOURCE_ID)
+            ?.setGeoJson(accuracyFeatureCollection(points.lastOrNull()))
     }
 
-    private fun recenterOnLatestPoint(force: Boolean) {
-        val latest = database.getPointsForSession(sessionId).lastOrNull() ?: return
-        if (!force && latest.id == lastRenderedPointId) return
+    private fun setFollowEnabled(enabled: Boolean) {
+        if (followEnabled == enabled) return
+        followEnabled = enabled
+        binding.btnRecenter.setBackgroundResource(
+            if (enabled) R.drawable.bg_badge_soft else R.drawable.live_map_panel_bg
+        )
+    }
+
+    private fun recenterOnLatestPoint(points: List<LocationPoint>, force: Boolean) {
+        val latest = points.lastOrNull() ?: return
+        if (!force && (!followEnabled || latest.id == lastRenderedPointId)) return
+        val currentMap = map ?: return
         lastRenderedPointId = latest.id
-        map?.animateCamera(
+        val zoom = if (hasCentered) currentMap.cameraPosition.zoom else FIRST_FIX_ZOOM
+        hasCentered = true
+        currentMap.animateCamera(
             CameraUpdateFactory.newCameraPosition(
                 CameraPosition.Builder()
                     .target(LatLng(latest.lat, latest.lon))
-                    .zoom(16.0)
+                    .zoom(zoom)
                     .build()
             ),
             650
         )
+    }
+
+    private fun openInMaps() {
+        val uri = LiveMapUriFactory.latestPointUri(database.getPointsForSession(sessionId), contactName)
+        if (uri.isEmpty()) return
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()))
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(this, getString(R.string.live_map_no_maps_app), Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun pathFeatureCollection(points: List<LocationPoint>): FeatureCollection {
@@ -208,10 +316,20 @@ class LiveMapActivity : BaseActivity() {
         )
     }
 
-    private fun latestFeatureCollection(point: LocationPoint?): FeatureCollection {
+    private fun pointFeatureCollection(point: LocationPoint?): FeatureCollection {
         if (point == null) return emptyFeatureCollection()
         return FeatureCollection.fromFeature(
             Feature.fromGeometry(Point.fromLngLat(point.lon, point.lat))
+        )
+    }
+
+    private fun accuracyFeatureCollection(point: LocationPoint?): FeatureCollection {
+        if (point == null) return emptyFeatureCollection()
+        val ring = AccuracyCircle.ring(point.lat, point.lon, point.accuracy.toDouble())
+        if (ring.isEmpty()) return emptyFeatureCollection()
+        val vertices = ring.map { (lon, lat) -> Point.fromLngLat(lon, lat) }
+        return FeatureCollection.fromFeature(
+            Feature.fromGeometry(Polygon.fromLngLats(listOf(vertices)))
         )
     }
 
@@ -247,10 +365,17 @@ class LiveMapActivity : BaseActivity() {
         private const val EXTRA_CONTACT_NAME = "contact_name"
         private const val EXTRA_IS_LIVE = "is_live"
         private const val REFRESH_MS = 2_000L
+        private const val FIRST_FIX_ZOOM = 16.0
+        private const val PATH_COLOR = "#1565C0"
         private const val PATH_SOURCE_ID = "live-path-source"
         private const val PATH_LAYER_ID = "live-path-layer"
         private const val LATEST_SOURCE_ID = "live-latest-source"
         private const val LATEST_LAYER_ID = "live-latest-layer"
+        private const val START_SOURCE_ID = "live-start-source"
+        private const val START_LAYER_ID = "live-start-layer"
+        private const val ACCURACY_SOURCE_ID = "live-accuracy-source"
+        private const val ACCURACY_FILL_LAYER_ID = "live-accuracy-fill-layer"
+        private const val ACCURACY_LINE_LAYER_ID = "live-accuracy-line-layer"
         private const val OSM_RASTER_STYLE_JSON = """
             {
               "version": 8,

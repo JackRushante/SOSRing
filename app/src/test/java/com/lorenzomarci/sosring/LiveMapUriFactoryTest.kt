@@ -23,4 +23,13 @@ class LiveMapUriFactoryTest {
     fun latestPointUri_emptyList_returnsEmpty() {
         assertEquals("", LiveMapUriFactory.latestPointUri(emptyList(), "X"))
     }
+
+    @Test
+    fun labelIsPercentEncoded() {
+        val points = listOf(LocationPoint(1, "+391", "s1", 37.1, 15.1, 5f, 1000))
+
+        val uri = LiveMapUriFactory.latestPointUri(points, "Mamma Rossi (casa) & co")
+
+        assertEquals("geo:37.1,15.1?q=37.1,15.1(Mamma%20Rossi%20%28casa%29%20%26%20co)", uri)
+    }
 }
