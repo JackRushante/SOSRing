@@ -1,0 +1,1 @@
+Mappa live: mostra durata, distanza percorsa, velocità media e velocità dell'ultimo minuto, con filtro del jitter GPS. L'ultima posizione ha un cerchio di precisione e il punto di partenza è segnato. Il follow mantiene lo zoom scelto e si sospende quando sposti la mappa; il tasto centra lo riattiva. Nuovo tasto per aprire l'ultima posizione nell'app mappe.

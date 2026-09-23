@@ -48,6 +48,7 @@ Entirely optional and off by default. It uses **UnifiedPush** as the transport, 
 - Each message is **signed** with a per-device key in the Android Keystore so the recipient can verify the sender
 - Peers **pair explicitly via QR code**; sharing is off by default, per contact
 - **Live tracking** streams a position roughly every 10 seconds for a chosen duration and shows the path on an **OpenStreetMap** map inside the app; the path is saved locally on the requester's device only
+- The **live map** shows duration, distance, average speed and speed over the last minute (with GPS jitter filtering), an accuracy circle around the latest position, and a button to open that position in your maps app
 
 ## Permissions
 

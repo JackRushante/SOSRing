@@ -1,0 +1,1 @@
+Live map: shows session duration, distance travelled, average speed and speed over the last minute, with GPS jitter filtering. The latest position has an accuracy circle and the path start is marked. Following keeps your zoom level and pauses when you move the map; the recenter button resumes it. New button to open the latest position in your maps app.
