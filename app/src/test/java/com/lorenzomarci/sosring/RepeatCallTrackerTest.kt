@@ -19,12 +19,12 @@ class RepeatCallTrackerTest {
         assertNull(ring(t, 2, null))
         t.onIdle()
         t.onIdle()
-        assertEquals(CallAlertDecision(true, 25, true), ring(t, 20_000))
+        assertEquals(CallAlertDecision(true, 25), ring(t, 20_000))
         assertNull(ring(t, 20_001))
         t.onIdle()
-        assertEquals(CallAlertDecision(true, 50, true), ring(t, 40_000))
+        assertEquals(CallAlertDecision(true, 50), ring(t, 40_000))
         t.onIdle()
-        assertEquals(CallAlertDecision(true, 100, true), ring(t, 60_000))
+        assertEquals(CallAlertDecision(true, 100), ring(t, 60_000))
     }
 
     @Test fun numberlessEventCanBeFollowedByIdentifiedVipWithinSameRing() {
@@ -95,7 +95,7 @@ class RepeatCallTrackerTest {
         ring(t, 0); t.onIdle()
         val restored = RepeatCallTracker()
         restored.restore(JSONObject(t.snapshot().toString()), 10_000, window, false)
-        assertEquals(CallAlertDecision(true, 25, true), ring(restored, 20_000))
+        assertEquals(CallAlertDecision(true, 25), ring(restored, 20_000))
     }
 
     @Test fun unknownOutcomeAfterProcessDeathIsNotTreatedAsMissed() {
@@ -127,7 +127,7 @@ class RepeatCallTrackerTest {
     }
 
     @Test fun defaultModeStillRingsOnFirstAttempt() {
-        assertEquals(CallAlertDecision(true, 25, true), ring(RepeatCallTracker(), 0, mode = CallAlertMode.FIRST))
+        assertEquals(CallAlertDecision(true, 25), ring(RepeatCallTracker(), 0, mode = CallAlertMode.FIRST))
     }
 
     @Test fun escalationUsesConfiguredBaseBelowFiftyAndCapsAtHundred() {
@@ -138,8 +138,8 @@ class RepeatCallTrackerTest {
             RepeatCallPolicy.decide(CallAlertMode.FIRST, it, 45, true).volumePercent
         })
         for (base in listOf(50, 75, 100)) {
-            assertEquals(CallAlertDecision(true, base, false), RepeatCallPolicy.decide(CallAlertMode.FIRST, 4, base, true))
+            assertEquals(CallAlertDecision(true, base), RepeatCallPolicy.decide(CallAlertMode.FIRST, 4, base, true))
         }
-        assertEquals(CallAlertDecision(true, 25, false), RepeatCallPolicy.decide(CallAlertMode.FIRST, 4, 25, false))
+        assertEquals(CallAlertDecision(true, 25), RepeatCallPolicy.decide(CallAlertMode.FIRST, 4, 25, false))
     }
 }

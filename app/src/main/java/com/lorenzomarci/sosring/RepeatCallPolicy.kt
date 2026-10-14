@@ -10,7 +10,7 @@ enum class CallAlertMode { INHERIT, FIRST, SECOND;
     }
 }
 
-data class CallAlertDecision(val shouldRing: Boolean, val volumePercent: Int, val exactVolume: Boolean)
+data class CallAlertDecision(val shouldRing: Boolean, val volumePercent: Int)
 
 object RepeatCallPolicy {
     val windowOptions = listOf(3, 5, 10)
@@ -24,7 +24,7 @@ object RepeatCallPolicy {
         if (progressive) repeat((attempt - firstAudible).coerceIn(0, 2)) {
             volume = (volume * 2).coerceAtMost(100)
         }
-        return CallAlertDecision(attempt >= firstAudible, volume, progressive)
+        return CallAlertDecision(attempt >= firstAudible, volume)
     }
 }
 

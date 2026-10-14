@@ -302,8 +302,7 @@ class CallMonitorService : Service() {
     @Suppress("DEPRECATION")
     private fun overrideAudio(number: String, decision: CallAlertDecision) {
         val ramp = prefs.callRamp.takeIf { prefs.callRampEnabled }
-        if (!beginAudioOverride(number, OverrideKind.CALL, ramp?.endPercent ?: decision.volumePercent,
-                ramp != null || decision.exactVolume)) return
+        if (!beginAudioOverride(number, OverrideKind.CALL, ramp?.endPercent ?: decision.volumePercent)) return
 
         startOverrideSound(ramp?.let(::buildRampCurve))
 
@@ -343,7 +342,7 @@ class CallMonitorService : Service() {
     }
 
     @Suppress("DEPRECATION")
-    private fun beginAudioOverride(number: String, kind: OverrideKind, volumePercent: Int, exactCallVolume: Boolean = false): Boolean {
+    private fun beginAudioOverride(number: String, kind: OverrideKind, volumePercent: Int): Boolean {
         if (isOverriding) return false
         if (!AudioOverridePolicy.shouldOverride(
                 audioManager.ringerMode,
@@ -383,15 +382,9 @@ class CallMonitorService : Service() {
             }
 
             val alarmMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
-            val alarmCurrent = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
-            val alarmFinal = AlertVolumePolicy.targetStreamVolume(
-                maxVolume = alarmMax,
-                currentVolume = alarmCurrent,
-                percent = volumePercent,
-                preserveHigherCurrentVolume = kind == OverrideKind.CALL && !exactCallVolume
-            )
+            val alarmFinal = AlertVolumePolicy.targetStreamVolume(alarmMax, volumePercent)
             audioManager.setStreamVolume(AudioManager.STREAM_ALARM, alarmFinal, 0)
-            Log.d(TAG, "Override playback: alarm volume=$alarmFinal (app=$volumePercent%, system=$alarmCurrent)")
+            Log.d(TAG, "Override playback: alarm volume=$alarmFinal (app=$volumePercent%, system=$savedAlarmVolume)")
             scheduleAlertGateCheck()
             true
         } catch (e: Exception) {
