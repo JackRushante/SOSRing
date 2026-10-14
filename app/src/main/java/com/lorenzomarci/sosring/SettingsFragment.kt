@@ -112,13 +112,45 @@ class SettingsFragment : Fragment() {
     }
 
     private fun setupVolumeSlider() {
-        binding.sliderVolume.value = prefs.volumePercent.toFloat()
-        binding.tvVolumeValue.text = "${prefs.volumePercent}%"
+        binding.sliderCallRamp.setMinSeparationValue(CallVolumeRampPolicy.STEP_PERCENT.toFloat())
+        bindCallVolume()
         binding.sliderVolume.addOnChangeListener { _, value, _ ->
             prefs.volumePercent = value.toInt()
-            binding.tvVolumeValue.text = "${value.toInt()}%"
+            renderCallVolume()
             CallAlertSettingsUi.refreshVolume(binding.callAlertSettings.root, prefs)
         }
+        binding.sliderCallRamp.addOnChangeListener { slider, _, fromUser ->
+            if (!fromUser) return@addOnChangeListener
+            prefs.callRamp = CallVolumeRamp(slider.values[0].toInt(), slider.values[1].toInt())
+            renderCallVolume()
+        }
+        binding.switchCallRamp.setOnCheckedChangeListener { _, enabled ->
+            prefs.callRampEnabled = enabled
+            renderCallVolume()
+            CallAlertSettingsUi.refreshVolume(binding.callAlertSettings.root, prefs)
+        }
+    }
+
+    private fun bindCallVolume() {
+        val ramp = prefs.callRamp
+        binding.sliderVolume.value = prefs.volumePercent.toFloat()
+        binding.sliderCallRamp.values = listOf(ramp.startPercent.toFloat(), ramp.endPercent.toFloat())
+        binding.switchCallRamp.isChecked = prefs.callRampEnabled
+        renderCallVolume()
+    }
+
+    private fun renderCallVolume() {
+        val rampEnabled = prefs.callRampEnabled
+        val ramp = prefs.callRamp
+        binding.tvVolumeValue.text = if (rampEnabled) {
+            getString(R.string.call_ramp_value, ramp.startPercent, ramp.endPercent)
+        } else {
+            "${prefs.volumePercent}%"
+        }
+        binding.tvCallRampHint.text = getString(R.string.call_ramp_hint, CallVolumeRampPolicy.DURATION_MS / 1000)
+        binding.tvCallRampHint.visibility = if (rampEnabled) View.VISIBLE else View.GONE
+        binding.sliderCallRamp.visibility = if (rampEnabled) View.VISIBLE else View.GONE
+        binding.sliderVolume.visibility = if (rampEnabled) View.GONE else View.VISIBLE
     }
 
     private fun setupSoundType() {
@@ -309,7 +341,9 @@ class SettingsFragment : Fragment() {
                 quietRules = prefs.getQuietRules(),
                 callAlertMode = prefs.callAlertMode,
                 repeatCallWindowMinutes = prefs.repeatCallWindowMinutes,
-                escalateCallVolume = prefs.escalateCallVolume
+                escalateCallVolume = prefs.escalateCallVolume,
+                callRampEnabled = prefs.callRampEnabled,
+                callRamp = prefs.callRamp
             )
             val envelope = ConfigCrypto.encrypt(ConfigExporter.export(config), password)
             requireContext().contentResolver.openOutputStream(uri)?.use { os ->
@@ -424,6 +458,10 @@ class SettingsFragment : Fragment() {
         prefs.callAlertMode = config.callAlertMode
         prefs.repeatCallWindowMinutes = config.repeatCallWindowMinutes
         prefs.escalateCallVolume = config.escalateCallVolume
+        config.callRampEnabled?.let { prefs.callRampEnabled = it }
+        config.callRamp?.let { prefs.callRamp = it }
+        if (config.callRampEnabled != null) prefs.callRampPromptPending = false
+        bindCallVolume()
         CallAlertSettingsUi.bind(binding.callAlertSettings.root, prefs)
         prefs.saveContacts(config.contacts)
         prefs.saveQuietRules(config.quietRules)

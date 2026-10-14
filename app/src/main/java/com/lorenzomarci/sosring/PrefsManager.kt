@@ -65,6 +65,11 @@ class PrefsManager(context: Context) {
         const val MAX_VOLUME_PERCENT = 100
         const val DEFAULT_VOLUME_PERCENT = 100
 
+        const val KEY_CALL_RAMP_ENABLED = "call_ramp_enabled"
+        const val KEY_CALL_RAMP_START = "call_ramp_start_percent"
+        const val KEY_CALL_RAMP_END = "call_ramp_end_percent"
+        private const val KEY_CALL_RAMP_PROMPT = "call_ramp_prompt_pending"
+
         private const val KEY_MESSAGE_VOLUME_PERCENT = "message_volume_percent"
         const val MIN_MESSAGE_VOLUME_PERCENT = 5
         const val DEFAULT_MESSAGE_VOLUME_PERCENT = 100
@@ -156,6 +161,32 @@ class PrefsManager(context: Context) {
     var escalateCallVolume: Boolean
         get() = prefs.getBoolean("escalate_call_volume", false)
         set(value) = setCallPreference("escalate_call_volume", value)
+
+    var callRampEnabled: Boolean
+        get() = prefs.getBoolean(KEY_CALL_RAMP_ENABLED, false)
+        set(value) = setCallPreference(KEY_CALL_RAMP_ENABLED, value)
+
+    var callRamp: CallVolumeRamp
+        get() = CallVolumeRampPolicy.normalize(
+            prefs.getInt(KEY_CALL_RAMP_START, CallVolumeRampPolicy.DEFAULT_START_PERCENT),
+            prefs.getInt(KEY_CALL_RAMP_END, CallVolumeRampPolicy.DEFAULT_END_PERCENT)
+        )
+        set(value) {
+            val ramp = CallVolumeRampPolicy.normalize(value.startPercent, value.endPercent)
+            setCallPreference(KEY_CALL_RAMP_START, ramp.startPercent)
+            setCallPreference(KEY_CALL_RAMP_END, ramp.endPercent)
+        }
+
+    var callRampPromptPending: Boolean
+        get() = prefs.getBoolean(KEY_CALL_RAMP_PROMPT, false)
+        set(value) = prefs.edit().putBoolean(KEY_CALL_RAMP_PROMPT, value).apply()
+
+    fun initCallRamp(defaultEnabled: Boolean) {
+        if (prefs.contains(KEY_CALL_RAMP_ENABLED)) return
+        val setup = CallVolumeRampPolicy.initialSetup(prefs.all.isNotEmpty(), defaultEnabled)
+        prefs.edit().putBoolean(KEY_CALL_RAMP_ENABLED, setup.enabled)
+            .putBoolean(KEY_CALL_RAMP_PROMPT, setup.prompt).apply()
+    }
 
     fun registerChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) =
         prefs.registerOnSharedPreferenceChangeListener(listener)

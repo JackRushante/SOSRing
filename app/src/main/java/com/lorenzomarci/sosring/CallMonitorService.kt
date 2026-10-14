@@ -12,11 +12,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
+import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.IBinder
+import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
@@ -71,7 +73,8 @@ class CallMonitorService : Service() {
     private lateinit var repeatCalls: RepeatCallStore
     private val callPreferencesListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key in setOf("service_enabled", "mute_until_timestamp", "quiet_rules", "vip_contacts",
-                "call_alert_mode", "repeat_call_window_minutes", "escalate_call_volume", "volume_percent")) {
+                "call_alert_mode", "repeat_call_window_minutes", "escalate_call_volume", "volume_percent",
+                PrefsManager.KEY_CALL_RAMP_ENABLED, PrefsManager.KEY_CALL_RAMP_START, PrefsManager.KEY_CALL_RAMP_END)) {
             repeatCalls.reset()
             if (!AlertGatePolicy.allowsCall(prefs.isServiceEnabled, prefs.isMuted, prefs.isInQuietPeriod())) {
                 suspendActiveAlert()
@@ -298,9 +301,11 @@ class CallMonitorService : Service() {
 
     @Suppress("DEPRECATION")
     private fun overrideAudio(number: String, decision: CallAlertDecision) {
-        if (!beginAudioOverride(number, OverrideKind.CALL, decision.volumePercent, decision.exactVolume)) return
+        val ramp = prefs.callRamp.takeIf { prefs.callRampEnabled }
+        if (!beginAudioOverride(number, OverrideKind.CALL, ramp?.endPercent ?: decision.volumePercent,
+                ramp != null || decision.exactVolume)) return
 
-        startOverrideSound()
+        startOverrideSound(ramp?.let(::buildRampCurve))
 
         // Start vibration
         startVibration()
@@ -432,7 +437,36 @@ class CallMonitorService : Service() {
         }, ALERT_GATE_CHECK_MS)
     }
 
-    private fun startOverrideSound() {
+    private fun buildRampCurve(ramp: CallVolumeRamp): CallVolumeRampCurve =
+        CallVolumeRampPolicy.curve(
+            ramp.startPercent,
+            audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM),
+            audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
+        ) { index ->
+            runCatching {
+                audioManager.getStreamVolumeDb(AudioManager.STREAM_ALARM, index, AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)
+            }.getOrNull()
+        }
+
+    private fun startVolumeRamp(player: MediaPlayer, curve: CallVolumeRampCurve) {
+        val startedAt = SystemClock.elapsedRealtime()
+        Log.d(TAG, "Override volume ramp: initial gain=${curve.gainAt(0)}, ramps=${curve.ramps}")
+        overrideHandler.post(object : Runnable {
+            override fun run() {
+                if (mediaPlayer !== player) return
+                val elapsed = SystemClock.elapsedRealtime() - startedAt
+                val gain = curve.gainAt(elapsed)
+                try {
+                    player.setVolume(gain, gain)
+                } catch (e: IllegalStateException) {
+                    return
+                }
+                if (elapsed < CallVolumeRampPolicy.DURATION_MS) overrideHandler.postDelayed(this, CallVolumeRampPolicy.TICK_MS)
+            }
+        })
+    }
+
+    private fun startOverrideSound(ramp: CallVolumeRampCurve?) {
         val customUri = currentRingingNumber?.let {
             ContactRingtoneHelper.getRingtoneUri(this, it)
         }
@@ -448,7 +482,7 @@ class CallMonitorService : Service() {
             defaultUri?.let { it to "default ringtone" },
             alarmUri?.let { it to "alarm" }
         )
-        playCandidate(candidates, 0, looping = prefs.overrideSoundType != PrefsManager.SOUND_TYPE_NOTIFICATION)
+        playCandidate(candidates, 0, looping = prefs.overrideSoundType != PrefsManager.SOUND_TYPE_NOTIFICATION, ramp = ramp)
     }
 
     private fun playCandidate(
@@ -456,7 +490,8 @@ class CallMonitorService : Service() {
         index: Int,
         looping: Boolean,
         onCompletion: (() -> Unit)? = null,
-        onAllFailed: (() -> Unit)? = null
+        onAllFailed: (() -> Unit)? = null,
+        ramp: CallVolumeRampCurve? = null
     ) {
         if (index >= candidates.size) {
             Log.e(TAG, "Failed to play override sound: all URIs failed")
@@ -467,7 +502,7 @@ class CallMonitorService : Service() {
         val (uri, label) = candidates[index]
         Log.d(TAG, "Override sound URI: $uri ($label)")
 
-        val vol = 1f
+        val vol = ramp?.gainAt(0) ?: 1f
         val mp = MediaPlayer()
         try {
             mp.setDataSource(this, uri)
@@ -483,6 +518,7 @@ class CallMonitorService : Service() {
                 if (mediaPlayer !== player) return@setOnPreparedListener
                 try {
                     player.start()
+                    ramp?.let { startVolumeRamp(player, it) }
                     Log.i(TAG, "Override sound playing on ALARM stream.")
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to start prepared override sound: ${e.message}")
@@ -497,7 +533,7 @@ class CallMonitorService : Service() {
                     mediaPlayer = null
                     try { player.release() } catch (_: Exception) {}
                     Log.w(TAG, "Override sound ($label) failed asynchronously, advancing fallback chain.")
-                    playCandidate(candidates, index + 1, looping, onCompletion, onAllFailed)
+                    playCandidate(candidates, index + 1, looping, onCompletion, onAllFailed, ramp)
                 } else {
                     try { player.release() } catch (_: Exception) {}
                 }
@@ -508,7 +544,7 @@ class CallMonitorService : Service() {
         } catch (e: Exception) {
             Log.w(TAG, "Failed to play URI: ${e.message}")
             try { mp.release() } catch (_: Exception) {}
-            playCandidate(candidates, index + 1, looping, onCompletion, onAllFailed)
+            playCandidate(candidates, index + 1, looping, onCompletion, onAllFailed, ramp)
         }
     }
 

@@ -36,7 +36,8 @@ class RepeatCallStore(context: Context, private val prefs: PrefsManager, phoneBu
             MessageDigest.getInstance("SHA-256").digest(PhoneUtils.normalize(it.number).toByteArray())
                 .joinToString("") { byte -> "%02x".format(byte) }
         }
-        val result = tracker.onRinging(key, allowed, checkedElapsed, windowMs, mode, prefs.volumePercent, prefs.escalateCallVolume)
+        val result = tracker.onRinging(key, allowed, checkedElapsed, windowMs, mode, prefs.volumePercent,
+            prefs.escalateCallVolume && !prefs.callRampEnabled)
         save()
         return result
     }

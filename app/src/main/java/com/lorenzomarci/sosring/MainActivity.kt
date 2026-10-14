@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.lorenzomarci.sosring.databinding.ActivityMainBinding
 
 class MainActivity : BaseActivity() {
@@ -61,6 +62,24 @@ class MainActivity : BaseActivity() {
         }
 
         handleUpdateIntent(intent)
+        if (prefs.callRampPromptPending) showCallRampPrompt()
+    }
+
+    private fun showCallRampPrompt() {
+        val ramp = prefs.callRamp
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.call_ramp_prompt_title)
+            .setMessage(getString(R.string.call_ramp_prompt_message, ramp.startPercent, ramp.endPercent,
+                CallVolumeRampPolicy.DURATION_MS / 1000))
+            .setCancelable(false)
+            .setPositiveButton(R.string.call_ramp_prompt_enable) { _, _ -> chooseCallRamp(true) }
+            .setNegativeButton(R.string.call_ramp_prompt_keep) { _, _ -> chooseCallRamp(false) }
+            .show()
+    }
+
+    private fun chooseCallRamp(enabled: Boolean) {
+        prefs.callRampEnabled = enabled
+        prefs.callRampPromptPending = false
     }
 
     override fun onResume() {

@@ -41,6 +41,7 @@ android {
             buildConfigField("String", "APP_SECRET", "\"${localProps.getProperty("APP_SECRET", "")}\"")
             buildConfigField("String", "NTFY_SERVER", "\"${localProps.getProperty("NTFY_SERVER", "")}\"")
             buildConfigField("String", "NTFY_AUTH_TOKEN", "\"${localProps.getProperty("NTFY_AUTH_TOKEN", "")}\"")
+            buildConfigField("boolean", "CALL_RAMP_DEFAULT", "false")
         }
         create("fdroid") {
             dimension = "distribution"
@@ -48,6 +49,7 @@ android {
             buildConfigField("String", "APP_SECRET", "\"\"")
             buildConfigField("String", "NTFY_SERVER", "\"\"")
             buildConfigField("String", "NTFY_AUTH_TOKEN", "\"\"")
+            buildConfigField("boolean", "CALL_RAMP_DEFAULT", "true")
         }
     }
 

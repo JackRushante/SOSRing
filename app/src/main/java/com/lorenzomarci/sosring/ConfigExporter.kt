@@ -20,7 +20,9 @@ data class AppConfig(
     val quietRules: List<QuietRule>,
     val callAlertMode: CallAlertMode = CallAlertMode.FIRST,
     val repeatCallWindowMinutes: Int = 5,
-    val escalateCallVolume: Boolean = false
+    val escalateCallVolume: Boolean = false,
+    val callRampEnabled: Boolean? = null,
+    val callRamp: CallVolumeRamp? = null
 )
 
 object ConfigExporter {
@@ -51,7 +53,9 @@ object ConfigExporter {
         quietRules: List<QuietRule>,
         callAlertMode: CallAlertMode = CallAlertMode.FIRST,
         repeatCallWindowMinutes: Int = 5,
-        escalateCallVolume: Boolean = false
+        escalateCallVolume: Boolean = false,
+        callRampEnabled: Boolean? = null,
+        callRamp: CallVolumeRamp? = null
     ): AppConfig = AppConfig(
         version = CURRENT_VERSION,
         exportedAt = System.currentTimeMillis(),
@@ -69,7 +73,9 @@ object ConfigExporter {
         quietRules = quietRules,
         callAlertMode = callAlertMode,
         repeatCallWindowMinutes = repeatCallWindowMinutes,
-        escalateCallVolume = escalateCallVolume
+        escalateCallVolume = escalateCallVolume,
+        callRampEnabled = callRampEnabled,
+        callRamp = callRamp
     )
 
     fun export(config: AppConfig): String {
@@ -109,6 +115,11 @@ object ConfigExporter {
             put("callAlertMode", config.callAlertMode.name)
             put("repeatCallWindowMinutes", config.repeatCallWindowMinutes)
             put("escalateCallVolume", config.escalateCallVolume)
+            config.callRampEnabled?.let { put("callRampEnabled", it) }
+            config.callRamp?.let {
+                put("callRampStartPercent", it.startPercent)
+                put("callRampEndPercent", it.endPercent)
+            }
             put("contacts", contactsArr)
             put("quietRules", rulesArr)
         }
@@ -203,7 +214,12 @@ object ConfigExporter {
                     if (it == CallAlertMode.INHERIT) CallAlertMode.FIRST else it
                 },
                 repeatCallWindowMinutes = RepeatCallPolicy.windowMinutes(root.optInt("repeatCallWindowMinutes", 5)),
-                escalateCallVolume = root.optBoolean("escalateCallVolume", false)
+                escalateCallVolume = root.optBoolean("escalateCallVolume", false),
+                callRampEnabled = if (root.has("callRampEnabled")) root.optBoolean("callRampEnabled") else null,
+                callRamp = if (root.has("callRampEnabled")) CallVolumeRampPolicy.normalize(
+                    root.optInt("callRampStartPercent", CallVolumeRampPolicy.DEFAULT_START_PERCENT),
+                    root.optInt("callRampEndPercent", CallVolumeRampPolicy.DEFAULT_END_PERCENT)
+                ) else null
             )
         } catch (e: Exception) {
             null

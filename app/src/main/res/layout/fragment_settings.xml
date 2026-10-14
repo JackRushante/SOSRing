@@ -434,6 +434,21 @@
                         tools:text="100%" />
                 </LinearLayout>
 
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchCallRamp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:minHeight="48dp"
+                    android:text="@string/call_ramp_title" />
+
+                <TextView
+                    android:id="@+id/tvCallRampHint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="12sp" />
+
                 <com.google.android.material.slider.Slider
                     android:id="@+id/sliderVolume"
                     android:layout_width="match_parent"
@@ -441,6 +456,19 @@
                     android:layout_marginTop="10dp"
                     android:stepSize="5"
                     android:valueFrom="25"
+                    android:valueTo="100"
+                    app:haloColor="?attr/colorPrimaryContainer"
+                    app:thumbColor="?attr/tokenAccent"
+                    app:trackColorActive="?attr/tokenAccent"
+                    app:trackColorInactive="@color/track_inactive" />
+
+                <com.google.android.material.slider.RangeSlider
+                    android:id="@+id/sliderCallRamp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:stepSize="5"
+                    android:valueFrom="5"
                     android:valueTo="100"
                     app:haloColor="?attr/colorPrimaryContainer"
                     app:thumbColor="?attr/tokenAccent"

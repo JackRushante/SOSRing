@@ -55,7 +55,12 @@ object CallAlertSettingsUi {
     fun refreshVolume(view: View, prefs: PrefsManager) {
         val b = ViewCallAlertSettingsBinding.bind(view)
         val base = prefs.volumePercent
-        b.tvEscalatePreview.text = if (base >= 50) view.context.getString(R.string.call_escalate_high_volume)
-            else view.context.getString(R.string.call_escalate_preview, base, (base * 2).coerceAtMost(100))
+        val rampEnabled = prefs.callRampEnabled
+        b.switchEscalateCalls.isEnabled = !rampEnabled
+        b.tvEscalatePreview.text = when {
+            rampEnabled -> view.context.getString(R.string.call_escalate_ramp_disabled)
+            base >= 50 -> view.context.getString(R.string.call_escalate_high_volume)
+            else -> view.context.getString(R.string.call_escalate_preview, base, (base * 2).coerceAtMost(100))
+        }
     }
 }

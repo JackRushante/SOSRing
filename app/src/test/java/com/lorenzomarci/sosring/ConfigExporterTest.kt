@@ -27,7 +27,9 @@ class ConfigExporterTest {
         ),
         quietRules = listOf(
             QuietRule(days = setOf(Calendar.MONDAY, Calendar.TUESDAY), startHour = 22, startMinute = 0, endHour = 6, endMinute = 0)
-        )
+        ),
+        callRampEnabled = true,
+        callRamp = CallVolumeRamp(15, 70)
     )
 
     @Test
@@ -52,6 +54,27 @@ class ConfigExporterTest {
         assertEquals(PrefsManager.MESSAGE_SOUND_CONTACT, parsed.getInt("messageSoundType"))
         val contacts = parsed.getJSONArray("contacts")
         assertEquals(2, contacts.length())
+        assertTrue(parsed.getBoolean("callRampEnabled"))
+        assertEquals(15, parsed.getInt("callRampStartPercent"))
+        assertEquals(70, parsed.getInt("callRampEndPercent"))
+    }
+
+    @Test
+    fun importWithoutRampKeepsCurrentRampSettings() {
+        val restored = ConfigExporter.import("""{"version":1,"volumePercent":60}""")
+        assertNotNull(restored)
+        assertNull(restored!!.callRampEnabled)
+        assertNull(restored.callRamp)
+    }
+
+    @Test
+    fun importNormalizesRampValues() {
+        val restored = ConfigExporter.import(
+            """{"version":1,"callRampEnabled":false,"callRampStartPercent":90,"callRampEndPercent":20}"""
+        )
+        assertNotNull(restored)
+        assertEquals(false, restored!!.callRampEnabled)
+        assertEquals(CallVolumeRamp(90, 95), restored.callRamp)
     }
 
     @Test

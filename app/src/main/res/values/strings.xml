@@ -336,4 +336,12 @@
     <string name="call_escalate_high_volume">Applies only when the configured call volume is below 50%. Lower the call volume to enable the progression.</string>
     <string name="call_escalate_preview">When enabled: %1$d%% → %2$d%% → 100%%, starting from the first call allowed to sound. The original alarm volume is restored afterwards.</string>
     <string name="call_mode_help">Only separate cellular calls from the same VIP number count. The window starts with the first call; answering resets it. The first call keeps the normal phone sound settings. Pauses and Quiet Hours block all overrides and reset the count. Messages keep their separate sound setting. Each VIP can override the general call rule from its menu.</string>
+    <string name="call_ramp_title">Progressive volume</string>
+    <string name="call_ramp_hint">Starts at the first value and rises to the second in %1$d seconds. Vibration starts right away.</string>
+    <string name="call_ramp_value">%1$d%% → %2$d%%</string>
+    <string name="call_escalate_ramp_disabled">Not used with progressive volume: it applies only to instant volume.</string>
+    <string name="call_ramp_prompt_title">New: progressive volume</string>
+    <string name="call_ramp_prompt_message">VIP calls can now start quietly and rise from %1$d%% to %2$d%% in %3$d seconds, instead of ringing at the set volume straight away. You can change this anytime in Settings.</string>
+    <string name="call_ramp_prompt_enable">Use progressive volume</string>
+    <string name="call_ramp_prompt_keep">Keep instant volume</string>
 </resources>
