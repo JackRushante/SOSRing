@@ -18,8 +18,8 @@ android {
         applicationId = "com.lorenzomarci.sosring"
         minSdk = 29
         targetSdk = 34
-        versionCode = 51
-        versionName = "2.22.0"
+        versionCode = 53
+        versionName = "2.23.0"
 
         ndk {
             abiFilters.add("arm64-v8a")

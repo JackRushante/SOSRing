@@ -17,8 +17,9 @@ SOS Ring solves this with a foreground service that monitors incoming calls and,
 - Pick VIP contacts from the phonebook or enter them manually; select any or all numbers when a contact has more than one
 - Audible alerts for direct WhatsApp, Google Messages (SMS/RCS), and Telegram conversations from paired VIP contacts
 - Separate controls for calls (25-100%) and messages (on/off, 5-100%, Android default sound or the sound assigned to the VIP contact)
+- Optional progressive volume for calls: the ringtone starts quietly and rises from a start to an end level (default 10% to 80%, both adjustable) in 10 seconds, while vibration starts right away
 - Choose to sound from the first call or only from the second call within 3, 5, or 10 minutes, with exceptions for individual VIP numbers
-- Optional volume doubling on subsequent calls when the configured call volume is below 50%, up to 100%
+- Optional volume doubling on subsequent calls when the configured call volume is below 50%, up to 100% (instant volume only)
 - Works in **Silent**, **Vibrate**, AND **Do Not Disturb** mode
 - Full state restore after each alert (ringer mode, all volumes including alarm, DND)
 - Temporary mute timer (1-12 hours) and Quiet Hours apply to both calls and messages
