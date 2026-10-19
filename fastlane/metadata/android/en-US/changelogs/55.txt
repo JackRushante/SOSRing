@@ -1,0 +1,1 @@
+VIP call silence control: the override notification now has a Silence/Resume action. When Android exposes the volume-key change, the ringtone also silences automatically. The unused-app warning now explains how to turn off Android's automatic permission removal, and the progressive volume introduced in 2.23.0 remains available.

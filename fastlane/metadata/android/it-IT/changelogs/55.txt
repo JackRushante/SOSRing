@@ -1,0 +1,1 @@
+Controllo silenziamento chiamate VIP: la notifica di override ora ha il pulsante Silenzia/Riattiva. Quando Android rende osservabile il cambio fatto con i tasti volume, la suoneria si silenzia automaticamente. L'avviso sull'app inutilizzata spiega come disattivare la rimozione automatica dei permessi; resta disponibile il volume progressivo introdotto nella 2.23.0.
