@@ -776,6 +776,7 @@ class CallMonitorService : Service() {
             .setSmallIcon(R.drawable.ic_notification_sos)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
+            .setOnlyAlertOnce(true)
 
         if (overrideKind == OverrideKind.CALL) {
             val toggleIntent = PendingIntent.getService(
