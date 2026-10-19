@@ -823,7 +823,13 @@ private fun setupRecyclerView() {
         } else false
         val powerManager = ctx.getSystemService(Context.POWER_SERVICE) as PowerManager
         val batteryOptimizationActive = !powerManager.isIgnoringBatteryOptimizations(ctx.packageName)
-        val warning = HomeWarningPolicy.decide(prefs.isServiceEnabled, criticalMissing, autoRevokeActive, batteryOptimizationActive)
+        val warning = HomeWarningPolicy.decide(
+            prefs.isServiceEnabled,
+            criticalMissing,
+            autoRevokeActive,
+            batteryOptimizationActive,
+            prefs.autoRevokeWarningDismissed
+        )
         when (warning) {
             HomeWarning.PERMISSIONS_REVOKED -> {
                 binding.tvWarning.text = getString(R.string.home_warn_perms_revoked)
@@ -840,13 +846,26 @@ private fun setupRecyclerView() {
             HomeWarning.NONE -> binding.warningBanner.visibility = View.GONE
         }
         binding.btnWarningAction.setOnClickListener {
-            if (warning == HomeWarning.BATTERY_UNRESTRICTED_NEEDED) {
-                startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
-            } else {
-                startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                    Uri.fromParts("package", ctx.packageName, null)))
+            when (warning) {
+                HomeWarning.BATTERY_UNRESTRICTED_NEEDED ->
+                    startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                HomeWarning.AUTO_REVOKE -> showAutoRevokeGuide(ctx)
+                else -> openAppSettings()
             }
         }
+    }
+
+    private fun showAutoRevokeGuide(ctx: Context) {
+        MaterialAlertDialogBuilder(ctx)
+            .setTitle(getString(R.string.home_auto_revoke_title))
+            .setMessage(getString(R.string.home_auto_revoke_steps))
+            .setPositiveButton(getString(R.string.home_auto_revoke_open)) { _, _ -> openAppSettings() }
+            .setNeutralButton(getString(R.string.home_auto_revoke_dismiss)) { _, _ ->
+                prefs.autoRevokeWarningDismissed = true
+                updatePermissionStatus()
+            }
+            .setNegativeButton(getString(R.string.btn_cancel), null)
+            .show()
     }
 
     private fun hasForegroundLocationPermission(): Boolean {

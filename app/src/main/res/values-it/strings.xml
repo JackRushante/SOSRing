@@ -68,6 +68,9 @@
     <string name="notif_service_text">Monitoraggio %1$d contatti VIP</string>
     <string name="notif_override_title">Suoneria forzata!</string>
     <string name="notif_override_text">Chiamata VIP in arrivo — suoneria attivata</string>
+    <string name="notif_override_silenced">Chiamata VIP in arrivo — audio silenziato</string>
+    <string name="notif_override_silence">Silenzia</string>
+    <string name="notif_override_restore">Riattiva</string>
     <string name="empty_contacts">Nessun contatto VIP. Tocca + per aggiungerne uno.</string>
     <!-- Quiet Hours -->
     <string name="quiet_hours_title">Orari silenziosi</string>
@@ -263,7 +266,11 @@
     <string name="perm_revoked_notif_title">SOS Ring richiede attenzione</string>
     <string name="perm_revoked_notif_text">Permessi revocati: la suoneria VIP non funziona. Apri SOS Ring e ri-concedili.</string>
     <string name="home_warn_perms_revoked">Permessi revocati: la suoneria VIP non funziona.</string>
-    <string name="home_warn_auto_revoke">Android può rimuovere i permessi se non apri mai l\'app.</string>
+    <string name="home_warn_auto_revoke">Android può sospendere SOS Ring e rimuovere i permessi se non la usi. Disattiva «Metti in pausa l\'app se non usata».</string>
+    <string name="home_auto_revoke_title">Evita la sospensione dell\'app</string>
+    <string name="home_auto_revoke_steps">Apri Info app, scorri fino a «Impostazioni app non usate» e disattiva «Metti in pausa l\'attività dell\'app se non viene usata».\n\nSu Android 11 l\'opzione è in Permessi come «Rimuovi autorizzazioni se l\'app non viene usata».</string>
+    <string name="home_auto_revoke_open">Apri Info app</string>
+    <string name="home_auto_revoke_dismiss">Non mostrare più</string>
     <string name="home_warn_battery_unrestricted">L\'ottimizzazione batteria può interrompere il monitoraggio chiamate. Imposta SOS Ring su utilizzo batteria Senza restrizioni.</string>
     <string name="home_warn_action_fix">Risolvi</string>
     <string name="notif_service_channel_name">Monitoraggio chiamate</string>

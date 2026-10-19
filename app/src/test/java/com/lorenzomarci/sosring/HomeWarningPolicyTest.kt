@@ -54,4 +54,22 @@ class HomeWarningPolicyTest {
                 batteryOptimizationActive = false
             )
         )
+
+    @Test fun dismissedAutoRevoke_fallsBackToBatteryWarning() =
+        assertEquals(
+            HomeWarning.BATTERY_UNRESTRICTED_NEEDED,
+            HomeWarningPolicy.decide(
+                serviceEnabled = true, criticalMissing = false, autoRevokeActive = true,
+                batteryOptimizationActive = true, autoRevokeDismissed = true
+            )
+        )
+
+    @Test fun dismissedAutoRevoke_noneWhenBatteryIsUnrestricted() =
+        assertEquals(
+            HomeWarning.NONE,
+            HomeWarningPolicy.decide(
+                serviceEnabled = true, criticalMissing = false, autoRevokeActive = true,
+                batteryOptimizationActive = false, autoRevokeDismissed = true
+            )
+        )
 }

@@ -103,6 +103,7 @@ class PrefsManager(context: Context) {
         private const val LOG_RETENTION_DAYS = 30
 
         private const val KEY_LAST_PERM_WARNING = "last_perm_warning"
+        private const val KEY_AUTO_REVOKE_WARNING_DISMISSED = "auto_revoke_warning_dismissed"
 
         private const val KEY_OVERRIDE_ACTIVE = "override_active"
         private const val KEY_SAVED_ALARM_VOLUME = "saved_alarm_volume"
@@ -359,6 +360,10 @@ class PrefsManager(context: Context) {
     var lastPermWarningMs: Long
         get() = prefs.getLong(KEY_LAST_PERM_WARNING, 0L)
         set(value) = prefs.edit().putLong(KEY_LAST_PERM_WARNING, value).apply()
+
+    var autoRevokeWarningDismissed: Boolean
+        get() = prefs.getBoolean(KEY_AUTO_REVOKE_WARNING_DISMISSED, false)
+        set(value) = prefs.edit().putBoolean(KEY_AUTO_REVOKE_WARNING_DISMISSED, value).apply()
 
     var overrideActive: Boolean
         get() = prefs.getBoolean(KEY_OVERRIDE_ACTIVE, false)

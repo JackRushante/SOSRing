@@ -69,6 +69,9 @@
     <string name="notif_service_text">Monitoring %1$d VIP contacts</string>
     <string name="notif_override_title">Ringtone forced!</string>
     <string name="notif_override_text">VIP call incoming — ringtone activated</string>
+    <string name="notif_override_silenced">VIP call incoming — sound silenced</string>
+    <string name="notif_override_silence">Silence</string>
+    <string name="notif_override_restore">Resume</string>
     <string name="empty_contacts">No VIP contacts yet. Tap + to add one.</string>
     <!-- Quiet Hours -->
     <string name="quiet_hours_title">Quiet Hours</string>
@@ -264,7 +267,11 @@
     <string name="perm_revoked_notif_title">SOS Ring needs attention</string>
     <string name="perm_revoked_notif_text">Permissions revoked: VIP ringing is not working. Open SOS Ring and grant them again.</string>
     <string name="home_warn_perms_revoked">Permissions revoked: VIP ringing is not working.</string>
-    <string name="home_warn_auto_revoke">Android may remove permissions if you never open the app.</string>
+    <string name="home_warn_auto_revoke">Android may pause SOS Ring and remove permissions if unused. Turn off \"Pause app activity if unused\".</string>
+    <string name="home_auto_revoke_title">Avoid unused app restrictions</string>
+    <string name="home_auto_revoke_steps">Open App info, scroll to \"Unused app settings\", then turn off \"Pause app activity if unused\".\n\nOn Android 11 the option is under Permissions as \"Remove permissions if app isn\'t used\".</string>
+    <string name="home_auto_revoke_open">Open App info</string>
+    <string name="home_auto_revoke_dismiss">Don\'t show again</string>
     <string name="home_warn_battery_unrestricted">Battery optimization may kill call monitoring. Set SOS Ring to Unrestricted battery use.</string>
     <string name="home_warn_action_fix">Fix</string>
     <string name="notif_service_channel_name">Call monitoring</string>

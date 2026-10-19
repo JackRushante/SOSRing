@@ -7,12 +7,13 @@ object HomeWarningPolicy {
         serviceEnabled: Boolean,
         criticalMissing: Boolean,
         autoRevokeActive: Boolean,
-        batteryOptimizationActive: Boolean = false
+        batteryOptimizationActive: Boolean = false,
+        autoRevokeDismissed: Boolean = false
     ): HomeWarning {
         return when {
             !serviceEnabled -> HomeWarning.NONE
             criticalMissing -> HomeWarning.PERMISSIONS_REVOKED
-            autoRevokeActive -> HomeWarning.AUTO_REVOKE
+            autoRevokeActive && !autoRevokeDismissed -> HomeWarning.AUTO_REVOKE
             batteryOptimizationActive -> HomeWarning.BATTERY_UNRESTRICTED_NEEDED
             else -> HomeWarning.NONE
         }
