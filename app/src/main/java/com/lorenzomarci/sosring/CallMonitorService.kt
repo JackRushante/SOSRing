@@ -41,6 +41,8 @@ class CallMonitorService : Service() {
         private const val EXTRA_VIP_NUMBER = "vip_number"
         private const val MESSAGE_ALERT_TIMEOUT_MS = 15_000L
         private const val ALERT_GATE_CHECK_MS = 1_000L
+        private const val OVERRIDE_VOLUME_POLL_MS = 250L
+        private const val ACTION_TOGGLE_OVERRIDE_SILENCE = "com.lorenzomarci.sosring.TOGGLE_OVERRIDE_SILENCE"
 
         fun start(context: Context) {
             val intent = Intent(context, CallMonitorService::class.java)
@@ -97,6 +99,9 @@ class CallMonitorService : Service() {
 
     private var mediaPlayer: MediaPlayer? = null
     private var vibrator: Vibrator? = null
+    private var overrideSilenced = false
+    private var overrideGain = 1f
+    private var overrideVolumeMonitor: Runnable? = null
 
     private var currentRingingNumber: String? = null
 
@@ -187,8 +192,10 @@ class CallMonitorService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_MESSAGE_ALERT) {
-            intent.getStringExtra(EXTRA_VIP_NUMBER)?.let(::overrideMessageAlert)
+        when (intent?.action) {
+            ACTION_MESSAGE_ALERT ->
+                intent.getStringExtra(EXTRA_VIP_NUMBER)?.let(::overrideMessageAlert)
+            ACTION_TOGGLE_OVERRIDE_SILENCE -> toggleOverrideSilence()
         }
         return START_STICKY
     }
@@ -305,6 +312,7 @@ class CallMonitorService : Service() {
         if (!beginAudioOverride(number, OverrideKind.CALL, ramp?.endPercent ?: decision.volumePercent)) return
 
         startOverrideSound(ramp?.let(::buildRampCurve))
+        startOverrideVolumeMonitor()
 
         // Start vibration
         startVibration()
@@ -358,6 +366,8 @@ class CallMonitorService : Service() {
         savedDndFilter = notificationManager.currentInterruptionFilter
         isOverriding = true
         overrideKind = kind
+        overrideSilenced = false
+        overrideGain = 1f
         prefs.savedAlarmVolume = savedAlarmVolume
         prefs.savedDndFilter = savedDndFilter
         prefs.overrideActive = true
@@ -400,6 +410,85 @@ class CallMonitorService : Service() {
 
     fun suspendMessageAlert() {
         if (isOverriding && overrideKind == OverrideKind.MESSAGE) restoreAudio()
+    }
+
+    private fun startOverrideVolumeMonitor() {
+        if (overrideKind != OverrideKind.CALL) return
+        val baseline = OverrideAudioSnapshot(
+            ringerMode = audioManager.ringerMode,
+            ringVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING),
+            ringMuted = audioManager.isStreamMute(AudioManager.STREAM_RING),
+            alarmVolume = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
+        )
+        val monitor = object : Runnable {
+            override fun run() {
+                if (!isOverriding || overrideKind != OverrideKind.CALL || mediaPlayer == null) {
+                    overrideVolumeMonitor = null
+                    return
+                }
+                val current = OverrideAudioSnapshot(
+                    ringerMode = audioManager.ringerMode,
+                    ringVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING),
+                    ringMuted = audioManager.isStreamMute(AudioManager.STREAM_RING),
+                    alarmVolume = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
+                )
+                when (OverrideVolumePolicy.decide(baseline, current, overrideSilenced)) {
+                    OverrideVolumeAction.SILENCE -> {
+                        silenceOverride()
+                        refreshOverrideNotification()
+                    }
+                    OverrideVolumeAction.RESTORE -> {
+                        restoreOverrideSound()
+                        refreshOverrideNotification()
+                    }
+                    OverrideVolumeAction.NONE -> Unit
+                }
+                overrideHandler.postDelayed(this, OVERRIDE_VOLUME_POLL_MS)
+            }
+        }
+        overrideVolumeMonitor = monitor
+        overrideHandler.postDelayed(monitor, OVERRIDE_VOLUME_POLL_MS)
+    }
+
+    private fun stopOverrideVolumeMonitor() {
+        overrideVolumeMonitor?.let { overrideHandler.removeCallbacks(it) }
+        overrideVolumeMonitor = null
+    }
+
+    private fun toggleOverrideSilence() {
+        if (!isOverriding || overrideKind != OverrideKind.CALL || mediaPlayer == null) return
+        if (overrideSilenced) restoreOverrideSound() else silenceOverride()
+        refreshOverrideNotification()
+    }
+
+    private fun refreshOverrideNotification() {
+        if (isOverriding && overrideKind == OverrideKind.CALL) {
+            notificationManager.notify(OVERRIDE_NOTIFICATION_ID, buildOverrideNotification())
+        }
+    }
+
+    private fun silenceOverride() {
+        if (overrideSilenced) return
+        overrideSilenced = true
+        try {
+            mediaPlayer?.setVolume(0f, 0f)
+        } catch (e: IllegalStateException) {
+            Log.w(TAG, "Cannot mute override player: ${e.message}")
+        }
+        stopVibrationOnly()
+        Log.i(TAG, "VIP override silenced")
+    }
+
+    private fun restoreOverrideSound() {
+        if (!overrideSilenced) return
+        overrideSilenced = false
+        try {
+            mediaPlayer?.setVolume(overrideGain, overrideGain)
+        } catch (e: IllegalStateException) {
+            Log.w(TAG, "Cannot restore override player: ${e.message}")
+        }
+        startVibration()
+        Log.i(TAG, "VIP override sound restored")
     }
 
     private fun scheduleAlertGateCheck() {
@@ -449,10 +538,13 @@ class CallMonitorService : Service() {
                 if (mediaPlayer !== player) return
                 val elapsed = SystemClock.elapsedRealtime() - startedAt
                 val gain = curve.gainAt(elapsed)
-                try {
-                    player.setVolume(gain, gain)
-                } catch (e: IllegalStateException) {
-                    return
+                overrideGain = gain
+                if (!overrideSilenced) {
+                    try {
+                        player.setVolume(gain, gain)
+                    } catch (e: IllegalStateException) {
+                        return
+                    }
                 }
                 if (elapsed < CallVolumeRampPolicy.DURATION_MS) overrideHandler.postDelayed(this, CallVolumeRampPolicy.TICK_MS)
             }
@@ -496,6 +588,8 @@ class CallMonitorService : Service() {
         Log.d(TAG, "Override sound URI: $uri ($label)")
 
         val vol = ramp?.gainAt(0) ?: 1f
+        overrideGain = vol
+        val initialVolume = if (overrideSilenced) 0f else vol
         val mp = MediaPlayer()
         try {
             mp.setDataSource(this, uri)
@@ -506,7 +600,7 @@ class CallMonitorService : Service() {
                     .build()
             )
             mp.isLooping = looping
-            mp.setVolume(vol, vol)
+            mp.setVolume(initialVolume, initialVolume)
             mp.setOnPreparedListener { player ->
                 if (mediaPlayer !== player) return@setOnPreparedListener
                 try {
@@ -560,6 +654,11 @@ class CallMonitorService : Service() {
         }
     }
 
+    private fun stopVibrationOnly() {
+        vibrator?.cancel()
+        vibrator = null
+    }
+
     private fun stopRingtoneAndVibration() {
         mediaPlayer?.let {
             try {
@@ -576,8 +675,8 @@ class CallMonitorService : Service() {
         }
         mediaPlayer = null
 
-        vibrator?.cancel()
-        vibrator = null
+        stopOverrideVolumeMonitor()
+        stopVibrationOnly()
     }
 
     @Suppress("DEPRECATION")
@@ -607,6 +706,8 @@ class CallMonitorService : Service() {
 
         isOverriding = false
         overrideKind = null
+        overrideSilenced = false
+        overrideGain = 1f
         prefs.overrideActive = false
         notificationManager.cancel(OVERRIDE_NOTIFICATION_ID)
         currentRingingNumber = null
@@ -665,12 +766,32 @@ class CallMonitorService : Service() {
     }
 
     private fun buildOverrideNotification(): Notification {
-        return NotificationCompat.Builder(this, OVERRIDE_CHANNEL_ID)
+        val builder = NotificationCompat.Builder(this, OVERRIDE_CHANNEL_ID)
             .setContentTitle(getString(R.string.notif_override_title))
-            .setContentText(getString(R.string.notif_override_text))
+            .setContentText(
+                getString(
+                    if (overrideSilenced) R.string.notif_override_silenced else R.string.notif_override_text
+                )
+            )
             .setSmallIcon(R.drawable.ic_notification_sos)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
-            .build()
+
+        if (overrideKind == OverrideKind.CALL) {
+            val toggleIntent = PendingIntent.getService(
+                this,
+                OVERRIDE_NOTIFICATION_ID,
+                Intent(this, CallMonitorService::class.java).setAction(ACTION_TOGGLE_OVERRIDE_SILENCE),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            builder.addAction(
+                0,
+                getString(
+                    if (overrideSilenced) R.string.notif_override_restore else R.string.notif_override_silence
+                ),
+                toggleIntent
+            )
+        }
+        return builder.build()
     }
 }
