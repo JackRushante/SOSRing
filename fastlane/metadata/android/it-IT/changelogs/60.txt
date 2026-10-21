@@ -1,0 +1,1 @@
+Correzione affidabilità: dopo un aggiornamento dell'app Android fermava il servizio di monitoraggio, che restava spento finché non si riapriva l'app o si riavviava il telefono. Ora SOS Ring riattiva da solo monitoraggio chiamate e condivisione posizione dopo ogni aggiornamento. Inoltre la notifica della chiamata VIP non suona più di nuovo quando si preme Silenzia o Riattiva.

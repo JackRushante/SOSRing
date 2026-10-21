@@ -1,0 +1,1 @@
+Reliability fix: after an app update, Android stopped the monitoring service and it stayed off until the app was opened again or the phone was restarted. SOS Ring now restarts call monitoring and location sharing automatically after every update. The VIP call notification also no longer alerts again when you tap Silence or Resume.
