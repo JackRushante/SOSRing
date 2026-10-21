@@ -10,19 +10,19 @@ import android.util.Log
 
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
+        if (ServiceRestorePolicy.shouldRestore(intent.action)) {
             val prefs = PrefsManager(context)
             if (prefs.isServiceEnabled) {
                 CallMonitorService.start(context)
             }
             if (Push.canStart(context)) {
-                Log.i("SOSRing", "Boot: restarting push engine")
+                Log.i("SOSRing", "Restore (${intent.action}): restarting push engine")
                 Push.start(context)
             }
             val muteUntil = prefs.muteUntilTimestamp
             if (muteUntil > System.currentTimeMillis()) {
                 scheduleMuteAlarm(context, muteUntil)
-                Log.i("SOSRing", "Boot: re-registered mute alarm for $muteUntil")
+                Log.i("SOSRing", "Restore (${intent.action}): re-registered mute alarm for $muteUntil")
             }
         }
     }
