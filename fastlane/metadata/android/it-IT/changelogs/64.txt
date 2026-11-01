@@ -1,0 +1,1 @@
+Le richieste di posizione non falliscono più in silenzio. Se il telefono di un contatto non può condividere la posizione, ora ricevi il motivo: localizzazione spenta sul suo telefono oppure nessun segnale GPS, Wi-Fi o rete. Se la localizzazione è spenta, sul suo telefono compare anche una notifica che apre le impostazioni di localizzazione.

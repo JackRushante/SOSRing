@@ -1,0 +1,1 @@
+Location requests no longer fail silently. If a contact's phone cannot share its position, you now get the reason: location turned off on their phone, or no GPS, Wi-Fi or cell signal. When location is off, their phone also shows a notification that opens the location settings.
