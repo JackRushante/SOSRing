@@ -57,6 +57,15 @@ class NtfyClient(private val context: Context, private val serverUrl: String) {
         sendMessage(topic, NtfyMessageFactory.locationPending(fromHash))
     }
 
+    fun sendLocationError(topic: String, fromHash: String, reason: LocationUnavailableReason) {
+        sendMessage(
+            topic,
+            NtfyMessageFactory.locationError(
+                fromHash, reason.code, BuildConfig.VERSION_CODE, android.os.Build.VERSION.SDK_INT
+            )
+        )
+    }
+
     fun sendLocationResponse(topic: String, fromHash: String, lat: Double, lon: Double, accuracy: Float,
                              myNumber: String, theirNumber: String) {
         val locationJson = JSONObject().apply {

@@ -23,6 +23,25 @@ class NtfyMessageFactoryTest {
     }
 
     @Test
+    fun locationErrorCarriesReasonAndVersionsButNoPosition() {
+        val message = NtfyMessageFactory.locationError(
+            fromHash = "sosring-me",
+            reason = LocationUnavailableReason.LOCATION_OFF.code,
+            versionCode = 64,
+            sdkInt = 36
+        )
+
+        assertEquals("loc_error", message.getString("type"))
+        assertEquals("sosring-me", message.getString("from"))
+        assertEquals("location_off", message.getString("reason"))
+        assertEquals(64, message.getInt("vc"))
+        assertEquals(36, message.getInt("sdk"))
+        assertTrue(message.has("ts"))
+        assertFalse(message.has("lat"))
+        assertFalse(message.has("enc"))
+    }
+
+    @Test
     fun liveStartCarriesSessionAndDurationOnly() {
         val message = NtfyMessageFactory.liveStart(
             fromHash = "sosring-me",

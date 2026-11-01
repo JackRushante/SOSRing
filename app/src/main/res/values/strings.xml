@@ -108,6 +108,12 @@
     <string name="location_pending">Getting position of %1$s…</string>
     <string name="location_received">Position of %1$s (±%2$dm)</string>
     <string name="location_no_response">No response from %1$s</string>
+    <string name="location_unavailable_off">Position of %1$s unavailable: location is turned off on their phone</string>
+    <string name="location_unavailable_no_fix">Position of %1$s unavailable: no GPS, Wi-Fi or cell signal</string>
+    <string name="location_unavailable_permission">Position of %1$s unavailable: SOS Ring cannot use location in the background on their phone</string>
+    <string name="location_unavailable_service">Position of %1$s unavailable: SOS Ring monitoring is off on their phone</string>
+    <string name="location_request_blocked_off">%1$s asked for your position, but location is off. Tap to turn it on.</string>
+    <string name="location_request_blocked_permission">%1$s asked for your position, but SOS Ring cannot use it in the background. Tap and allow location all the time.</string>
     <string name="location_live_started">Live tracking: %1$s (%2$d min)</string>
     <string name="location_live_stopped">Live tracking stopped</string>
     <string name="location_live_button">Track live (%1$d min)</string>

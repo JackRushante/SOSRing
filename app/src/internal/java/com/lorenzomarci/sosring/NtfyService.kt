@@ -171,6 +171,7 @@ class NtfyService(private val context: Context) : PushEngine {
                 "loc_request" -> handleLocationRequest(fromHash)
                 "loc_pending" -> handleLocationPending(fromHash)
                 "loc_response" -> handleLocationResponse(message, fromHash)
+                "loc_error" -> handleLocationError(message, fromHash)
                 "key_rotated" -> handleKeyRotated(fromHash, keyFp)
                 "live_start" -> handleLiveStart(message, fromHash)
                 "live_point" -> handleLivePoint(message, fromHash)
@@ -295,6 +296,11 @@ class NtfyService(private val context: Context) : PushEngine {
 
         Log.i(TAG, "Location request from ${sender.name}, getting GPS fix...")
         prefs.addLocationLog(sender.name, sender.number, "incoming")
+        if (!LocationUnavailableAlert.isLocationEnabled(context)) {
+            Log.w(TAG, "Location request unavailable: system location is off")
+            replyLocationUnavailable(fromHash, sender.name, LocationUnavailableReason.LOCATION_OFF)
+            return
+        }
         ntfyClient.sendLocationPending(fromHash, TopicScheme.own(prefs))
 
         locationHelper?.requestSingleFix(object : LocationHelper.Callback {
@@ -310,9 +316,25 @@ class NtfyService(private val context: Context) : PushEngine {
             }
 
             override fun onLocationFailed() {
-                Log.w(TAG, "Failed to get location for request from ${sender.name}")
+                val reason = LocationUnavailableReason.afterFailedFix(
+                    LocationUnavailableAlert.isLocationEnabled(context)
+                )
+                Log.w(TAG, "Failed to get location for request from ${sender.name}: ${reason.code}")
+                replyLocationUnavailable(fromHash, sender.name, reason)
             }
         })
+    }
+
+    /** Tells the requester why no position will come, and the owner how to fix it when possible. */
+    private fun replyLocationUnavailable(fromHash: String, senderName: String, reason: LocationUnavailableReason) {
+        try {
+            ntfyClient.sendLocationError(fromHash, TopicScheme.own(prefs), reason)
+        } catch (e: Exception) {
+            Log.e(TAG, "Cannot send location error: ${e.message}")
+        }
+        LocationUnavailableAlert.ownerText(context, reason, senderName)?.let { text ->
+            showNotification(text, LocationUnavailableAlert.fixIntent(context, reason))
+        }
     }
 
     private fun handleLocationPending(fromHash: String) {
@@ -362,6 +384,23 @@ class NtfyService(private val context: Context) : PushEngine {
             context.getString(R.string.location_received, name, acc),
             pendingIntent
         )
+    }
+
+    private fun handleLocationError(message: JSONObject, fromHash: String) {
+        val contact = prefs.getContacts().find { TopicScheme.forNumber(prefs, it.number) == fromHash }
+        if (contact == null) {
+            Log.w(TAG, "Location error from unknown hash, ignoring")
+            return
+        }
+        val reason = LocationUnavailableReason.fromCode(message.optString("reason", ""))
+            ?: LocationUnavailableReason.NO_FIX
+        Log.w(
+            TAG,
+            "Position of ${contact.name} unavailable: ${reason.code} " +
+                "(vc=${message.optInt("vc", 0)}, sdk=${message.optInt("sdk", 0)})"
+        )
+        pendingRequests.remove(fromHash)
+        showNotification(LocationUnavailableAlert.requesterText(context, reason, contact.name), null)
     }
 
     private fun handleLiveStart(message: JSONObject, fromHash: String) {

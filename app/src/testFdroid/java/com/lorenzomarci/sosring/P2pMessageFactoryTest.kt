@@ -12,6 +12,21 @@ class P2pMessageFactoryTest {
     }
 
     @Test
+    fun locError_roundTrip() {
+        val bytes = P2pMessageFactory.locError(LocationUnavailableReason.LOCATION_OFF.code)
+
+        assertEquals("pos_err", P2pMessageFactory.type(bytes))
+        assertEquals("location_off", P2pMessageFactory.parseLocError(bytes))
+    }
+
+    @Test
+    fun parseLocError_rejectsOtherTypesAndBlankReason() {
+        assertNull(P2pMessageFactory.parseLocError(P2pMessageFactory.locRequest()))
+        assertNull(P2pMessageFactory.parseLocError(P2pMessageFactory.locError("")))
+        assertNull(P2pMessageFactory.parseLocError("not json".toByteArray()))
+    }
+
+    @Test
     fun locResponse_roundTrip() {
         val bytes = P2pMessageFactory.locResponse(45.123456, 11.654321, 12.0)
 

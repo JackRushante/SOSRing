@@ -107,6 +107,12 @@
     <string name="location_pending">Ottenendo la posizione di %1$s…</string>
     <string name="location_received">Posizione di %1$s (±%2$dm)</string>
     <string name="location_no_response">Nessuna risposta da %1$s</string>
+    <string name="location_unavailable_off">Posizione di %1$s non disponibile: localizzazione spenta sul suo telefono</string>
+    <string name="location_unavailable_no_fix">Posizione di %1$s non disponibile: nessun segnale GPS, Wi-Fi o rete</string>
+    <string name="location_unavailable_permission">Posizione di %1$s non disponibile: sul suo telefono SOS Ring non può usare la posizione in background</string>
+    <string name="location_unavailable_service">Posizione di %1$s non disponibile: sul suo telefono il monitoraggio di SOS Ring è spento</string>
+    <string name="location_request_blocked_off">%1$s ha chiesto la tua posizione, ma la localizzazione è spenta. Tocca per attivarla.</string>
+    <string name="location_request_blocked_permission">%1$s ha chiesto la tua posizione, ma SOS Ring non può usarla in background. Tocca e consenti la posizione sempre.</string>
     <string name="location_live_started">Tracciamento live: %1$s (%2$d min)</string>
     <string name="location_live_stopped">Tracciamento live fermato</string>
     <string name="location_live_button">Traccia live (%1$d min)</string>

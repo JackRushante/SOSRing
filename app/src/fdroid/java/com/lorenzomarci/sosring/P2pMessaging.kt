@@ -57,6 +57,7 @@ object P2pMessaging {
         when (type) {
             P2pMessageFactory.TYPE_LOC_REQUEST -> respondWithLocation(context, sender)
             P2pMessageFactory.TYPE_LOC_RESPONSE -> showLocation(context, sender, opened.payload)
+            P2pMessageFactory.TYPE_LOC_ERROR -> showLocationError(context, sender, opened.payload)
             P2pMessageFactory.TYPE_LIVE_START -> respondWithLiveStart(context, sender, opened.payload)
             P2pMessageFactory.TYPE_LIVE_POINT -> handleLivePoint(context, sender, opened.payload)
             P2pMessageFactory.TYPE_LIVE_STOP -> handleLiveStop(context, sender, opened.payload)
@@ -76,6 +77,11 @@ object P2pMessaging {
             return
         }
         Log.i(TAG, "position request from ${requester.number}, getting fix")
+        if (!LocationUnavailableAlert.isLocationEnabled(context)) {
+            Log.w(TAG, "Location request dropped: system location is off")
+            replyUnavailable(context, requester, label, LocationUnavailableReason.LOCATION_OFF)
+            return
+        }
         val locationServicePromoted = CallMonitorService.getInstance()?.also {
             it.setLocationForegroundType(true)
         } != null
@@ -91,10 +97,36 @@ object P2pMessaging {
             }
 
             override fun onLocationFailed() {
-                Log.w(TAG, "Location fix failed for ${requester.number}")
+                val reason = LocationUnavailableReason.afterFailedFix(
+                    LocationUnavailableAlert.isLocationEnabled(context)
+                )
+                Log.w(TAG, "Location fix failed for ${requester.number}: ${reason.code}")
+                replyUnavailable(context, requester, label, reason)
                 demoteLocationForeground(locationServicePromoted)
             }
         })
+    }
+
+    /** Tells the requester why no position will come, and the owner how to fix it when possible. */
+    private fun replyUnavailable(context: Context, requester: Peer, label: String, reason: LocationUnavailableReason) {
+        try {
+            sendTo(context, requester, P2pMessageFactory.locError(reason.code))
+        } catch (e: Exception) {
+            Log.e(TAG, "Cannot send location error: ${e.message}")
+        }
+        LocationUnavailableAlert.ownerText(context, reason, label)?.let { text ->
+            notify(context, text, LocationUnavailableAlert.fixIntent(context, reason))
+        }
+    }
+
+    private fun showLocationError(context: Context, sender: Peer, payload: ByteArray) {
+        val code = P2pMessageFactory.parseLocError(payload) ?: return
+        val reason = LocationUnavailableReason.fromCode(code) ?: LocationUnavailableReason.NO_FIX
+        val label = PrefsManager(context).getContacts()
+            .firstOrNull { PhoneUtils.matches(sender.number, it.number) }
+            ?.name?.ifBlank { null } ?: sender.number
+        notify(context, LocationUnavailableAlert.requesterText(context, reason, label), null)
+        Log.w(TAG, "position unavailable from ${sender.number}: ${reason.code}")
     }
 
     private fun demoteLocationForeground(wasPromoted: Boolean) {

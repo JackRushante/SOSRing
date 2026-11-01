@@ -25,6 +25,17 @@ object NtfyMessageFactory {
     fun locationPending(fromHash: String): JSONObject =
         base("loc_pending", fromHash)
 
+    /**
+     * The asked phone could not answer. Plain like loc_pending: no position inside, and the cause
+     * plus app and Android versions stay readable in the ntfy cache for diagnostics.
+     */
+    fun locationError(fromHash: String, reason: String, versionCode: Int, sdkInt: Int): JSONObject =
+        base("loc_error", fromHash).apply {
+            put("reason", reason)
+            put("vc", versionCode)
+            put("sdk", sdkInt)
+        }
+
     fun locationResponse(fromHash: String, encryptedPayload: String): JSONObject =
         base("loc_response", fromHash).apply {
             put("enc", encryptedPayload)

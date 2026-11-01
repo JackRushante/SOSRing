@@ -6,6 +6,7 @@ object P2pMessageFactory {
 
     const val TYPE_LOC_REQUEST = "pos_req"
     const val TYPE_LOC_RESPONSE = "pos_res"
+    const val TYPE_LOC_ERROR = "pos_err"
     const val TYPE_LIVE_START = "liv_beg"
     const val TYPE_LIVE_POINT = "liv_pos"
     const val TYPE_LIVE_STOP = "liv_end"
@@ -24,6 +25,22 @@ object P2pMessageFactory {
             put("acc", accuracy)
             put("ts", now)
         }.toString().toByteArray(Charsets.UTF_8)
+
+    /** The asked phone could not answer; [reason] is a [LocationUnavailableReason] code. */
+    fun locError(reason: String, now: Long = System.currentTimeMillis()): ByteArray =
+        JSONObject().apply {
+            put("type", TYPE_LOC_ERROR)
+            put("why", reason)
+            put("ts", now)
+        }.toString().toByteArray(Charsets.UTF_8)
+
+    /** The reason code of a location error, or null if the payload is something else. */
+    fun parseLocError(payload: ByteArray): String? = try {
+        val json = JSONObject(String(payload, Charsets.UTF_8))
+        if (json.optString("type") != TYPE_LOC_ERROR) null else json.optString("why").ifBlank { null }
+    } catch (e: Exception) {
+        null
+    }
 
     fun type(payload: ByteArray): String? = try {
         JSONObject(String(payload, Charsets.UTF_8)).optString("type", "").ifBlank { null }
