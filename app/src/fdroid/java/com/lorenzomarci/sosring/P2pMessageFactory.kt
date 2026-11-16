@@ -1,4 +1,4 @@
-!(endpoint.startsWith("https://") || endpoint.startsWith("http://")) ||package com.lorenzomarci.sosring
+package com.lorenzomarci.sosring
 
 import org.json.JSONObject
 

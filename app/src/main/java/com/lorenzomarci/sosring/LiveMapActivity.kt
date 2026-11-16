@@ -204,6 +204,7 @@ class LiveMapActivity : BaseActivity() {
         if (points.isNotEmpty()) hadPoints = true
         val state = LiveMapStateFactory.fromPoints(points, isLive, now)
         val problem = if (isLive && state.status == LiveMapStatus.WAITING_FIRST) engine?.liveProblem() else null
+        binding.tvStatus.maxLines = if (problem != null) PROBLEM_MAX_LINES else 1
         binding.tvStatus.text = problem ?: resolveStatusText(state)
         renderStats(points, includeRecent = state.status == LiveMapStatus.LIVE)
         updateSources(points)
@@ -362,6 +363,7 @@ class LiveMapActivity : BaseActivity() {
     }
 
     companion object {
+        private const val PROBLEM_MAX_LINES = 8
         private const val EXTRA_SESSION_ID = "session_id"
         private const val EXTRA_CONTACT_NAME = "contact_name"
         private const val EXTRA_IS_LIVE = "is_live"

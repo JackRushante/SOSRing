@@ -332,7 +332,10 @@ object P2pLiveController {
         inNoFixReported = true
         val reason = P2pMessaging.failedFixReason(appContext, CallMonitorService.getInstance() != null)
         Log.w(TAG, "no first fix for live session=$sessionId: ${reason.code}")
-        P2pMessaging.replyUnavailable(appContext, requester, inRequesterName ?: requesterNumber, reason, sessionId)
+        // Not a location-log failure: the session keeps trying and may still deliver positions.
+        P2pMessaging.replyUnavailable(
+            appContext, requester, inRequesterName ?: requesterNumber, reason, sessionId, logFailure = false
+        )
     }
 
     private fun sendControl(peer: Peer, payload: ByteArray) {
