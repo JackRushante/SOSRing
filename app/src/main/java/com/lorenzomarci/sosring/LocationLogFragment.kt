@@ -33,7 +33,7 @@ class LocationLogFragment : Fragment() {
         val container = binding.locationLogContainer
         container.removeAllViews()
 
-        val logs = prefs.getLocationLogs().filter { it.type == "incoming" || it.type == "incoming_denied" }
+        val logs = prefs.getLocationLogs().filter { it.type in SHOWN_TYPES }
         val dateFormat = java.text.SimpleDateFormat("dd/MM HH:mm", java.util.Locale.getDefault())
 
         if (logs.isEmpty()) {
@@ -49,6 +49,8 @@ class LocationLogFragment : Fragment() {
                 val date = dateFormat.format(java.util.Date(entry.timestamp))
                 val label = if (entry.type == "incoming_denied") {
                     getString(R.string.location_log_denied, entry.name)
+                } else if (entry.type == "incoming_failed") {
+                    getString(R.string.location_log_failed, entry.name)
                 } else {
                     "\u2B07 ${getString(R.string.location_log_incoming, entry.name)}"
                 }
@@ -60,5 +62,10 @@ class LocationLogFragment : Fragment() {
                 container.addView(tv)
             }
         }
+    }
+
+    companion object {
+        // "incoming_failed": the request arrived but no position reached the requester.
+        private val SHOWN_TYPES = setOf("incoming", "incoming_denied", "incoming_failed")
     }
 }

@@ -19,6 +19,8 @@ class LocationUnavailableReasonTest {
         assertEquals("no_fix", LocationUnavailableReason.NO_FIX.code)
         assertEquals("no_permission", LocationUnavailableReason.NO_BACKGROUND_PERMISSION.code)
         assertEquals("service_inactive", LocationUnavailableReason.SERVICE_INACTIVE.code)
+        assertEquals("not_shared", LocationUnavailableReason.NOT_SHARED.code)
+        assertEquals("live_limit", LocationUnavailableReason.LIVE_LIMIT.code)
     }
 
     @Test

@@ -51,7 +51,11 @@ object PushProvider {
         val registered = !UnifiedPushStore(context).endpointUrl.isNullOrBlank()
         val peerPaired = PeerStore(context).get(contact.number) != null
         return when (P2pLocationReadiness.check(registered, peerPaired)) {
-            P2pBlock.NONE -> null
+            P2pBlock.NONE -> {
+                // The asked phone silently ignores a second request inside its replay-guard window.
+                val waitMs = P2pPendingRequests.waitBeforeResendMs(contact.number)
+                if (waitMs > 0) context.getString(R.string.p2p_request_wait, contact.name, (waitMs + 999) / 1000) else null
+            }
             P2pBlock.NOT_REGISTERED -> context.getString(R.string.p2p_block_not_registered)
             P2pBlock.NOT_PAIRED -> context.getString(R.string.p2p_block_not_paired)
         }

@@ -1,4 +1,4 @@
-package com.lorenzomarci.sosring
+!(endpoint.startsWith("https://") || endpoint.startsWith("http://")) ||package com.lorenzomarci.sosring
 
 import org.json.JSONObject
 
@@ -10,6 +10,7 @@ object P2pMessageFactory {
     const val TYPE_LIVE_START = "liv_beg"
     const val TYPE_LIVE_POINT = "liv_pos"
     const val TYPE_LIVE_STOP = "liv_end"
+    const val TYPE_ENDPOINT_UPDATE = "ep_upd"
 
     fun locRequest(now: Long = System.currentTimeMillis()): ByteArray =
         JSONObject().apply {
@@ -26,13 +27,55 @@ object P2pMessageFactory {
             put("ts", now)
         }.toString().toByteArray(Charsets.UTF_8)
 
-    /** The asked phone could not answer; [reason] is a [LocationUnavailableReason] code. */
-    fun locError(reason: String, now: Long = System.currentTimeMillis()): ByteArray =
+    /**
+     * The asked phone could not answer; [reason] is a [LocationUnavailableReason] code. A live
+     * session refusal carries its [sessionId]; versions before 2.26 ignore the extra field.
+     */
+    fun locError(reason: String, sessionId: String? = null, now: Long = System.currentTimeMillis()): ByteArray =
         JSONObject().apply {
             put("type", TYPE_LOC_ERROR)
             put("why", reason)
+            sessionId?.let { put("sid", it) }
             put("ts", now)
         }.toString().toByteArray(Charsets.UTF_8)
+
+    /** Session id of a live-session error, null for a one-shot request error. */
+    fun parseLocErrorSession(payload: ByteArray): String? = try {
+        val json = JSONObject(String(payload, Charsets.UTF_8))
+        if (json.optString("type") != TYPE_LOC_ERROR) null else json.optString("sid").ifBlank { null }
+    } catch (e: Exception) {
+        null
+    }
+
+    /** Tells paired peers the sender's new push address after its distributor re-registered. */
+    fun endpointUpdate(endpoint: String, p256dh: String, auth: String, now: Long = System.currentTimeMillis()): ByteArray =
+        JSONObject().apply {
+            put("type", TYPE_ENDPOINT_UPDATE)
+            put("e", endpoint)
+            put("p", p256dh)
+            put("a", auth)
+            put("ts", now)
+        }.toString().toByteArray(Charsets.UTF_8)
+
+    data class EndpointUpdate(val endpoint: String, val p256dh: String, val auth: String)
+
+    /** A web push address (http or https URL) and both keys, or null. */
+    fun parseEndpointUpdate(payload: ByteArray): EndpointUpdate? = try {
+        val json = JSONObject(String(payload, Charsets.UTF_8))
+        val endpoint = json.optString("e")
+        val p256dh = json.optString("p")
+        val auth = json.optString("a")
+        val webUrl = endpoint.startsWith("https://") || endpoint.startsWith("http://")
+        if (json.optString("type") != TYPE_ENDPOINT_UPDATE || !webUrl ||
+            p256dh.isBlank() || auth.isBlank()
+        ) {
+            null
+        } else {
+            EndpointUpdate(endpoint, p256dh, auth)
+        }
+    } catch (e: Exception) {
+        null
+    }
 
     /** The reason code of a location error, or null if the payload is something else. */
     fun parseLocError(payload: ByteArray): String? = try {

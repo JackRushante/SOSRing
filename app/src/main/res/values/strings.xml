@@ -359,4 +359,7 @@
     <string name="call_ramp_prompt_message">VIP calls can now start quietly and rise from %1$d%% to %2$d%% in %3$d seconds, instead of ringing at the set volume straight away. You can change this anytime in Settings.</string>
     <string name="call_ramp_prompt_enable">Use progressive volume</string>
     <string name="call_ramp_prompt_keep">Keep instant volume</string>
+    <string name="location_unavailable_not_shared">Position of %1$s unavailable: they have not turned on \"Share my location\" for you in SOS Ring (Security screen)</string>
+    <string name="location_unavailable_live_limit">Live tracking of %1$s refused: today\'s live-tracking time for you on their phone is used up</string>
+    <string name="location_log_failed">%1$s requested your location — no position sent (location off, no fix, no permission or not delivered)</string>
 </resources>

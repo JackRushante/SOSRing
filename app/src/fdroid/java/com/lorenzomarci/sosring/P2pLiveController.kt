@@ -38,6 +38,7 @@ object P2pLiveController {
     private var outDeadlineMs = 0L
     private var lastPointAtMs = 0L
     private var outStaleNotified = false
+    private var outProblem: String? = null
 
     private var inSessionId: String? = null
     private var inRequesterNumber: String? = null
@@ -46,12 +47,17 @@ object P2pLiveController {
     private var inIntervalMs = LIVE_INTERVAL_MS
     private var lastFixAtMs = 0L
     private var inStaleNotified = false
+    private var inFirstFixSent = false
+    private var inNoFixReported = false
+    private var inDeliveryWarned = false
+    private var inRequesterName: String? = null
     private var inCallback: LocationHelper.LiveCallback? = null
     private var locationHelper: LocationHelper? = null
 
     val outgoingContactNumber: String? get() = outPeerNumber
     fun outgoingSessionId(): String? = outSessionId
     fun hasActiveIncomingSession(): Boolean = inSessionId != null
+    fun outgoingProblem(): String? = if (outSessionId != null) outProblem else null
 
     fun startOutgoing(context: Context, contact: VipContact, durationMinutes: Int): Boolean {
         if (outSessionId != null) return false
@@ -65,14 +71,28 @@ object P2pLiveController {
         outDeadlineMs = LiveSessionPolicy.deadlineMs(outStartedAtMs, durationMinutes)
         lastPointAtMs = 0L
         outStaleNotified = false
-        sendTo(peer, P2pMessageFactory.liveStart(sessionId, durationMinutes, LIVE_INTERVAL_SEC), ControlRetryPolicy.MAX_ATTEMPTS)
+        outProblem = null
+        val appContext = context.applicationContext
+        P2pMessaging.sendTo(
+            peer,
+            P2pMessageFactory.liveStart(sessionId, durationMinutes, LIVE_INTERVAL_SEC),
+            attempts = ControlRetryPolicy.MAX_ATTEMPTS,
+            ttlSeconds = WebPushSender.CONTROL_TTL_SECONDS,
+            onFailure = { failure ->
+                outHandler.post {
+                    reportOutgoingProblem(
+                        appContext, sessionId, P2pMessaging.deliveryFailureText(appContext, failure, contact.name)
+                    )
+                }
+            }
+        )
         outHandler.postDelayed({ stopOutgoing(context, sendEnd = true) }, durationMinutes * 60_000L)
-        scheduleOutgoingWatchdog(context.applicationContext)
+        scheduleOutgoingWatchdog(appContext)
         outHandler.postDelayed({
-            if (outSessionId == sessionId &&
+            if (outSessionId == sessionId && outProblem == null &&
                 LiveNoResponsePolicy.timedOut(outStartedAtMs, outFirstPointReceived, System.currentTimeMillis())
             ) {
-                notify(context, context.getString(R.string.location_no_response, contact.name), null, ongoing = false, notificationId = OUTGOING_NOTIFICATION_ID)
+                reportOutgoingProblem(appContext, sessionId, appContext.getString(R.string.p2p_no_answer, contact.name))
             }
         }, LiveNoResponsePolicy.NO_RESPONSE_MS)
         notify(
@@ -91,7 +111,7 @@ object P2pLiveController {
         val peerNumber = outPeerNumber
         outHandler.removeCallbacksAndMessages(null)
         if (sendEnd && peerNumber != null) {
-            PeerStore(context).get(peerNumber)?.let { sendTo(it, P2pMessageFactory.liveStop(sessionId), ControlRetryPolicy.MAX_ATTEMPTS) }
+            PeerStore(context).get(peerNumber)?.let { sendControl(it, P2pMessageFactory.liveStop(sessionId)) }
         }
         SosRingDatabase.getInstance(context).clearSession(sessionId)
         outSessionId = null
@@ -101,6 +121,7 @@ object P2pLiveController {
         outDeadlineMs = 0L
         lastPointAtMs = 0L
         outStaleNotified = false
+        outProblem = null
         LocalBroadcastManager.getInstance(context).sendBroadcast(Intent(Push.ACTION_CONTACTS_UPDATED))
         NotificationManagerCompat.from(context).cancel(OUTGOING_NOTIFICATION_ID)
         Log.i(TAG, "outgoing live stopped session=$sessionId")
@@ -120,7 +141,26 @@ object P2pLiveController {
         outFirstPointReceived = true
         lastPointAtMs = System.currentTimeMillis()
         outStaleNotified = false
+        outProblem = null
         LocalBroadcastManager.getInstance(context).sendBroadcast(Intent(Push.ACTION_CONTACTS_UPDATED))
+    }
+
+    /** The asked phone refused or cannot serve the live session: say why on the map and in a notification. */
+    fun onErrorReceived(context: Context, senderNumber: String, sessionId: String, text: String) {
+        val peerNumber = outPeerNumber
+        if (outSessionId != sessionId || peerNumber == null || !PhoneUtils.matches(senderNumber, peerNumber)) {
+            Log.w(TAG, "live error for inactive session or from unexpected sender, ignoring")
+            return
+        }
+        outHandler.post { reportOutgoingProblem(context.applicationContext, sessionId, text) }
+    }
+
+    private fun reportOutgoingProblem(appContext: Context, sessionId: String, text: String) {
+        if (outSessionId != sessionId) return
+        outProblem = text
+        notify(appContext, text, liveMapIntent(appContext, sessionId, outPeerName ?: ""), ongoing = false, notificationId = OUTGOING_NOTIFICATION_ID)
+        LocalBroadcastManager.getInstance(appContext).sendBroadcast(Intent(Push.ACTION_CONTACTS_UPDATED))
+        Log.w(TAG, "outgoing live session=$sessionId problem reported")
     }
 
     fun onEndReceived(context: Context, senderNumber: String, sessionId: String) {
@@ -142,25 +182,46 @@ object P2pLiveController {
         }
     }
 
-    fun startIncoming(context: Context, requester: Peer, requesterName: String, sessionId: String, durationMinutes: Int, intervalSeconds: Int) {
-        if (inSessionId != null && inRequesterNumber == requester.number) {
-            Log.w(TAG, "live start from ${requester.number} ignored, session already active for this peer")
-            return
+    /**
+     * Starts sharing to [requester]; returns why it cannot, or null when it started (or the
+     * same session is already running). A new session from the same peer replaces the old one:
+     * its end message may have been lost, and ignoring the new start left the requester waiting.
+     */
+    fun startIncoming(
+        context: Context,
+        requester: Peer,
+        requesterName: String,
+        sessionId: String,
+        durationMinutes: Int,
+        intervalSeconds: Int
+    ): LocationUnavailableReason? {
+        if (inSessionId == sessionId) {
+            Log.w(TAG, "live start for session=$sessionId already active, ignoring duplicate")
+            return null
+        }
+        val replacing = inSessionId != null && PhoneUtils.matches(inRequesterNumber ?: "", requester.number)
+        if (replacing) {
+            Log.i(TAG, "live start from ${requester.number} replaces its previous session")
+            stopIncoming(context, sendEnd = false)
         }
         val requestedMs = durationMinutes * 60_000L
         val usedMsToday = LiveConsentUsageStore(context).usedMsToday(requester.number)
         if (!LiveConsentBudget.allow(usedMsToday, requestedMs, LiveConsentBudget.DAILY_CAP_MS)) {
             Log.w(TAG, "live start from ${requester.number} rejected, daily budget exceeded")
-            return
+            return LocationUnavailableReason.LIVE_LIMIT
         }
         stopIncoming(context, sendEnd = false)
         inSessionId = sessionId
         inRequesterNumber = requester.number
+        inRequesterName = requesterName
         inStartedAtMs = System.currentTimeMillis()
         inDeadlineMs = LiveSessionPolicy.deadlineMs(inStartedAtMs, durationMinutes)
         inIntervalMs = intervalSeconds * 1000L
         lastFixAtMs = inStartedAtMs
         inStaleNotified = false
+        inFirstFixSent = false
+        inNoFixReported = false
+        inDeliveryWarned = false
         CallMonitorService.getInstance()?.setLocationForegroundType(true)
         val helper = LocationHelper(context)
         locationHelper = helper
@@ -175,6 +236,7 @@ object P2pLiveController {
                 }
                 lastFixAtMs = now
                 inStaleNotified = false
+                inFirstFixSent = true
                 val contact = PrefsManager(appContext).getContacts()
                     .firstOrNull { PhoneUtils.matches(requester.number, it.number) }
                 if (contact == null || !contact.locationEnabled) {
@@ -182,7 +244,11 @@ object P2pLiveController {
                     stopIncoming(appContext, sendEnd = true)
                     return
                 }
-                sendTo(requester, P2pMessageFactory.livePoint(active, location.latitude, location.longitude, location.accuracy.toDouble()))
+                P2pMessaging.sendTo(
+                    requester,
+                    P2pMessageFactory.livePoint(active, location.latitude, location.longitude, location.accuracy.toDouble()),
+                    onFailure = { failure -> inHandler.post { onLivePointUndelivered(appContext, active, failure) } }
+                )
             }
 
             override fun onLiveError(message: String) {
@@ -190,12 +256,32 @@ object P2pLiveController {
             }
         }
         inCallback = callback
-        helper.startLiveTracking(callback, intervalMillis = inIntervalMs, maxDurationMillis = durationMinutes * 60_000L)
+        helper.startLiveTracking(
+            callback,
+            intervalMillis = inIntervalMs,
+            maxDurationMillis = durationMinutes * 60_000L,
+            sendLastKnown = true
+        )
         inHandler.removeCallbacksAndMessages(null)
         inHandler.postDelayed({ stopIncoming(context, sendEnd = true) }, durationMinutes * 60_000L)
         inHandler.postDelayed({ incomingWatchdogTick(appContext) }, LiveSessionPolicy.WATCHDOG_TICK_MS)
         notify(context, context.getString(R.string.location_live_started, requesterName, durationMinutes), openAppIntent(context), ongoing = true, withStop = true, notificationId = LIVE_NOTIFICATION_ID)
         Log.i(TAG, "incoming live started session=$sessionId from ${requester.number}")
+        return null
+    }
+
+    /** Positions do not reach the requester: tell the owner once; a stale pairing ends the session. */
+    private fun onLivePointUndelivered(appContext: Context, sessionId: String, failure: PushFailure) {
+        if (inSessionId != sessionId) return
+        val name = inRequesterName ?: inRequesterNumber ?: "?"
+        if (!inDeliveryWarned) {
+            inDeliveryWarned = true
+            notify(appContext, P2pMessaging.answerFailureText(appContext, failure, name), openAppIntent(appContext), ongoing = false, notificationId = STALL_NOTIFICATION_ID)
+        }
+        if (failure == PushFailure.STALE_PAIRING) {
+            Log.w(TAG, "live points to a stale endpoint, stopping session=$sessionId")
+            stopIncoming(appContext, sendEnd = false)
+        }
     }
 
     fun stopIncomingIfRequester(context: Context, number: String) {
@@ -213,7 +299,7 @@ object P2pLiveController {
         CallMonitorService.getInstance()?.setLocationForegroundType(false)
         inHandler.removeCallbacksAndMessages(null)
         if (sendEnd && requesterNumber != null) {
-            PeerStore(context).get(requesterNumber)?.let { sendTo(it, P2pMessageFactory.liveStop(sessionId), ControlRetryPolicy.MAX_ATTEMPTS) }
+            PeerStore(context).get(requesterNumber)?.let { sendControl(it, P2pMessageFactory.liveStop(sessionId)) }
         }
         if (requesterNumber != null) {
             LiveConsentUsageStore(context).addUsage(requesterNumber, System.currentTimeMillis() - startedAtMs, startedAtMs)
@@ -224,15 +310,38 @@ object P2pLiveController {
         inDeadlineMs = 0L
         lastFixAtMs = 0L
         inStaleNotified = false
+        inFirstFixSent = false
+        inNoFixReported = false
+        inDeliveryWarned = false
+        inRequesterName = null
         inCallback = null
         NotificationManagerCompat.from(context).cancel(LIVE_NOTIFICATION_ID)
         Log.i(TAG, "incoming live stopped session=$sessionId")
     }
 
-    private fun sendTo(peer: Peer, payload: ByteArray, attempts: Int = 1) {
-        val envelope = P2pEnvelope.seal(payload, IdentityKeyStore.idPub(), IdentityKeyStore::sign)
-        val body = WebPushCrypto.encrypt(envelope, peer.p256dh, peer.auth)
-        WebPushSender.send(peer.endpoint, body, attempts)
+    /**
+     * No fix since the start (indoors, GPS cold start, no network location): tell the requester
+     * once, so the map shows the cause instead of waiting. The session keeps trying.
+     */
+    private fun reportNoFirstFixIfLate(appContext: Context, nowMs: Long) {
+        if (inFirstFixSent || inNoFixReported) return
+        if (!LiveNoResponsePolicy.firstFixLate(inStartedAtMs, nowMs)) return
+        val sessionId = inSessionId ?: return
+        val requesterNumber = inRequesterNumber ?: return
+        val requester = PeerStore(appContext).get(requesterNumber) ?: return
+        inNoFixReported = true
+        val reason = P2pMessaging.failedFixReason(appContext, CallMonitorService.getInstance() != null)
+        Log.w(TAG, "no first fix for live session=$sessionId: ${reason.code}")
+        P2pMessaging.replyUnavailable(appContext, requester, inRequesterName ?: requesterNumber, reason, sessionId)
+    }
+
+    private fun sendControl(peer: Peer, payload: ByteArray) {
+        P2pMessaging.sendTo(
+            peer,
+            payload,
+            attempts = ControlRetryPolicy.MAX_ATTEMPTS,
+            ttlSeconds = WebPushSender.CONTROL_TTL_SECONDS
+        )
     }
 
     /**
@@ -280,6 +389,7 @@ object P2pLiveController {
             stopIncoming(appContext, sendEnd = true)
             return
         }
+        reportNoFirstFixIfLate(appContext, now)
         if (LiveSessionPolicy.isStale(lastFixAtMs, inIntervalMs, now)) {
             restartIncomingUpdates(appContext, now)
         }

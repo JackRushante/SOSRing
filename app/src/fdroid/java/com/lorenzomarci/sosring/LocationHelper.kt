@@ -10,6 +10,7 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import androidx.core.content.ContextCompat
 
@@ -18,7 +19,9 @@ class LocationHelper(private val context: Context) {
     companion object {
         private const val TAG = "LocationHelper"
         private const val ACCURACY_THRESHOLD = 30f
-        private const val TIMEOUT_MS = 15_000L
+        // A GPS cold start often needs more than 15 s; the requester waits 75 s for the answer.
+        private const val TIMEOUT_MS = 30_000L
+        private const val LIVE_LAST_KNOWN_MAX_AGE_MS = 2 * 60_000L
     }
 
     interface Callback {
@@ -42,6 +45,9 @@ class LocationHelper(private val context: Context) {
     private var isLiveTracking = false
     private var liveUpdateCount = 0
     private var maxLiveUpdates = Int.MAX_VALUE
+    private var liveIntervalMs = 10_000L
+    private var lastLiveDeliveredAtMs = 0L
+    private var lastLiveGpsAtMs = 0L
     private val liveTimeoutRunnable = Runnable { stopLiveTracking() }
 
     private val singleFixListener = object : LocationListener {
@@ -62,11 +68,7 @@ class LocationHelper(private val context: Context) {
 
     private val liveListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
-            liveCallback?.onLocationUpdate(location)
-            liveUpdateCount++
-            if (liveUpdateCount >= maxLiveUpdates) {
-                stopLiveTracking()
-            }
+            deliverLive(location)
         }
 
         @Deprecated("Deprecated in API 29")
@@ -77,6 +79,20 @@ class LocationHelper(private val context: Context) {
         }
 
         override fun onProviderDisabled(provider: String) {
+        }
+    }
+
+    private fun deliverLive(location: Location) {
+        if (!isLiveTracking) return
+        val now = SystemClock.elapsedRealtime()
+        val isGps = location.provider == LocationManager.GPS_PROVIDER
+        if (isGps) lastLiveGpsAtMs = now
+        if (!LiveFixFilter.shouldDeliver(isGps, now, lastLiveDeliveredAtMs, lastLiveGpsAtMs, liveIntervalMs)) return
+        lastLiveDeliveredAtMs = now
+        liveCallback?.onLocationUpdate(location)
+        liveUpdateCount++
+        if (liveUpdateCount >= maxLiveUpdates) {
+            stopLiveTracking()
         }
     }
 
@@ -161,7 +177,7 @@ class LocationHelper(private val context: Context) {
     }
 
     @SuppressLint("MissingPermission")
-    private fun getLastKnownLocation(): Location? {
+    private fun getLastKnownLocation(maxAgeMs: Long = LocationFreshness.MAX_AGE_MS): Location? {
         val now = System.currentTimeMillis()
         var best: Location? = null
         for (provider in locationManager.getProviders(true)) {
@@ -169,7 +185,7 @@ class LocationHelper(private val context: Context) {
                 @Suppress("DEPRECATION")
                 val loc = locationManager.getLastKnownLocation(provider)
                 if (loc != null &&
-                    LocationFreshness.isFresh(loc.time, now) &&
+                    LocationFreshness.isFresh(loc.time, now, maxAgeMs) &&
                     (best == null || loc.accuracy < best.accuracy)
                 ) {
                     best = loc
@@ -184,7 +200,8 @@ class LocationHelper(private val context: Context) {
     fun startLiveTracking(
         cb: LiveCallback,
         intervalMillis: Long = 10_000L,
-        maxDurationMillis: Long = 60 * 60_000L
+        maxDurationMillis: Long = 60 * 60_000L,
+        sendLastKnown: Boolean = false
     ) {
         if (isLiveTracking) return
         if (!hasForegroundLocationPermission()) {
@@ -195,6 +212,9 @@ class LocationHelper(private val context: Context) {
         isLiveTracking = true
         liveUpdateCount = 0
         maxLiveUpdates = LiveLocationBudget.maxUpdates(maxDurationMillis, intervalMillis)
+        liveIntervalMs = intervalMillis
+        lastLiveDeliveredAtMs = 0L
+        lastLiveGpsAtMs = 0L
 
         var anyProvider = false
         for (provider in liveProviders()) {
@@ -226,6 +246,10 @@ class LocationHelper(private val context: Context) {
         }
 
         handler.postDelayed(liveTimeoutRunnable, maxDurationMillis)
+        if (sendLastKnown) {
+            // A recent position goes out at once: the first GPS fix can take a minute or more.
+            getLastKnownLocation(LIVE_LAST_KNOWN_MAX_AGE_MS)?.let { lastKnown -> handler.post { deliverLive(lastKnown) } }
+        }
         Log.i(TAG, "Live tracking started, interval=${intervalMillis}ms")
     }
 
@@ -249,15 +273,8 @@ class LocationHelper(private val context: Context) {
         return providers
     }
 
-    private fun liveProviders(): List<String> {
-        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            return listOf(LocationManager.GPS_PROVIDER)
-        }
-        if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-            return listOf(LocationManager.NETWORK_PROVIDER)
-        }
-        return emptyList()
-    }
+    /** GPS and network together: indoors GPS never fixes, and the filter prefers GPS when it does. */
+    private fun liveProviders(): List<String> = singleFixProviders()
 
     private fun hasForegroundLocationPermission(): Boolean {
         return ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==

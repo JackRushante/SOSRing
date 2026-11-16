@@ -13,7 +13,8 @@ class P2pPushEngine(private val appContext: Context) : PushEngine {
             Log.w(TAG, "No paired peer for requested contact")
             return
         }
-        Thread { P2pMessaging.requestLocation(appContext, peer) }.start()
+        val label = contact.name.ifBlank { contact.number }
+        Thread { P2pMessaging.requestLocation(appContext, peer, label) }.start()
     }
 
     override fun runDiscovery() {}
@@ -24,6 +25,8 @@ class P2pPushEngine(private val appContext: Context) : PushEngine {
     override fun stopLiveTracking() = P2pLiveController.stopOutgoing(appContext, sendEnd = true)
 
     override fun getLiveSessionId(): String? = P2pLiveController.outgoingSessionId()
+
+    override fun liveProblem(): String? = P2pLiveController.outgoingProblem()
 
     override fun heartbeat(nowMs: Long) = P2pLiveController.heartbeat(appContext, nowMs)
 

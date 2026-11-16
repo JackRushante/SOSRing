@@ -203,7 +203,8 @@ class LiveMapActivity : BaseActivity() {
         }
         if (points.isNotEmpty()) hadPoints = true
         val state = LiveMapStateFactory.fromPoints(points, isLive, now)
-        binding.tvStatus.text = resolveStatusText(state)
+        val problem = if (isLive && state.status == LiveMapStatus.WAITING_FIRST) engine?.liveProblem() else null
+        binding.tvStatus.text = problem ?: resolveStatusText(state)
         renderStats(points, includeRecent = state.status == LiveMapStatus.LIVE)
         updateSources(points)
         recenterOnLatestPoint(points, force = false)

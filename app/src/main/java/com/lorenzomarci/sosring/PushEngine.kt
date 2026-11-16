@@ -8,6 +8,9 @@ interface PushEngine {
     fun stopLiveTracking()
     fun getLiveSessionId(): String?
 
+    /** Why the outgoing live session gets no positions, when known; shown on the live map. */
+    fun liveProblem(): String? = null
+
     /**
      * Enforcement opportunistico dello stato live su orologio a muro: i timer
      * uptime-based possono scattare in ritardo dopo il deep sleep, quindi ogni

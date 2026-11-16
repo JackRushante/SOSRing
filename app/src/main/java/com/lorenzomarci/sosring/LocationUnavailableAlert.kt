@@ -26,6 +26,8 @@ object LocationUnavailableAlert {
             LocationUnavailableReason.NO_FIX -> R.string.location_unavailable_no_fix
             LocationUnavailableReason.NO_BACKGROUND_PERMISSION -> R.string.location_unavailable_permission
             LocationUnavailableReason.SERVICE_INACTIVE -> R.string.location_unavailable_service
+            LocationUnavailableReason.NOT_SHARED -> R.string.location_unavailable_not_shared
+            LocationUnavailableReason.LIVE_LIMIT -> R.string.location_unavailable_live_limit
         }
         return context.getString(res, name)
     }
@@ -37,7 +39,8 @@ object LocationUnavailableAlert {
                 context.getString(R.string.location_request_blocked_off, requesterName)
             LocationUnavailableReason.NO_BACKGROUND_PERMISSION ->
                 context.getString(R.string.location_request_blocked_permission, requesterName)
-            LocationUnavailableReason.NO_FIX, LocationUnavailableReason.SERVICE_INACTIVE -> null
+            LocationUnavailableReason.NO_FIX, LocationUnavailableReason.SERVICE_INACTIVE,
+            LocationUnavailableReason.NOT_SHARED, LocationUnavailableReason.LIVE_LIMIT -> null
         }
 
     /** Opens the system screen that fixes the cause: Location settings or the app's permissions. */
@@ -48,7 +51,8 @@ object LocationUnavailableAlert {
                 Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                 Uri.fromParts("package", context.packageName, null)
             )
-            LocationUnavailableReason.NO_FIX, LocationUnavailableReason.SERVICE_INACTIVE -> return null
+            LocationUnavailableReason.NO_FIX, LocationUnavailableReason.SERVICE_INACTIVE,
+            LocationUnavailableReason.NOT_SHARED, LocationUnavailableReason.LIVE_LIMIT -> return null
         }.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         return PendingIntent.getActivity(
             context, REQUEST_CODE_BASE + reason.ordinal, intent,

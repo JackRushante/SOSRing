@@ -16,7 +16,13 @@ enum class LocationUnavailableReason(val code: String) {
     NO_BACKGROUND_PERMISSION("no_permission"),
 
     /** The monitoring service is not running, so the location cannot be read. */
-    SERVICE_INACTIVE("service_inactive");
+    SERVICE_INACTIVE("service_inactive"),
+
+    /** The owner has not turned on "Share my location" for the requester. */
+    NOT_SHARED("not_shared"),
+
+    /** Live tracking refused: the daily live-tracking time allowed for this requester is used up. */
+    LIVE_LIMIT("live_limit");
 
     companion object {
         fun fromCode(code: String?): LocationUnavailableReason? =

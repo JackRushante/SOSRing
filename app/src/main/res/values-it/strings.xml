@@ -358,4 +358,7 @@
     <string name="call_ramp_prompt_message">Le chiamate VIP ora possono partire piano e salire da %1$d%% a %2$d%% in %3$d secondi, invece di suonare subito al volume impostato. Puoi cambiarlo quando vuoi nelle Impostazioni.</string>
     <string name="call_ramp_prompt_enable">Usa volume progressivo</string>
     <string name="call_ramp_prompt_keep">Mantieni volume istantaneo</string>
+    <string name="location_unavailable_not_shared">Posizione di %1$s non disponibile: non ha attivato \"Condividi la mia posizione\" per te in SOS Ring (schermata Sicurezza)</string>
+    <string name="location_unavailable_live_limit">Tracciamento live di %1$s rifiutato: sul suo telefono il tempo di tracciamento live di oggi per te è esaurito</string>
+    <string name="location_log_failed">%1$s ha richiesto la tua posizione — nessuna posizione inviata (posizione spenta, nessun segnale, permesso mancante o non consegnata)</string>
 </resources>

@@ -61,6 +61,26 @@ class PeerStore(context: Context) {
         return matchSingleByIdPub(all(), target)
     }
 
+    /**
+     * Replaces the push address of every pairing with this identity (the peer's distributor
+     * re-registered). Returns how many pairings changed.
+     */
+    fun updateEndpoint(idPubB64: String, endpoint: String, p256dh: String, auth: String): Int {
+        var changed = 0
+        val updated = all().map { peer ->
+            if (peer.idPub == idPubB64 &&
+                (peer.endpoint != endpoint || peer.p256dh != p256dh || peer.auth != auth)
+            ) {
+                changed++
+                peer.copy(endpoint = endpoint, p256dh = p256dh, auth = auth)
+            } else {
+                peer
+            }
+        }
+        if (changed > 0) persist(updated)
+        return changed
+    }
+
     private fun persist(peers: List<Peer>) {
         val arr = JSONArray()
         peers.forEach { peer ->
