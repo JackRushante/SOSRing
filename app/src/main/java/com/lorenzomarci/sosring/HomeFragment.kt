@@ -36,6 +36,7 @@ class HomeFragment : Fragment() {
     private lateinit var prefs: PrefsManager
     private lateinit var adapter: VipNumbersAdapter
     private val contacts = mutableListOf<VipContact>()
+    private var pairingAwaitingAccess: Pair<VipContact, MessageApp>? = null
 
     private val countdownHandler = Handler(Looper.getMainLooper())
     private val countdownRunnable = object : Runnable {
@@ -113,6 +114,20 @@ class HomeFragment : Fragment() {
             countdownHandler.post(countdownRunnable)
         }
         liveRefreshHandler.post(liveRefreshRunnable)
+        resumePairingAfterAccessSettings()
+    }
+
+    /** Back from the notification-access screen: go on with the pairing, or say why it cannot start. */
+    private fun resumePairingAfterAccessSettings() {
+        val (contact, app) = pairingAwaitingAccess ?: return
+        pairingAwaitingAccess = null
+        if (VipMessageAlerts.hasNotificationAccess(requireContext())) {
+            beginMessagePairing(contact, app)
+        } else {
+            VipMessageAlerts.cancelPairing(requireContext())
+            adapter.notifyDataSetChanged()
+            Toast.makeText(requireContext(), getString(R.string.message_pair_access_missing), Toast.LENGTH_LONG).show()
+        }
     }
 
     override fun onPause() {
@@ -176,6 +191,7 @@ private fun setupRecyclerView() {
                         .setMessage(getString(R.string.message_access_message))
                         .setPositiveButton(getString(R.string.btn_open_settings)) { _, _ ->
                             VipMessageAlerts.beginPairing(requireContext(), contact, app)
+                            pairingAwaitingAccess = contact to app
                             startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
                         }
                         .setNegativeButton(getString(R.string.btn_cancel), null)
@@ -189,15 +205,19 @@ private fun setupRecyclerView() {
         val appName = messageAppName(app)
         VipMessageAlerts.beginPairing(requireContext(), contact, app)
         adapter.notifyDataSetChanged()
+        val instructions = if (app == MessageApp.SMS) {
+            getString(R.string.message_pair_sms_message, contact.name)
+        } else {
+            getString(R.string.message_pair_message, appName, contact.name)
+        }
+        val message = if (VipMessageAlerts.isListenerConnected(requireContext())) {
+            instructions
+        } else {
+            instructions + "\n\n" + getString(R.string.message_listener_not_connected)
+        }
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(getString(R.string.message_pair_title, appName))
-            .setMessage(
-                if (app == MessageApp.GOOGLE_MESSAGES) {
-                    getString(R.string.message_pair_google_message, contact.name)
-                } else {
-                    getString(R.string.message_pair_message, appName, contact.name)
-                }
-            )
+            .setMessage(message)
             .setPositiveButton(getString(R.string.btn_continue), null)
             .setNegativeButton(getString(R.string.btn_cancel)) { _, _ ->
                 VipMessageAlerts.cancelPairing(requireContext())
@@ -209,7 +229,7 @@ private fun setupRecyclerView() {
     private fun messageAppName(app: MessageApp): String = getString(
         when (app) {
             MessageApp.WHATSAPP -> R.string.message_app_whatsapp
-            MessageApp.GOOGLE_MESSAGES -> R.string.message_app_google_messages
+            MessageApp.SMS -> R.string.message_app_google_messages
             MessageApp.TELEGRAM -> R.string.message_app_telegram
         }
     )

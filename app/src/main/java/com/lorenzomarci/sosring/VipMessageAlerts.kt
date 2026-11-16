@@ -4,7 +4,8 @@ import android.content.Context
 
 enum class MessageApp(val storageId: String) {
     WHATSAPP("whatsapp"),
-    GOOGLE_MESSAGES("google_messages"),
+    /** Any SMS/RCS app; the storage id keeps the name of the first one supported. */
+    SMS("google_messages"),
     TELEGRAM("telegram");
 
     companion object {
@@ -24,6 +25,10 @@ object VipMessageAlerts {
 
     fun hasNotificationAccess(context: Context): Boolean =
         VipMessageAlertsProvider.hasNotificationAccess(context)
+
+    /** False when access is granted but the system has not bound the listener yet (a rebind is requested). */
+    fun isListenerConnected(context: Context): Boolean =
+        VipMessageAlertsProvider.isListenerConnected(context)
 
     fun state(context: Context, contact: VipContact, app: MessageApp): MessageAlertState =
         VipMessageAlertsProvider.state(context, contact, app)

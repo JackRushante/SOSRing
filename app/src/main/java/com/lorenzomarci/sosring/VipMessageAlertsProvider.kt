@@ -10,6 +10,12 @@ object VipMessageAlertsProvider {
     fun hasNotificationAccess(context: Context): Boolean =
         NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)
 
+    fun isListenerConnected(context: Context): Boolean {
+        if (VipMessageNotificationListener.connected) return true
+        VipMessageNotificationListener.requestRebind(context)
+        return false
+    }
+
     fun state(context: Context, contact: VipContact, app: MessageApp): MessageAlertState =
         VipMessageBindingStore(context).state(contact.number, app)
 

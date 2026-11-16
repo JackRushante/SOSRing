@@ -325,7 +325,9 @@
     <string name="message_access_message">Autorizza SOS Ring ad accedere alle notifiche per identificare le conversazioni dirette dei contatti VIP. Il testo dei messaggi non viene mai salvato.</string>
     <string name="message_pair_title">Associa conversazione %1$s</string>
     <string name="message_pair_message">Con %1$s chiuso, chiedi a %2$s di inviare un messaggio diretto. La prossima conversazione diretta di quell’app verrà associata al VIP.</string>
-    <string name="message_pair_google_message">Chiedi a %1$s di inviare un SMS o RCS diretto. SOS Ring lo associa automaticamente quando Google Messaggi espone il numero; altrimenti associa esplicitamente la prossima conversazione diretta.</string>
+    <string name="message_pair_sms_message">Con l’app SMS chiusa, chiedi a %1$s di inviarti un SMS diretto (testo qualsiasi). SOS Ring lo associa automaticamente quando l’app SMS mostra il numero o il nome salvato in rubrica; altrimenti associa a questo VIP la prossima conversazione SMS diretta. Funziona con l’app SMS predefinita del telefono (Google Messaggi, Messaggi di /e/OS, Fossify, QKSMS e altre).</string>
+    <string name="message_pair_access_missing">Associazione annullata: SOS Ring non ha ancora l’accesso alle notifiche, quindi non vede i messaggi in arrivo. Concedilo e riprova.</string>
+    <string name="message_listener_not_connected">Android non ha ancora avviato il lettore di notifiche di SOS Ring. Se all’arrivo del messaggio non succede nulla, disattiva e riattiva l’accesso alle notifiche per SOS Ring, oppure riavvia il telefono.</string>
     <string name="message_pair_success">Avvisi %1$s attivati per %2$s</string>
     <string name="message_auto_paired">Avvisi SMS/RCS attivati automaticamente per %1$s</string>
     <string name="message_unpaired">Avvisi %1$s disattivati per %2$s</string>

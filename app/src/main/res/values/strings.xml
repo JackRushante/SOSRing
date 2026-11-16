@@ -326,7 +326,9 @@
     <string name="message_access_message">Allow SOS Ring to access notifications so it can identify direct conversations from VIP contacts. Message text is never stored.</string>
     <string name="message_pair_title">Pair %1$s conversation</string>
     <string name="message_pair_message">With %1$s closed, ask %2$s to send a direct message. The next direct conversation in that app will be paired with this VIP.</string>
-    <string name="message_pair_google_message">Ask %1$s to send a direct SMS or RCS message. SOS Ring pairs it automatically when Google Messages exposes the phone number; otherwise the next direct conversation is paired explicitly.</string>
+    <string name="message_pair_sms_message">With your SMS app closed, ask %1$s to send you a direct SMS (any text). SOS Ring pairs it automatically when the SMS app shows their number or saved contact name; otherwise the next direct SMS conversation is paired with this VIP. Works with the default SMS app of the phone (Google Messages, /e/OS Message, Fossify, QKSMS and others).</string>
+    <string name="message_pair_access_missing">Pairing cancelled: SOS Ring still has no notification access, so it cannot see incoming messages. Allow it and try again.</string>
+    <string name="message_listener_not_connected">Android has not started SOS Ring’s notification reader yet. If nothing happens after the message arrives, turn notification access for SOS Ring off and on again, or restart the phone.</string>
     <string name="message_pair_success">%1$s alerts enabled for %2$s</string>
     <string name="message_auto_paired">SMS/RCS alerts automatically enabled for %1$s</string>
     <string name="message_unpaired">%1$s alerts disabled for %2$s</string>

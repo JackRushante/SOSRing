@@ -17,7 +17,7 @@ FUNZIONALITA:
 • Volume chiamate configurabile (25-100%)
 • Suono dalla prima chiamata VIP o dalla seconda entro 3, 5 o 10 minuti, con eccezioni per numero
 • Raddoppio opzionale del volume fra chiamate successive se il volume base è inferiore al 50%, fino al 100%
-• Avvisi messaggi VIP opzionali per WhatsApp, Google Messaggi (SMS/RCS) e Telegram
+• Avvisi messaggi VIP opzionali per WhatsApp, SMS/RCS (qualsiasi app SMS predefinita) e Telegram
 • Toggle, volume (5-100%) e suono dei messaggi separati: predefinito Android o suono assegnato al contatto VIP
 • Funziona in Silenzioso, Vibrazione E Non Disturbare
 • Ripristino completo dopo la chiamata (incluso volume sveglia)

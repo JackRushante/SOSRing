@@ -4,7 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
-class GoogleMessagesVipResolverTest {
+class SmsVipResolverTest {
 
     private val contacts = listOf(
         VipContact("One", "+393331112222"),
@@ -15,15 +15,15 @@ class GoogleMessagesVipResolverTest {
     fun matchesOneVipByNumber() {
         assertEquals(
             contacts[0],
-            GoogleMessagesVipResolver.uniqueVip(setOf("3331112222"), contacts)
+            SmsVipResolver.uniqueVip(setOf("3331112222"), contacts)
         )
     }
 
     @Test
     fun rejectsMissingOrAmbiguousMatch() {
-        assertNull(GoogleMessagesVipResolver.uniqueVip(emptySet(), contacts))
+        assertNull(SmsVipResolver.uniqueVip(emptySet(), contacts))
         assertNull(
-            GoogleMessagesVipResolver.uniqueVip(
+            SmsVipResolver.uniqueVip(
                 setOf("+393331112222", "+393334445555"),
                 contacts
             )

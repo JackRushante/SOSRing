@@ -17,7 +17,7 @@ FEATURES:
 • Configurable call override volume (25-100%)
 • Sound from the first VIP call or the second within 3, 5 or 10 minutes, with per-number exceptions
 • Optional volume doubling between successive calls when the base volume is below 50%, capped at 100%
-• Optional VIP message alerts for WhatsApp, Google Messages (SMS/RCS), and Telegram
+• Optional VIP message alerts for WhatsApp, SMS/RCS (any default SMS app) and Telegram
 • Separate message sound toggle, volume (5-100%), and Android default or VIP contact sound
 • Works in Silent, Vibrate, AND Do Not Disturb mode
 • Full state restore after call (including alarm volume)

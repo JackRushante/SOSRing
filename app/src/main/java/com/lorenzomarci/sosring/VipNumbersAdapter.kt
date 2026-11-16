@@ -66,7 +66,7 @@ class VipNumbersAdapter(
                 VipMessageAlerts.supported && onMessageAlertTap != null
             val appItems = mapOf(
                 MessageApp.WHATSAPP to R.id.action_whatsapp_alert,
-                MessageApp.GOOGLE_MESSAGES to R.id.action_google_messages_alert,
+                MessageApp.SMS to R.id.action_google_messages_alert,
                 MessageApp.TELEGRAM to R.id.action_telegram_alert
             )
             appItems.forEach { (app, itemId) ->
@@ -78,7 +78,7 @@ class VipNumbersAdapter(
                     R.id.action_call_mode -> { onCallMode?.invoke(contact); true }
                     R.id.action_whatsapp_alert -> { onMessageAlertTap?.invoke(contact, MessageApp.WHATSAPP); true }
                     R.id.action_google_messages_alert -> {
-                        onMessageAlertTap?.invoke(contact, MessageApp.GOOGLE_MESSAGES); true
+                        onMessageAlertTap?.invoke(contact, MessageApp.SMS); true
                     }
                     R.id.action_telegram_alert -> { onMessageAlertTap?.invoke(contact, MessageApp.TELEGRAM); true }
                     R.id.action_delete -> { onDelete(position); true }
@@ -92,7 +92,7 @@ class VipNumbersAdapter(
             val appName = anchor.context.getString(
                 when (app) {
                     MessageApp.WHATSAPP -> R.string.message_app_whatsapp
-                    MessageApp.GOOGLE_MESSAGES -> R.string.message_app_google_messages
+                    MessageApp.SMS -> R.string.message_app_google_messages
                     MessageApp.TELEGRAM -> R.string.message_app_telegram
                 }
             )

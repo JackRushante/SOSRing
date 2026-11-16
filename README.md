@@ -15,7 +15,7 @@ SOS Ring solves this with a foreground service that monitors incoming calls and,
 ## Features
 
 - Pick VIP contacts from the phonebook or enter them manually; select any or all numbers when a contact has more than one
-- Audible alerts for direct WhatsApp, Google Messages (SMS/RCS), and Telegram conversations from paired VIP contacts
+- Audible alerts for direct WhatsApp, SMS/RCS (the phone's default SMS app: Google Messages, /e/OS Message, Fossify, QKSMS and others), and Telegram conversations from paired VIP contacts
 - Separate controls for calls (25-100%) and messages (on/off, 5-100%, Android default sound or the sound assigned to the VIP contact)
 - Optional progressive volume for calls: the ringtone starts quietly and rises from a start to an end level (default 10% to 80%, both adjustable) in 10 seconds, while vibration starts right away
 - **Silence / Resume** action in the VIP call notification; the ringtone also silences automatically when Android exposes the volume-key change
@@ -59,7 +59,7 @@ Entirely optional and off by default. It uses **UnifiedPush** as the transport, 
 | `READ_PHONE_STATE` | Detect incoming calls |
 | `READ_CALL_LOG` | Get the caller's number |
 | `READ_CONTACTS` | Pick VIP contacts from the phonebook |
-| Notification access | Identify paired direct conversations from WhatsApp, Google Messages, and Telegram; message text is processed transiently and never stored |
+| Notification access | Identify paired direct conversations from WhatsApp, the SMS app, and Telegram; message text is processed transiently and never stored |
 | `ACCESS_NOTIFICATION_POLICY` | Override Do Not Disturb |
 | `MODIFY_AUDIO_SETTINGS` | Change ringer mode and volume |
 | `FOREGROUND_SERVICE` (+ `LOCATION`, `SPECIAL_USE`) | Keep the monitoring service alive; foreground type during live sharing |
